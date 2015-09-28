@@ -1,0 +1,68 @@
+*vimagit*    vimagit is an attempt to reproduce the magnificient Magit to vim.
+
+
+
+                      vimagit
+
+Author:            Jerome Reybert
+Plugin Homepage:   <https://github.com/jreybert/vimagit>
+
+===============================================================================
+
+                               _  _ _ _  _ ____ ____ _ ___     .   ~
+                               |  | | |\/| |__| | __ |  |    --|-- ~
+                                \/  | |  | |  | |__] |  |      '   ~
+                                                             ----- ~
+
+===============================================================================
+CONTENTS                                                      *vimagitContents*
+
+  1.  Introduction ................. |vimagitIntroduction|
+  2.  Installation ................. |vimagitInstallation|
+  3.  Usage ........................ |vimagitUsage|
+  4.  Commands ..................... |vimagitCommands|
+  5.  Customization ................ |vimagitCustomization|
+  6.  FAQ .......................... |vimagitFAQ|
+
+
+===============================================================================
+1. INTRODUCTION                                           *vimagitIntroduction*
+                                                                      *vimagit*
+
+vimagit is a plugin which try to mimic the fantastic magit emacs plugin. If you
+already know the original plugin, give it a try. If you never have heard about
+magit (or maybe emacs), this is IMO the most efficient way to stage hunks and
+craft nice commits.
+
+===============================================================================
+2. INSTALLATION                                           *vimagitInstallation*
+
+The plugin hierarchy tree respects the vim plugin standard. It is compatible
+with pathogen (and most probably vundle).
+
+To install:
+>
+  cd ~/.vim/bundle
+  git clone https://github.com/jreybert/vimagit
+<
+
+===============================================================================
+3. USAGE                                                         *vimagitUsage*
+
+In a git'ed source directory, once you have some unstaged work, simply type
+with :Magit , and here is the magic. A new window appears, with all the diffs
+and new files in your directory.
+
+===============================================================================
+4. COMMANDS                                                   *vimagitCommands*
+
+Move the cursor around. When the cursor is on a hunk, press S to stage. When the
+cursor is more generally in a diff file (it can be a hunk, or the diff header),
+press F to stage the whole file.
+
+===============================================================================
+5. CUSTOMISATION                                         *vimagitCustomization*
+
+===============================================================================
+6. FAQ                                                             *vimagitFAQ*
+
