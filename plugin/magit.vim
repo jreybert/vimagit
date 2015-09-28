@@ -106,7 +106,7 @@ function! magit#select_file()
 endfunction
 
 function! magit#git_apply(selection)
-	silent let git_result=system("git apply --cached -", selection)
+	silent let git_result=system("git apply --cached -", a:selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 	endif
@@ -121,7 +121,7 @@ function! magit#stage_file()
 		echoerr "Not in a file region"
 		return
 	endif
-	magit#git_apply(selection)
+	call magit#git_apply(selection)
 	call magit#get_unstaged()
 endfunction
 
