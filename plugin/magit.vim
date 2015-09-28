@@ -4,6 +4,12 @@ scriptencoding utf-8
 "  finish
 "endif
 "let g:loaded_magit = 1
+" Initialisation {{{
+
+" FIXME: find if there is a minimum vim version required
+" if v:version < 703
+" endif
+
 let g:magit_unstaged_buffer_name = "magit-unstaged"
 
 function! s:set(var, default)
@@ -17,6 +23,10 @@ function! s:set(var, default)
 endfunction
 
 call s:set('g:magit_enabled',               1)
+
+" }}}
+
+" {{{ Internal functions
 
 function! magit#get_unstaged()
 	if ( @% != g:magit_unstaged_buffer_name )
@@ -101,6 +111,9 @@ function! magit#git_apply(selection)
 	endif
 endfunction
 
+" }}}
+
+" {{{ User functions and commands
 function! magit#stage_file()
 	let [ret, selection] = magit#select_file()
 	if ( ret != 0 )
@@ -112,3 +125,5 @@ function! magit#stage_file()
 endfunction
 
 command! Magit call magit#show_magit("v")
+
+" }}}
