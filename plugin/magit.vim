@@ -32,34 +32,27 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
-function! magit#get_unstaged()
-	if ( @% != g:magit_unstaged_buffer_name )
-		echoerr "Not in magit buffer " . g:magit_unstaged_buffer_name . " but in " . @%
-		return
-	endif
-	" FIXME: find a way to save folding state. According to help, this won't
-	" help:
-	" > This does not save fold information.
-	" Playing with foldenable around does not help.
-	" mkview does not help either.
-	let l:winview = winsaveview()
-	silent! execute "normal! ggdG"
-	silent! read !git diff
-	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
-	call winrestview(l:winview)
+" magit#get_staged: this function writes in current buffer all staged files
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+function! magit#get_staged()
+	put ='##Staged stuff##'
+	put ='##============##'
+	put =''
+	silent! read !git diff --staged --no-color
 endfunction
 
-function! magit#show_magit(orientation)
-	vnew 
-	setlocal buftype=nofile bufhidden=delete noswapfile filetype=gitdiff foldmethod=syntax nowrapscan
-	execute "file " . g:magit_unstaged_buffer_name
+" magit#get_unstaged: this function writes in current buffer all unstaged
+" and untracked files
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+function! magit#get_unstaged()
+	put ='##Unstaged stuff##'
+	put ='##==============##'
+	put =''
 
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_reload . " :call magit#get_unstaged()<cr>"
-	
-	call magit#get_unstaged()
-	execute "normal! gg"
+	silent! read !git diff --no-color
+	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
 endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
@@ -166,6 +159,53 @@ endfunction
 
 " {{{ User functions and commands
 
+" magit#update_buffer: this function:
+" 1. checks that current buffer is the wanted one
+" 2. save window state (cursor position...)
+" 3. delete buffer
+" 4. fills with unstage stuff
+" 5. restore window state
+function! magit#update_buffer()
+	if ( @% != g:magit_unstaged_buffer_name )
+		echoerr "Not in magit buffer " . g:magit_unstaged_buffer_name . " but in " . @%
+		return
+	endif
+	" FIXME: find a way to save folding state. According to help, this won't
+	" help:
+	" > This does not save fold information.
+	" Playing with foldenable around does not help.
+	" mkview does not help either.
+	let l:winview = winsaveview()
+	silent! execute "normal! ggdG"
+	
+	call magit#get_staged()
+
+	call magit#get_unstaged()
+
+	call winrestview(l:winview)
+endfunction
+
+function! magit#show_magit(orientation)
+	vnew 
+	setlocal buftype=nofile
+	setlocal bufhidden=delete
+	setlocal noswapfile
+	setlocal foldmethod=syntax
+	setlocal nowrapscan
+	setlocal foldlevel=1
+	setlocal filetype=gitdiff
+	"setlocal readonly
+
+	execute "file " . g:magit_unstaged_buffer_name
+
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_reload .             " :call magit#update_buffer()<cr>"
+	
+	call magit#update_buffer()
+	execute "normal! gg"
+endfunction
+
 " magit#stage_hunk: this function stage a single hunk, from the current
 " cursor position
 " return: no
@@ -181,7 +221,7 @@ function! magit#stage_hunk()
 		return
 	endif
 	call magit#git_apply(header . hunk)
-	call magit#get_unstaged()
+	call magit#update_buffer()
 endfunction
 
 " magit#stage_hunk: this function stage a whole file, from the current
@@ -194,7 +234,7 @@ function! magit#stage_file()
 		return
 	endif
 	call magit#git_apply(selection)
-	call magit#get_unstaged()
+	call magit#update_buffer()
 endfunction
 
 command! Magit call magit#show_magit("v")
