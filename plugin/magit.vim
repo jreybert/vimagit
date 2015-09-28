@@ -37,26 +37,48 @@ function! magit#show_magit(orientation)
 	execute "normal! gg"
 endfunction
 
-function! magit#search_block(start_pattern, end_pattern, last_line)
-	let save_reg_a = @0
-	let @0 = ""
-	execute "normal! $"
-	let v:errmsg = ""
-	execute a:start_pattern . ',' . a:end_pattern . a:last_line . ' y'
-	let ret = (v:errmsg != "")
-	let selection = @0
-	execute "normal! ^"
-	let @0 = save_reg_a
-	return [v:errmsg != "", selection]
+" magit#search_block: helper function, to get a block of text, giving a start
+" and multiple end pattern
+" param[in] start_pattern: regex start, which will be search backward (cursor
+" position is set to end of line before searching, to find the pattern if on
+" the current line)
+" param[in] end_pattern: list of end pattern. Each end pattern is a list with
+" index 0 end pattern regex, and index 1 the number of line to exclude
+" (essentially -1 or 0). Each pattern is searched in order. It stop searching
+" at first match.
+" return: a list. index 0: return status . index 1: a string containing the
+" lines.
+function! magit#search_block(start_pattern, end_pattern)
+	let l:winview = winsaveview()
+
+	call cursor(0, 100)
+	let start=search(a:start_pattern, "bnW")
+	if ( start == 0 )
+		call winrestview(l:winview)
+		return [1, ""]
+	endif
+
+	call cursor(0, 1)
+	for end_p in a:end_pattern
+		let end=search(end_p[0], "nW")
+		if ( end != 0 )
+			let end+=end_p[1]
+			break
+		endif
+	endfor
+	if ( end == 0 )
+		call winrestview(l:winview)
+		return [1, ""]
+	endif
+
+	let lines=getline(start, end)
+
+	call winrestview(l:winview)
+	return [0, join(lines, "\n")]
 endfunction
 
 function! magit#select_file()
-	let selection = ""
-	let [ret, selection] = magit#search_block("?diff --git?", "/diff --git/", "-1")
-	if (ret != 0)
-		let [ret, selection] = magit#search_block("?diff --git?", "/\\%$/", "")
-	endif
-	return [ret, selection]
+	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ])
 endfunction
 
 function! magit#stage_file()
