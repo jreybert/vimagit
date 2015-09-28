@@ -10,7 +10,7 @@ scriptencoding utf-8
 " if v:version < 703
 " endif
 
-let g:magit_unstaged_buffer_name = "magit-unstaged"
+let g:magit_unstaged_buffer_name = "magit-playground"
 
 function! s:set(var, default)
 	if !exists(a:var)
