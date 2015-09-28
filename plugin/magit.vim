@@ -46,14 +46,24 @@ endfunction
 " index 0 end pattern regex, and index 1 the number of line to exclude
 " (essentially -1 or 0). Each pattern is searched in order. It stop searching
 " at first match.
+" param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
+" inferior to upper_limit line, block is discarded
 " return: a list. index 0: return status . index 1: a string containing the
 " lines.
-function! magit#search_block(start_pattern, end_pattern)
+function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let l:winview = winsaveview()
 
+	let upper_limit=0
+	if ( a:upper_limit_pattern != "" )
+		let upper_limit=search(a:upper_limit_pattern, "bnW")
+	endif
 	call cursor(0, 100)
 	let start=search(a:start_pattern, "bnW")
 	if ( start == 0 )
+		call winrestview(l:winview)
+		return [1, ""]
+	endif
+	if ( start < upper_limit )
 		call winrestview(l:winview)
 		return [1, ""]
 	endif
@@ -78,7 +88,7 @@ function! magit#search_block(start_pattern, end_pattern)
 endfunction
 
 function! magit#select_file()
-	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ])
+	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ], "")
 endfunction
 
 function! magit#stage_file()
