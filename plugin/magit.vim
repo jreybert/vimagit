@@ -36,6 +36,7 @@ call s:set('g:magit_enabled',               1)
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_staged()
+	put =''
 	put ='##Staged stuff##'
 	put ='##============##'
 	put =''
@@ -47,6 +48,7 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
+	put =''
 	put ='##Unstaged stuff##'
 	put ='##==============##'
 	put =''
