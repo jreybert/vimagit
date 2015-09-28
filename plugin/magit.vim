@@ -109,6 +109,11 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [0, join(lines, "\n") . "\n"]
 endfunction
 
+let s:diff_re  = '^diff --git'
+let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
+let s:title_re = '^##\%([^#]\|\s\)\+##$'
+let s:eof_re   = '\\%$'
+
 " magit#select_file: select the whole diff file, relative to the current
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
@@ -117,7 +122,7 @@ endfunction
 "         index 0: return value
 "         index 1: string containing the patch for the whole file
 function! magit#select_file()
-	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ], "")
+	return magit#search_block(s:diff_re, [ [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], "")
 endfunction
 
 " magit#select_file_header: select the upper diff header, relative to the current
@@ -128,7 +133,7 @@ endfunction
 "         index 0: return value
 "         index 1: string containing the diff header
 function! magit#select_file_header()
-	return magit#search_block("^diff --git", [ ["^@@ ", -1] ], "")
+	return magit#search_block(s:diff_re, [ [s:hunk_re, -1] ], "")
 endfunction
 
 " magit#select_hunk: select a hunk, from the current cursor position
@@ -138,7 +143,7 @@ endfunction
 "         index 0: return value
 "         index 1: string containing the hunk
 function! magit#select_hunk()
-	return magit#search_block("^@@ ", [ ["^@@ ", -1], ["^diff --git", -1], [ "\\%$", 0 ] ], "^diff --git")
+	return magit#search_block(s:hunk_re, [ [s:hunk_re, -1], [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
