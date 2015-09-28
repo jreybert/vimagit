@@ -115,18 +115,46 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [0, join(lines, "\n") . "\n"]
 endfunction
 
+" magit#select_file: select the whole diff file, relative to the current
+" cursor position
+" nota: if the cursor is not in a diff file when the function is called, this
+" function will fail
+" function will fail
+" return: a List
+"         index 0: return value
+"         index 1: string containing the patch for the whole file
 function! magit#select_file()
 	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ], "")
 endfunction
 
+" magit#select_file_header: select the upper diff header, relative to the current
+" cursor position
+" nota: if the cursor is not in a diff file when the function is called, this
+" function will fail
+" function will fail
+" return: a List
+"         index 0: return value
+"         index 1: string containing the diff header
 function! magit#select_file_header()
 	return magit#search_block("^diff --git", [ ["^@@ ", -1] ], "")
 endfunction
 
+" magit#select_hunk: select a hunk, from the current cursor position
+" nota: if the cursor is not in a hunk when the function is called, this
+" function will fail
+" return: a List
+"         index 0: return value
+"         index 1: string containing the hunk
 function! magit#select_hunk()
 	return magit#search_block("^@@ ", [ ["^@@ ", -1], ["^diff --git", -1], [ "\\%$", 0 ] ], "^diff --git")
 endfunction
 
+" magit#git_apply: helper function to stage a selection
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
+" header plus one or more hunks
+" return: no
 function! magit#git_apply(selection)
 	silent let git_result=system("git apply --cached -", a:selection)
 	if ( v:shell_error != 0 )
@@ -138,6 +166,9 @@ endfunction
 
 " {{{ User functions and commands
 
+" magit#stage_hunk: this function stage a single hunk, from the current
+" cursor position
+" return: no
 function! magit#stage_hunk()
 	let [ret, header] = magit#select_file_header()
 	if ( ret != 0 )
@@ -153,6 +184,9 @@ function! magit#stage_hunk()
 	call magit#get_unstaged()
 endfunction
 
+" magit#stage_hunk: this function stage a whole file, from the current
+" cursor position
+" return: no
 function! magit#stage_file()
 	let [ret, selection] = magit#select_file()
 	if ( ret != 0 )
