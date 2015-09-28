@@ -57,6 +57,8 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	if ( a:upper_limit_pattern != "" )
 		let upper_limit=search(a:upper_limit_pattern, "bnW")
 	endif
+
+	" important if backward regex is at the beginning of the current line
 	call cursor(0, 100)
 	let start=search(a:start_pattern, "bnW")
 	if ( start == 0 )
