@@ -94,13 +94,20 @@ function! magit#select_file()
 	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ], "")
 endfunction
 
+function! magit#git_apply(selection)
+	silent let git_result=system("git apply --cached -", selection)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+	endif
+endfunction
+
 function! magit#stage_file()
 	let [ret, selection] = magit#select_file()
 	if ( ret != 0 )
 		echoerr "Not in a file region"
 		return
 	endif
-	call system("git apply --cached -", selection)
+	magit#git_apply(selection)
 	call magit#get_unstaged()
 endfunction
 
