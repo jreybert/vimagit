@@ -23,6 +23,8 @@ function! s:set(var, default)
 endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
+call s:set('g:magit_stage_hunk_mapping',        "S")
+
 call s:set('g:magit_enabled',               1)
 
 " }}}
@@ -43,7 +45,10 @@ function! magit#show_magit(orientation)
 	vnew 
 	setlocal buftype=nofile bufhidden=delete noswapfile filetype=gitdiff foldmethod=syntax nowrapscan
 	execute "file " . g:magit_unstaged_buffer_name
+
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
+	
 	call magit#get_unstaged()
 	execute "normal! gg"
 endfunction
@@ -105,6 +110,14 @@ function! magit#select_file()
 	return magit#search_block("^diff --git", [ ["^diff --git", -1], [ "\\%$", 0 ] ], "")
 endfunction
 
+function! magit#select_file_header()
+	return magit#search_block("^diff --git", [ ["^@@ ", -1] ], "")
+endfunction
+
+function! magit#select_hunk()
+	return magit#search_block("^@@ ", [ ["^@@ ", -1], ["^diff --git", -1], [ "\\%$", 0 ] ], "^diff --git")
+endfunction
+
 function! magit#git_apply(selection)
 	silent let git_result=system("git apply --cached -", a:selection)
 	if ( v:shell_error != 0 )
@@ -115,6 +128,22 @@ endfunction
 " }}}
 
 " {{{ User functions and commands
+
+function! magit#stage_hunk()
+	let [ret, header] = magit#select_file_header()
+	if ( ret != 0 )
+		echoerr "Can't find diff header"
+		return
+	endif
+	let [ret, hunk] = magit#select_hunk()
+	if ( ret != 0 )
+		echoerr "Not in a hunk region"
+		return
+	endif
+	call magit#git_apply(header . hunk)
+	call magit#get_unstaged()
+endfunction
+
 function! magit#stage_file()
 	let [ret, selection] = magit#select_file()
 	if ( ret != 0 )
