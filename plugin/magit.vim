@@ -87,7 +87,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let lines=getline(start, end)
 
 	call winrestview(l:winview)
-	return [0, join(lines, "\n")]
+	return [0, join(lines, "\n") . "\n"]
 endfunction
 
 function! magit#select_file()
