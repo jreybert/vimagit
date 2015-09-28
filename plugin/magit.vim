@@ -90,7 +90,6 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 		return [1, ""]
 	endif
 
-
 	let min=line('$')
 	for end_p in a:end_pattern
 		let curr_end=search(end_p[0], "nW")
@@ -114,7 +113,6 @@ endfunction
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
-" function will fail
 " return: a List
 "         index 0: return value
 "         index 1: string containing the patch for the whole file
@@ -125,7 +123,6 @@ endfunction
 " magit#select_file_header: select the upper diff header, relative to the current
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
-" function will fail
 " function will fail
 " return: a List
 "         index 0: return value
