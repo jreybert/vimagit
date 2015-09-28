@@ -60,7 +60,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 
 	" important if backward regex is at the beginning of the current line
 	call cursor(0, 100)
-	let start=search(a:start_pattern, "bnW")
+	let start=search(a:start_pattern, "bW")
 	if ( start == 0 )
 		call winrestview(l:winview)
 		return [1, ""]
@@ -72,7 +72,6 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 
 
 	let min=line('$')
-	call cursor(0, 1)
 	for end_p in a:end_pattern
 		let curr_end=search(end_p[0], "nW")
 		if ( curr_end != 0 && curr_end <= min )
