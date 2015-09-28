@@ -12,6 +12,15 @@ syn sync minlines=50
 
 syn include @diff syntax/diff.vim
 
+syn match titleEntry "^\#\#\([^#]\|\s\)\+\#\#$" contains=titleSign
+if has("conceal")
+	syn match titleSign contained "\#\#" conceal
+else
+	syn match titleSign contained "\#\#"
+endif
+hi def link titleEntry String
+hi def link titleSign  Ignore
+
 syn region gitHunk start=/^@@ -/ end=/^\%(diff --\|@@ -\|$\)\@=/ contains=@diff fold contained
 syn region gitDiff start=/^diff --git / end=/^\%(diff --\|$\)\@=/ contains=gitHunk,@diff fold transparent
 
