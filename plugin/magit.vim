@@ -24,6 +24,7 @@ endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
+call s:set('g:magit_reload',                    "R")
 
 call s:set('g:magit_enabled',               1)
 
@@ -48,6 +49,7 @@ function! magit#show_magit(orientation)
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_reload . " :call magit#get_unstaged()<cr>"
 	
 	call magit#get_unstaged()
 	execute "normal! gg"
