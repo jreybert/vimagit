@@ -22,6 +22,7 @@ function! s:set(var, default)
 	endif
 endfunction
 
+call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_enabled',               1)
 
 " }}}
@@ -42,7 +43,7 @@ function! magit#show_magit(orientation)
 	vnew 
 	setlocal buftype=nofile bufhidden=delete noswapfile filetype=gitdiff foldmethod=syntax nowrapscan
 	execute "file " . g:magit_unstaged_buffer_name
-	nnoremap <buffer> <silent> F :call magit#stage_file()<cr>
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
 	call magit#get_unstaged()
 	execute "normal! gg"
 endfunction
