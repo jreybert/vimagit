@@ -37,9 +37,16 @@ function! magit#get_unstaged()
 		echoerr "Not in magit buffer " . g:magit_unstaged_buffer_name . " but in " . @%
 		return
 	endif
+	" FIXME: find a way to save folding state. According to help, this won't
+	" help:
+	" > This does not save fold information.
+	" Playing with foldenable around does not help.
+	" mkview does not help either.
+	let l:winview = winsaveview()
 	silent! execute "normal! ggdG"
 	silent! read !git diff
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
+	call winrestview(l:winview)
 endfunction
 
 function! magit#show_magit(orientation)
