@@ -44,8 +44,8 @@ endfunction
 " the current line)
 " param[in] end_pattern: list of end pattern. Each end pattern is a list with
 " index 0 end pattern regex, and index 1 the number of line to exclude
-" (essentially -1 or 0). Each pattern is searched in order. It stop searching
-" at first match.
+" (essentially -1 or 0). Each pattern is searched in order. It'll choose the
+" match with the minimum line number (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
 " return: a list. index 0: return status . index 1: a string containing the
@@ -68,12 +68,14 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 		return [1, ""]
 	endif
 
+
+	let min=line('$')
 	call cursor(0, 1)
 	for end_p in a:end_pattern
-		let end=search(end_p[0], "nW")
-		if ( end != 0 )
-			let end+=end_p[1]
-			break
+		let curr_end=search(end_p[0], "nW")
+		if ( curr_end != 0 && curr_end <= min )
+			let end=curr_end + end_p[1]
+			let min=curr_end
 		endif
 	endfor
 	if ( end == 0 )
