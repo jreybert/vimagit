@@ -24,7 +24,9 @@ endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
-call s:set('g:magit_commit_mapping',            "C")
+call s:set('g:magit_commit_mapping',            "CC")
+call s:set('g:magit_commit_amend_mapping',      "CA")
+call s:set('g:magit_commit_fixup_mapping',      "CF")
 call s:set('g:magit_reload_mapping',            "R")
 
 call s:set('g:magit_enabled',               1)
@@ -79,7 +81,7 @@ function! magit#get_unstaged()
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
 endfunction
 
-let s:magit_commit_mode=0
+let s:magit_commit_mode=''
 function! magit#get_commit_section()
 	put =''
 	put =magit#decorate_section(s:magit_commit_section_start)
@@ -88,7 +90,11 @@ function! magit#get_commit_section()
 
 	let git_dir=magit#strip(system("git rev-parse --git-dir"))
 	" refresh the COMMIT_EDITMSG file
-	silent! call system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+	if ( s:magit_commit_mode == 'CC' )
+		silent! call system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+	elseif ( s:magit_commit_mode == 'CA' )
+		silent! call system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+	endif
 	let commit_msg=join(readfile(git_dir . '/COMMIT_EDITMSG'), "\n") . "\n"
 	put =commit_msg
 	put =magit#decorate_section(s:magit_commit_section_end)
@@ -157,11 +163,22 @@ let s:bin_re   = '^Binary files '
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
 let s:eof_re   = '\%$'
 
-function! magit#git_commit()
-	let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
-	let commit_section_pat_end='^'.magit#decorate_section(s:magit_commit_section_end).'$'
-	let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +2], [ [commit_section_pat_end, -1] ], "")
-	silent let git_result=system("git commit --file -", commit_msg)
+function! magit#git_commit(mode)
+	if ( a:mode == 'CF' )
+		silent let git_result=system("git commit --amend -C HEAD")
+	else
+		let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
+		let commit_section_pat_end='^'.magit#decorate_section(s:magit_commit_section_end).'$'
+		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +2], [ [commit_section_pat_end, -1] ], "")
+		let amend_flag=""
+		if ( a:mode == 'CA' )
+			let amend_flag=" --amend "
+		endif
+		silent! let git_result=system("git commit " . amend_flag . " --file -", commit_msg)
+	endif
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+	endif
 endfunction
 
 " magit#select_file: select the whole diff file, relative to the current
@@ -246,7 +263,7 @@ function! magit#update_buffer()
 	let l:winview = winsaveview()
 	silent! execute "normal! ggdG"
 	
-	if ( s:magit_commit_mode == 1 )
+	if ( s:magit_commit_mode != '' )
 		call magit#get_commit_section()
 	endif
 	call magit#get_staged()
@@ -268,10 +285,12 @@ function! magit#show_magit(orientation)
 
 	execute "file " . g:magit_unstaged_buffer_name
 
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .     " :call magit#update_buffer()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .     " :call magit#commit_command()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
@@ -327,17 +346,23 @@ function! magit#stage_file()
 	call magit#update_buffer()
 endfunction
 
-function! magit#commit_command()
+function! magit#commit_command(mode)
 	let section=magit#get_section()
-	if ( section == s:magit_commit_section_start )
-		if ( s:magit_commit_mode == 0 )
-			echoerr "Error, commit section should not be enabled"
-			return
-		endif
-		call magit#git_commit()
-		let s:magit_commit_mode=0
+	if ( a:mode == 'CF' )
+		call magit#git_commit(a:mode)
 	else
-		let s:magit_commit_mode=1
+		if ( section == s:magit_commit_section_start )
+			if ( s:magit_commit_mode == '' )
+				echoerr "Error, commit section should not be enabled"
+				return
+			endif
+			" when we do commit, it is prefered ot commit the way we prepared it
+			" (.i.e normal or amend), whatever we commit with CC or CA.
+			call magit#git_commit(s:magit_commit_mode)
+			let s:magit_commit_mode=''
+		else
+			let s:magit_commit_mode=a:mode
+		endif
 	endif
 	call magit#update_buffer()
 endfunction
