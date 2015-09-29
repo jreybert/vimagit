@@ -97,6 +97,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 		return [1, ""]
 	endif
 
+	let end=0
 	let min=line('$')
 	for end_p in a:end_pattern
 		let curr_end=search(end_p[0], "nW")
@@ -119,7 +120,7 @@ endfunction
 let s:diff_re  = '^diff --git'
 let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
-let s:eof_re   = '\\%$'
+let s:eof_re   = '\%$'
 
 " magit#select_file: select the whole diff file, relative to the current
 " cursor position
