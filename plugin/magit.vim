@@ -32,13 +32,20 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
+let s:magit_staged_section='Staged stuff'
+let s:magit_unstaged_section='Unstaged stuff'
+
+function! magit#underline(title)
+	return substitute(a:title, ".", "=", "g")
+endfunction
+
 " magit#get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_staged()
 	put =''
-	put ='##Staged stuff##'
-	put ='##============##'
+	put ='&@'.s:magit_staged_section.'@&'
+	put ='&@'.magit#underline(s:magit_staged_section).'@&'
 	put =''
 	silent! read !git diff --staged --no-color
 endfunction
@@ -49,8 +56,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
 	put =''
-	put ='##Unstaged stuff##'
-	put ='##==============##'
+	put ='&@'.s:magit_unstaged_section.'@&'
+	put ='&@'.magit#underline(s:magit_unstaged_section).'@&'
 	put =''
 
 	silent! read !git diff --no-color
