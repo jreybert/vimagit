@@ -402,6 +402,12 @@ function! magit#stage_file()
 	call magit#update_buffer()
 endfunction
 
+" magit#commit_command: entry function for commit mode
+" INFO: it has a different effect if current section is commit section or not
+" param[in] mode: commit mode
+"   'CF': do not set global s:magit_commit_mode, directly call magit#git_commit
+"   'CA'/'CF': if in commit section mode, call magit#git_commit, else just set
+"   global state variable s:magit_commit_mode,
 function! magit#commit_command(mode)
 	let section=magit#get_section()
 	if ( a:mode == 'CF' )
