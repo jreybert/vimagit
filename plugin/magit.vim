@@ -119,6 +119,7 @@ endfunction
 
 let s:diff_re  = '^diff --git'
 let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
+let s:bin_re   = '^Binary files '
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
 let s:eof_re   = '\%$'
 
@@ -130,7 +131,7 @@ let s:eof_re   = '\%$'
 "         index 0: return value
 "         index 1: string containing the patch for the whole file
 function! magit#select_file()
-	return magit#search_block(s:diff_re, [ [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], "")
+	return magit#search_block(s:diff_re, [ [s:diff_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
 endfunction
 
 " magit#select_file_header: select the upper diff header, relative to the current
