@@ -12,6 +12,10 @@ scriptencoding utf-8
 
 let g:magit_unstaged_buffer_name = "magit-playground"
 
+" s:set: helper function to set user definable variable
+" param[in] var: variable to set
+" param[in] default: default value if not already set by the user
+" return: no
 function! s:set(var, default)
 	if !exists(a:var)
 		if type(a:default)
@@ -35,23 +39,41 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
+" Section names
+" These are used to beautify the magit buffer and to help for some block
+" selection
 let s:magit_staged_section=         'Staged stuff'
 let s:magit_unstaged_section=       'Unstaged stuff'
 let s:magit_commit_section_start=   'Commit stuff'
 let s:magit_commit_section_end=     'Commit stuff end'
 
+" magit#underline: helper function to underline a string
+" param[in] title: string to underline
+" return a string composed of strlen(title) '='
 function! magit#underline(title)
 	return substitute(a:title, ".", "=", "g")
 endfunction
 
+" magit#strip: helper function to strip a string
+" WARNING: it only works with monoline string
+" param[in] string: string to strip
+" return: stripped string
 function! magit#strip(string)
 	return substitute(a:string, '^\s*\(.\{-}\)\s*\n$', '\1', '')
 endfunction
 
+" magit#decorate_section: helper function to add decoration around section name
+" INFO: this decoration is important for syntax AND for regex used in this
+" script to delimit blocks
+" param[in] string: string to decorate
+" return: decorated string
 function! magit#decorate_section(string)
 	return '&@'.a:string.'@&'
 endfunction
 
+" magit#join_list: helper function to concatente a list of strings with newlines
+" param[in] list: List to to concat
+" return: concatenated list
 function! magit#join_list(list)
 	return join(a:list, "\n") . "\n"
 endfunction
@@ -81,7 +103,21 @@ function! magit#get_unstaged()
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
 endfunction
 
+" s:magit_commit_mode: global variable which states in which commit mode we are
+" values are:
+"       '': not in commit mode
+"       'CC': normal commit mode, next commit command will create a new commit
+"       'CA': amend commit mode, next commit command will ament current commit
+"       'CF': fixup commit mode, it should not be a global state mode
 let s:magit_commit_mode=''
+
+" magit#get_commit_section: this function writes in current buffer the commit
+" section. It is a commit message, depending on s:magit_commit_mode
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+" param[in] s:magit_commit_mode: this function uses global commit mode
+"       'CC': prepare a brand new commit message
+"       'CA': get the last commit message
 function! magit#get_commit_section()
 	put =''
 	put =magit#decorate_section(s:magit_commit_section_start)
@@ -157,12 +193,22 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [0, lines]
 endfunction
 
+" Regular expressions used to select blocks
 let s:diff_re  = '^diff --git'
 let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let s:bin_re   = '^Binary files '
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
 let s:eof_re   = '\%$'
 
+" magit#git_commit: commit staged stuff with message prepared in commit section
+" param[in] mode: mode to commit
+"       'CF': don't use commit section, just amend previous commit with staged
+"       stuff, without modifying message
+"       'CC': commit staged stuff with message in commit section to a brand new
+"       commit
+"       'CA': commit staged stuff with message in commit section amending last
+"       commit
+" return no
 function! magit#git_commit(mode)
 	if ( a:mode == 'CF' )
 		silent let git_result=system("git commit --amend -C HEAD")
@@ -272,6 +318,8 @@ function! magit#update_buffer()
 	call winrestview(l:winview)
 endfunction
 
+" magit#show_magit: prepare and show magit buffer
+" it also set local mappings to magit buffer
 function! magit#show_magit(orientation)
 	vnew 
 	setlocal buftype=nofile
@@ -296,6 +344,9 @@ function! magit#show_magit(orientation)
 	execute "normal! gg"
 endfunction
 
+" magit#get_section: helper function to get the current section, according to
+" cursor position
+" return: string of the current section, without decoration
 function! magit#get_section()
 	let section_line=search('^&@[a-zA-Z ]\+@&$', "bnW")
 	return substitute(getline(section_line), '^&@\([a-zA-Z ]\+\)@&$', '\1', '')
@@ -303,6 +354,8 @@ endfunction
 
 " magit#stage_hunk: this function stage a single hunk, from the current
 " cursor position
+" INFO: in unstaged section, it stages the hunk, and in staged section, it
+" unstages the hunk
 " return: no
 function! magit#stage_hunk()
 	let [ret, header] = magit#select_file_header()
@@ -326,8 +379,10 @@ function! magit#stage_hunk()
 	call magit#update_buffer()
 endfunction
 
-" magit#stage_hunk: this function stage a whole file, from the current
+" magit#stage_file: this function stage a whole file, from the current
 " cursor position
+" INFO: in unstaged section, it stages the file, and in staged section, it
+" unstages the file
 " return: no
 function! magit#stage_file()
 	let [ret, selection] = magit#select_file()

@@ -53,14 +53,38 @@ and new files in your directory.
 4. COMMANDS                                                   *vimagitCommands*
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
+
+Sections:
+
+There are 3 sections:
+  * Commit stuff: this section appears in commit mode (see below). It contains
+    the message to be commited.
+  * Staged stuff: this sections contains all staged files/hunks
+  * Unstaged stuff: this section contains all unstaged and untracked
+    files/hunks.
+
 These mappings work in normal mode.
 
                 S     stage/unstage hunk at cursor position
                 F     stage/unstage the whole file at cursor position
                 R     refresh vimagit buffer
+                CC    if not in commit section, set commit mode to "New
+                      commit" and show Commit stuff section with brand new
+                      commit message
+                      if in commit section, commit the staged stuff in
+                      previously set commit mode
+                CA    if not in commit section, set commit mode to "Amend
+                      commit" and show Commit stuff section with previous
+                      commit message
+                      if in commit section, commit the staged stuff in
+                      previously set commit mode
+                CA    if not in commit section, amend the staged stuff into
+                      the previous commit
+                
 
 When cursor is in "Unstaged stuff" section, S/F mappings will stage. On the
 other side, when cursor is in "Staged stuff" section, S/F mappings will unstage.
+
 
 ===============================================================================
 5. CUSTOMISATION                                         *vimagitCustomization*
