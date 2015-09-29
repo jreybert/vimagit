@@ -331,6 +331,7 @@ function! magit#show_magit(orientation)
 	setlocal filetype=gitdiff
 	"setlocal readonly
 
+	silent! execute "bdelete " . g:magit_unstaged_buffer_name
 	execute "file " . g:magit_unstaged_buffer_name
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
