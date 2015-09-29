@@ -24,7 +24,8 @@ endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
-call s:set('g:magit_reload',                    "R")
+call s:set('g:magit_commit_mapping',            "C")
+call s:set('g:magit_reload_mapping',            "R")
 
 call s:set('g:magit_enabled',               1)
 
@@ -32,11 +33,17 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
-let s:magit_staged_section='Staged stuff'
-let s:magit_unstaged_section='Unstaged stuff'
+let s:magit_staged_section=         'Staged stuff'
+let s:magit_unstaged_section=       'Unstaged stuff'
+let s:magit_commit_section_start=   'Commit stuff'
+let s:magit_commit_section_end=     'Commit stuff end'
 
 function! magit#underline(title)
 	return substitute(a:title, ".", "=", "g")
+endfunction
+
+function! magit#strip(string)
+	return substitute(a:string, '^\s*\(.\{-}\)\s*\n$', '\1', '')
 endfunction
 
 function! magit#decorate_section(string)
@@ -70,6 +77,21 @@ function! magit#get_unstaged()
 
 	silent! read !git diff --no-color
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
+endfunction
+
+let s:magit_commit_mode=0
+function! magit#get_commit_section()
+	put =''
+	put =magit#decorate_section(s:magit_commit_section_start)
+	put =magit#decorate_section(magit#underline(s:magit_commit_section_start))
+	put =''
+
+	let git_dir=magit#strip(system("git rev-parse --git-dir"))
+	" refresh the COMMIT_EDITMSG file
+	silent! call system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+	let commit_msg=join(readfile(git_dir . '/COMMIT_EDITMSG'), "\n") . "\n"
+	put =commit_msg
+	put =magit#decorate_section(s:magit_commit_section_end)
 endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
@@ -134,6 +156,13 @@ let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let s:bin_re   = '^Binary files '
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
 let s:eof_re   = '\%$'
+
+function! magit#git_commit()
+	let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
+	let commit_section_pat_end='^'.magit#decorate_section(s:magit_commit_section_end).'$'
+	let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +2], [ [commit_section_pat_end, -1] ], "")
+	silent let git_result=system("git commit --file -", commit_msg)
+endfunction
 
 " magit#select_file: select the whole diff file, relative to the current
 " cursor position
@@ -217,6 +246,9 @@ function! magit#update_buffer()
 	let l:winview = winsaveview()
 	silent! execute "normal! ggdG"
 	
+	if ( s:magit_commit_mode == 1 )
+		call magit#get_commit_section()
+	endif
 	call magit#get_staged()
 	call magit#get_unstaged()
 
@@ -238,7 +270,8 @@ function! magit#show_magit(orientation)
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping . " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping . " :call magit#stage_hunk()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_reload .             " :call magit#update_buffer()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .     " :call magit#update_buffer()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .     " :call magit#commit_command()<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
@@ -290,6 +323,21 @@ function! magit#stage_file()
 		call magit#git_unapply(selection)
 	else
 		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
+	endif
+	call magit#update_buffer()
+endfunction
+
+function! magit#commit_command()
+	let section=magit#get_section()
+	if ( section == s:magit_commit_section_start )
+		if ( s:magit_commit_mode == 0 )
+			echoerr "Error, commit section should not be enabled"
+			return
+		endif
+		call magit#git_commit()
+		let s:magit_commit_mode=0
+	else
+		let s:magit_commit_mode=1
 	endif
 	call magit#update_buffer()
 endfunction
