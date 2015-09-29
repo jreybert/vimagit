@@ -168,6 +168,19 @@ function! magit#git_apply(selection)
 	endif
 endfunction
 
+" magit#git_unapply: helper function to unstage a selection
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
+" header plus one or more hunks
+" return: no
+function! magit#git_unapply(selection)
+	silent let git_result=system("git apply --cached --reverse -", a:selection)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+	endif
+endfunction
+
 " }}}
 
 " {{{ User functions and commands
@@ -192,7 +205,6 @@ function! magit#update_buffer()
 	silent! execute "normal! ggdG"
 	
 	call magit#get_staged()
-
 	call magit#get_unstaged()
 
 	call winrestview(l:winview)
@@ -219,6 +231,11 @@ function! magit#show_magit(orientation)
 	execute "normal! gg"
 endfunction
 
+function! magit#get_section()
+	let section_line=search('^&@[a-zA-Z ]\+@&$', "bnW")
+	return substitute(getline(section_line), '^&@\([a-zA-Z ]\+\)@&$', '\1', '')
+endfunction
+
 " magit#stage_hunk: this function stage a single hunk, from the current
 " cursor position
 " return: no
@@ -233,7 +250,14 @@ function! magit#stage_hunk()
 		echoerr "Not in a hunk region"
 		return
 	endif
-	call magit#git_apply(header . hunk)
+	let section=magit#get_section()
+	if ( section == s:magit_unstaged_section )
+		call magit#git_apply(header . hunk)
+	elseif ( section == s:magit_staged_section )
+		call magit#git_unapply(header . hunk)
+	else
+		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
+	endif
 	call magit#update_buffer()
 endfunction
 
@@ -246,7 +270,14 @@ function! magit#stage_file()
 		echoerr "Not in a file region"
 		return
 	endif
-	call magit#git_apply(selection)
+	let section=magit#get_section()
+	if ( section == s:magit_unstaged_section )
+		call magit#git_apply(selection)
+	elseif ( section == s:magit_staged_section )
+		call magit#git_unapply(selection)
+	else
+		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
+	endif
 	call magit#update_buffer()
 endfunction
 
