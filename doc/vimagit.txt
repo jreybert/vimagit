@@ -1,9 +1,5 @@
 *vimagit*    vimagit is an attempt to reproduce the magnificient Magit to vim.
 
-
-
-                      vimagit
-
 Author:            Jerome Reybert
 Plugin Homepage:   <https://github.com/jreybert/vimagit>
 
@@ -56,9 +52,15 @@ and new files in your directory.
 ===============================================================================
 4. COMMANDS                                                   *vimagitCommands*
 
-Move the cursor around. When the cursor is on a hunk, press S to stage. When the
-cursor is more generally in a diff file (it can be a hunk, or the diff header),
-press F to stage the whole file.
+IMPORTANT: mappings can have different meanings regarding the cursor position.
+These mappings work in normal mode.
+
+                S     stage/unstage hunk at cursor position
+                F     stage/unstage the whole file at cursor position
+                R     refresh vimagit buffer
+
+When cursor is in "Unstaged stuff" section, S/F mappings will stage. On the
+other side, when cursor is in "Staged stuff" section, S/F mappings will unstage.
 
 ===============================================================================
 5. CUSTOMISATION                                         *vimagitCustomization*
