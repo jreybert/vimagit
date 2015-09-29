@@ -74,13 +74,15 @@ endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
 " and multiple end pattern
-" param[in] start_pattern: regex start, which will be search backward (cursor
-" position is set to end of line before searching, to find the pattern if on
-" the current line)
-" param[in] end_pattern: list of end pattern. Each end pattern is a list with
-" index 0 end pattern regex, and index 1 the number of line to exclude
-" (essentially -1 or 0). Each pattern is searched in order. It'll choose the
-" match with the minimum line number (smallest region search)
+" a "pattern parameter" is a List:
+"   @[0]: end pattern regex
+"   @[1]: number of line to exclude above (negative), below (positive) or none (0)
+" param[in] start_pattern: start "pattern parameter", which will be search
+" backward (cursor position is set to end of line before searching, to find the
+" pattern if on the current line)
+" param[in] end_pattern: list of end "pattern parameter". Each pattern is 
+" searched in order. It'll choose the match with the minimum line number
+" (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
 " return: a list.
@@ -96,7 +98,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 
 	" important if backward regex is at the beginning of the current line
 	call cursor(0, 100)
-	let start=search(a:start_pattern, "bW")
+	let start=search(a:start_pattern[0], "bW")
 	if ( start == 0 )
 		call winrestview(l:winview)
 		return [1, ""]
@@ -105,6 +107,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 		call winrestview(l:winview)
 		return [1, ""]
 	endif
+	let start+=a:start_pattern[1]
 
 	let end=0
 	let min=line('$')
@@ -140,7 +143,7 @@ let s:eof_re   = '\%$'
 "         @[0]: return value
 "         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
-	return magit#search_block(s:diff_re, [ [s:diff_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
+	return magit#search_block([s:diff_re, 0], [ [s:diff_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
 endfunction
 
 " magit#select_file_header: select the upper diff header, relative to the current
@@ -151,7 +154,7 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the diff header
 function! magit#select_file_header()
-	return magit#search_block(s:diff_re, [ [s:hunk_re, -1] ], "")
+	return magit#search_block([s:diff_re, 0], [ [s:hunk_re, -1] ], "")
 endfunction
 
 " magit#select_hunk: select a hunk, from the current cursor position
@@ -161,7 +164,7 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
-	return magit#search_block(s:hunk_re, [ [s:hunk_re, -1], [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
+	return magit#search_block([s:hunk_re, 0], [ [s:hunk_re, -1], [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
