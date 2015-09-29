@@ -138,6 +138,9 @@ function! magit#get_commit_section()
 	put =''
 
 	let git_dir=magit#strip(system("git rev-parse --git-dir"))
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+	endif
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
 		silent! call system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
