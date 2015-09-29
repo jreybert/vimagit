@@ -39,13 +39,17 @@ function! magit#underline(title)
 	return substitute(a:title, ".", "=", "g")
 endfunction
 
+function! magit#decorate_section(string)
+	return '&@'.a:string.'@&'
+endfunction
+
 " magit#get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_staged()
 	put =''
-	put ='&@'.s:magit_staged_section.'@&'
-	put ='&@'.magit#underline(s:magit_staged_section).'@&'
+	put =magit#decorate_section(s:magit_staged_section)
+	put =magit#decorate_section(magit#underline(s:magit_staged_section))
 	put =''
 	silent! read !git diff --staged --no-color
 endfunction
@@ -56,8 +60,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
 	put =''
-	put ='&@'.s:magit_unstaged_section.'@&'
-	put ='&@'.magit#underline(s:magit_unstaged_section).'@&'
+	put =magit#decorate_section(s:magit_unstaged_section)
+	put =magit#decorate_section(magit#underline(s:magit_unstaged_section))
 	put =''
 
 	silent! read !git diff --no-color
