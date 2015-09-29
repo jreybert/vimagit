@@ -430,7 +430,7 @@ function! magit#ignore_file()
 	let ignore_file=""
 	for line in selection
 		if ( match(line, "^+++ ") != -1 )
-			let ignore_file=substitute(line, '^+++ ./\(.*\)$', '\1', '')
+			let ignore_file=magit#strip(substitute(line, '^+++ ./\(.*\)$', '\1', ''))
 			break
 		endif
 	endfor
@@ -438,11 +438,12 @@ function! magit#ignore_file()
 		echoerr "Can not find file to ignore"
 		return
 	endif
-/bin/bash: :w: command not found
+	let top_dir=magit#strip(system("git rev-parse --show-toplevel")) . "/"
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
+		echoerr "Git error: " . top_dir
 	endif
 	call magit#append_file(top_dir . "/.gitignore", [ ignore_file ] )
+	call magit#update_buffer()
 endfunction
 
 " magit#commit_command: entry function for commit mode
