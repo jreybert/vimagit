@@ -28,7 +28,8 @@ endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
-call s:set('g:magit_commit_mapping',            "CC")
+call s:set('g:magit_commit_mapping1',           "C")
+call s:set('g:magit_commit_mapping2',           "CC")
 call s:set('g:magit_commit_amend_mapping',      "CA")
 call s:set('g:magit_commit_fixup_mapping',      "CF")
 call s:set('g:magit_reload_mapping',            "R")
@@ -353,7 +354,8 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping1 .      " :call magit#commit_command('CC')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping2 .      " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
