@@ -60,7 +60,7 @@ endfunction
 " param[in] string: string to strip
 " return: stripped string
 function! magit#strip(string)
-	return substitute(a:string, '^\s*\(.\{-}\)\s*\n$', '\1', '')
+	return substitute(a:string, '^\s*\(.\{-}\)\s*\n\=$', '\1', '')
 endfunction
 
 " magit#decorate_section: helper function to add decoration around section name
