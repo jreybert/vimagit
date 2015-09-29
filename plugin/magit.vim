@@ -48,6 +48,7 @@ let s:magit_staged_section=         'Staged stuff'
 let s:magit_unstaged_section=       'Unstaged stuff'
 let s:magit_commit_section_start=   'Commit stuff'
 let s:magit_commit_section_end=     'Commit stuff end'
+let s:magit_stash_section=          'Stash stuff'
 
 " magit#underline: helper function to underline a string
 " param[in] title: string to underline
@@ -116,6 +117,27 @@ function! magit#get_unstaged()
 	silent! read !git diff --no-color
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
 endfunction
+
+function! magit#get_stashes()
+	silent! let stash_list=systemlist("git stash list")
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . stash_list
+	endif
+
+	if (!empty(stash_list))
+		put =''
+		put =magit#decorate_section(s:magit_stash_section)
+		put =magit#decorate_section(magit#underline(s:magit_stash_section))
+		put =''
+
+		for stash in stash_list
+			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
+			put =stash
+			silent! execute "read !git stash show -p " . stash_id
+		endfor
+	endif
+endfunction
+
 
 " s:magit_commit_mode: global variable which states in which commit mode we are
 " values are:
@@ -212,6 +234,7 @@ endfunction
 
 " Regular expressions used to select blocks
 let s:diff_re  = '^diff --git'
+let s:stash_re = '^stash@{\d\+}:'
 let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let s:bin_re   = '^Binary files '
 let s:title_re = '^##\%([^#]\|\s\)\+##$'
@@ -252,7 +275,7 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
-	return magit#search_block([s:diff_re, 0], [ [s:diff_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
+	return magit#search_block([s:diff_re, 0], [ [s:diff_re, -1], [s:stash_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
 endfunction
 
 " magit#select_file_header: select the upper diff header, relative to the current
@@ -273,7 +296,7 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
-	return magit#search_block([s:hunk_re, 0], [ [s:hunk_re, -1], [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
+	return magit#search_block([s:hunk_re, 0], [ [s:hunk_re, -1], [s:diff_re, -1], [s:stash_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
@@ -331,6 +354,7 @@ function! magit#update_buffer()
 	endif
 	call magit#get_staged()
 	call magit#get_unstaged()
+	call magit#get_stashes()
 
 	call winrestview(l:winview)
 endfunction
