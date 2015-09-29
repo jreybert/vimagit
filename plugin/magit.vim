@@ -32,6 +32,7 @@ call s:set('g:magit_commit_mapping',            "CC")
 call s:set('g:magit_commit_amend_mapping',      "CA")
 call s:set('g:magit_commit_fixup_mapping',      "CF")
 call s:set('g:magit_reload_mapping',            "R")
+call s:set('g:magit_ignore_mapping',            "I")
 
 call s:set('g:magit_enabled',               1)
 
@@ -76,6 +77,18 @@ endfunction
 " return: concatenated list
 function! magit#join_list(list)
 	return join(a:list, "\n") . "\n"
+endfunction
+
+" magit#append_file: helper function to append to a file
+" Version working with file *possibly* containing trailing newline
+" param[in] file: filename to append
+" param[in] lines: List of lines to append
+function! magit#append_file(file, lines)
+	let fcontents=readfile(a:file, 'b')
+	if !empty(fcontents) && empty(fcontents[-1])
+		call remove(fcontents, -1)
+	endif
+	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
 " magit#get_staged: this function writes in current buffer all staged files
@@ -340,6 +353,7 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
@@ -400,6 +414,32 @@ function! magit#stage_file()
 		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
 	endif
 	call magit#update_buffer()
+endfunction
+
+" magit#ignore_file: this function add the file under cursor to .gitignore
+" FIXME: git diff adds some strange characters to end of line
+function! magit#ignore_file()
+	let [ret, selection] = magit#select_file()
+	if ( ret != 0 )
+		echoerr "Not in a file region"
+		return
+	endif
+	let ignore_file=""
+	for line in selection
+		if ( match(line, "^+++ ") != -1 )
+			let ignore_file=substitute(line, '^+++ ./\(.*\)$', '\1', '')
+			break
+		endif
+	endfor
+	if ( ignore_file == "" )
+		echoerr "Can not find file to ignore"
+		return
+	endif
+/bin/bash: :w: command not found
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+	endif
+	call magit#append_file(top_dir . "/.gitignore", [ ignore_file ] )
 endfunction
 
 " magit#commit_command: entry function for commit mode
