@@ -43,6 +43,10 @@ function! magit#decorate_section(string)
 	return '&@'.a:string.'@&'
 endfunction
 
+function! magit#join_list(list)
+	return join(a:list, "\n") . "\n"
+endfunction
+
 " magit#get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
@@ -79,8 +83,9 @@ endfunction
 " match with the minimum line number (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
-" return: a list. index 0: return status . index 1: a string containing the
-" lines.
+" return: a list.
+"      @[0]: return status
+"      @[1]: List of selected block lines
 function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let l:winview = winsaveview()
 
@@ -118,7 +123,7 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let lines=getline(start, end)
 
 	call winrestview(l:winview)
-	return [0, join(lines, "\n") . "\n"]
+	return [0, lines]
 endfunction
 
 let s:diff_re  = '^diff --git'
@@ -132,8 +137,8 @@ let s:eof_re   = '\%$'
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
 " return: a List
-"         index 0: return value
-"         index 1: string containing the patch for the whole file
+"         @[0]: return value
+"         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
 	return magit#search_block(s:diff_re, [ [s:diff_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
 endfunction
@@ -143,8 +148,8 @@ endfunction
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
 " return: a List
-"         index 0: return value
-"         index 1: string containing the diff header
+"         @[0]: return value
+"         @[1]: List of lines containing the diff header
 function! magit#select_file_header()
 	return magit#search_block(s:diff_re, [ [s:hunk_re, -1] ], "")
 endfunction
@@ -153,8 +158,8 @@ endfunction
 " nota: if the cursor is not in a hunk when the function is called, this
 " function will fail
 " return: a List
-"         index 0: return value
-"         index 1: string containing the hunk
+"         @[0]: return value
+"         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
 	return magit#search_block(s:hunk_re, [ [s:hunk_re, -1], [s:diff_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
 endfunction
@@ -166,7 +171,8 @@ endfunction
 " header plus one or more hunks
 " return: no
 function! magit#git_apply(selection)
-	silent let git_result=system("git apply --cached -", a:selection)
+	let selection=magit#join_list(a:selection)
+	silent let git_result=system("git apply --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 	endif
@@ -256,9 +262,9 @@ function! magit#stage_hunk()
 	endif
 	let section=magit#get_section()
 	if ( section == s:magit_unstaged_section )
-		call magit#git_apply(header . hunk)
+		call magit#git_apply(header + hunk)
 	elseif ( section == s:magit_staged_section )
-		call magit#git_unapply(header . hunk)
+		call magit#git_unapply(header + hunk)
 	else
 		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
 	endif
