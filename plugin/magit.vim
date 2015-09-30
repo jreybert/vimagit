@@ -44,11 +44,11 @@ call s:set('g:magit_enabled',               1)
 " Section names
 " These are used to beautify the magit buffer and to help for some block
 " selection
-let s:magit_staged_section=         'Staged stuff'
-let s:magit_unstaged_section=       'Unstaged stuff'
-let s:magit_commit_section_start=   'Commit stuff'
-let s:magit_commit_section_end=     'Commit stuff end'
-let s:magit_stash_section=          'Stash stuff'
+let s:magit_staged_section=         'Staged changes'
+let s:magit_unstaged_section=       'Unstaged changes'
+let s:magit_commit_section_start=   'Commit message'
+let s:magit_commit_section_end=     'Commit message end'
+let s:magit_stash_section=          'Stash list'
 
 " magit#underline: helper function to underline a string
 " param[in] title: string to underline
