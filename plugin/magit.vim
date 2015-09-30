@@ -282,7 +282,15 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
-	return magit#search_block([s:diff_re, 0], [ [s:diff_re, -1], [s:stash_re, -1], [s:title_re, -2], [s:bin_re, 0], [ s:eof_re, 0 ] ], "")
+	return magit#search_block(
+				\ [s:diff_re, 0],
+				\ [ [s:diff_re, -1],
+				\   [s:stash_re, -1],
+				\   [s:title_re, -2],
+				\   [s:bin_re, 0],
+				\   [s:eof_re, 0 ]
+				\ ],
+				\ "")
 endfunction
 
 " magit#select_file_header: select the upper diff header, relative to the current
@@ -293,7 +301,10 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the diff header
 function! magit#select_file_header()
-	return magit#search_block([s:diff_re, 0], [ [s:hunk_re, -1] ], "")
+	return magit#search_block(
+				\ [s:diff_re, 0],
+				\ [ [s:hunk_re, -1] ],
+				\ "")
 endfunction
 
 " magit#select_hunk: select a hunk, from the current cursor position
@@ -303,7 +314,15 @@ endfunction
 "         @[0]: return value
 "         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
-	return magit#search_block([s:hunk_re, 0], [ [s:hunk_re, -1], [s:diff_re, -1], [s:stash_re, -1], [s:title_re, -2], [ s:eof_re, 0 ] ], s:diff_re)
+	return magit#search_block(
+				\ [s:hunk_re, 0],
+				\ [ [s:hunk_re, -1],
+				\   [s:diff_re, -1],
+				\   [s:stash_re, -1],
+				\   [s:title_re, -2],
+				\   [ s:eof_re, 0 ]
+				\ ],
+				\ s:diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
