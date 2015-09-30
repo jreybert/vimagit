@@ -367,7 +367,6 @@ function! magit#show_magit(orientation)
 	setlocal bufhidden=delete
 	setlocal noswapfile
 	setlocal foldmethod=syntax
-	setlocal nowrapscan
 	setlocal foldlevel=1
 	setlocal filetype=gitdiff
 	"setlocal readonly
