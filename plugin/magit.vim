@@ -59,15 +59,6 @@ function! magit#strip(string)
 	return substitute(a:string, '^\s*\(.\{-}\)\s*\n\=$', '\1', '')
 endfunction
 
-" magit#decorate_section: helper function to add decoration around section name
-" INFO: this decoration is important for syntax AND for regex used in this
-" script to delimit blocks
-" param[in] string: string to decorate
-" return: decorated string
-function! magit#decorate_section(string)
-	return a:string
-endfunction
-
 " magit#join_list: helper function to concatente a list of strings with newlines
 " param[in] list: List to to concat
 " return: concatenated list
@@ -92,8 +83,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_staged()
 	put =''
-	put =magit#decorate_section(g:magit_sections['staged'])
-	put =magit#decorate_section(magit#underline(g:magit_sections['staged']))
+	put =g:magit_sections['staged']
+	put =magit#underline(g:magit_sections['staged'])
 	put =''
 	silent! read !git diff --staged --no-color
 endfunction
@@ -104,8 +95,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
 	put =''
-	put =magit#decorate_section(g:magit_sections['unstaged'])
-	put =magit#decorate_section(magit#underline(g:magit_sections['unstaged']))
+	put =g:magit_sections['unstaged']
+	put =magit#underline(g:magit_sections['unstaged'])
 	put =''
 
 	silent! read !git diff --no-color
@@ -123,8 +114,8 @@ function! magit#get_stashes()
 
 	if (!empty(stash_list))
 		put =''
-		put =magit#decorate_section(g:magit_sections['stash'])
-		put =magit#decorate_section(magit#underline(g:magit_sections['stash']))
+		put =g:magit_sections['stash']
+		put =magit#underline(g:magit_sections['stash'])
 		put =''
 
 		for stash in stash_list
@@ -159,9 +150,9 @@ function! magit#get_commit_section()
 		let commit_mode_str="amend"
 	endif
 	put =''
-	put =magit#decorate_section(g:magit_sections['commit_start'])
-	put =magit#decorate_section('Commit mode: '.commit_mode_str)
-	put =magit#decorate_section(magit#underline(g:magit_sections['commit_start']))
+	put =g:magit_sections['commit_start']
+	put ='Commit mode: '.commit_mode_str
+	put =magit#underline(g:magit_sections['commit_start'])
 	put =''
 
 	silent! let git_dir=magit#strip(system("git rev-parse --git-dir"))
@@ -176,7 +167,7 @@ function! magit#get_commit_section()
 	endif
 	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^#"'))
 	put =commit_msg
-	put =magit#decorate_section(g:magit_sections['commit_end'])
+	put =g:magit_sections['commit_end']
 endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
@@ -249,8 +240,8 @@ function! magit#git_commit(mode)
 	if ( a:mode == 'CF' )
 		silent let git_result=system("git commit --amend -C HEAD")
 	else
-		let commit_section_pat_start='^'.magit#decorate_section(g:magit_sections['commit_start']).'$'
-		let commit_section_pat_end='^'.magit#decorate_section(g:magit_sections['commit_end']).'$'
+		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
+		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
 		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +3], [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
 		if ( a:mode == 'CA' )
@@ -376,7 +367,7 @@ function! magit#update_buffer()
 	call winrestview(l:winview)
 
 	if ( s:magit_commit_mode != '' )
-		let commit_section_pat_start='^'.magit#decorate_section(g:magit_sections['commit_start']).'$'
+		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+3, 0)
 	endif
