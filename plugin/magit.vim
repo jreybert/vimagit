@@ -416,7 +416,7 @@ function! magit#show_magit(orientation)
 	setlocal noswapfile
 	setlocal foldmethod=syntax
 	setlocal foldlevel=1
-	setlocal filetype=gitdiff
+	setlocal filetype=magit
 	"setlocal readonly
 
 	silent! execute "bdelete " . g:magit_unstaged_buffer_name

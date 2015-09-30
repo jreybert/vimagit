@@ -1,7 +1,6 @@
 " Vim syntax file
-" Language:	generic git output
-" Maintainer:	Tim Pope <vimNOSPAM@tpope.org>
-" Last Change:	2010 May 21
+" Language:     magit buffer syntax
+" Maintainer:	Jerome Reybert <jreybert@gmail.com>
 
 if exists("b:current_syntax")
   finish
@@ -46,4 +45,4 @@ execute 'syn region gitHunk start=/' .
  \ g:diff_re . '\|' . g:hunk_re . '\|' . g:section_re. '\|' . g:stash_re . '\|' . g:file_re .
  \ '\)\@=/ contains=@diff fold contained'
 
-let b:current_syntax = "gitdiff"
+let b:current_syntax = "magit"
