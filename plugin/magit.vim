@@ -155,8 +155,15 @@ let s:magit_commit_mode=''
 "       'CC': prepare a brand new commit message
 "       'CA': get the last commit message
 function! magit#get_commit_section()
+	let commit_mode_str=""
+	if ( s:magit_commit_mode == 'CC' )
+		let commit_mode_str="normal"
+	elseif ( s:magit_commit_mode == 'CA' )
+		let commit_mode_str="amend"
+	endif
 	put =''
 	put =magit#decorate_section(s:magit_commit_section_start)
+	put =magit#decorate_section('Commit mode: '.commit_mode_str)
 	put =magit#decorate_section(magit#underline(s:magit_commit_section_start))
 	put =''
 
@@ -255,7 +262,7 @@ function! magit#git_commit(mode)
 	else
 		let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
 		let commit_section_pat_end='^'.magit#decorate_section(s:magit_commit_section_end).'$'
-		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +2], [ [commit_section_pat_end, -1] ], "")
+		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +3], [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
@@ -357,6 +364,13 @@ function! magit#update_buffer()
 	call magit#get_stashes()
 
 	call winrestview(l:winview)
+
+	if ( s:magit_commit_mode != '' )
+		let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
+		silent! let section_line=search(commit_section_pat_start, "w")
+		silent! call cursor(section_line+3, 0)
+	endif
+
 endfunction
 
 " magit#show_magit: prepare and show magit buffer
