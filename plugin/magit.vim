@@ -111,6 +111,8 @@ function! magit#get_diff(mode)
 		for diff_line in diff_list
 			put =diff_line
 		endfor
+		" add missing new line
+		put =''
 	endfor
 endfunction
 
