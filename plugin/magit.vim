@@ -10,6 +10,8 @@ scriptencoding utf-8
 " if v:version < 703
 " endif
 
+execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
+
 let g:magit_unstaged_buffer_name = "magit-playground"
 
 " s:set: helper function to set user definable variable
@@ -242,14 +244,6 @@ function! magit#search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [0, lines]
 endfunction
 
-" Regular expressions used to select blocks
-let s:diff_re  = '^diff --git'
-let s:stash_re = '^stash@{\d\+}:'
-let s:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
-let s:bin_re   = '^Binary files '
-let s:title_re = '^##\%([^#]\|\s\)\+##$'
-let s:eof_re   = '\%$'
-
 " magit#git_commit: commit staged stuff with message prepared in commit section
 " param[in] mode: mode to commit
 "       'CF': don't use commit section, just amend previous commit with staged
@@ -286,12 +280,13 @@ endfunction
 "         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
 	return magit#search_block(
-				\ [s:diff_re, 0],
-				\ [ [s:diff_re, -1],
-				\   [s:stash_re, -1],
-				\   [s:title_re, -2],
-				\   [s:bin_re, 0],
-				\   [s:eof_re, 0 ]
+				\ [g:diff_re, 0],
+				\ [ [g:diff_re, -1],
+				\   [g:file_re, -1],
+				\   [g:stash_re, -1],
+				\   [g:title_re, -2],
+				\   [g:bin_re, 0],
+				\   [g:eof_re, 0 ]
 				\ ],
 				\ "")
 endfunction
@@ -305,8 +300,8 @@ endfunction
 "         @[1]: List of lines containing the diff header
 function! magit#select_file_header()
 	return magit#search_block(
-				\ [s:diff_re, 0],
-				\ [ [s:hunk_re, -1] ],
+				\ [g:diff_re, 0],
+				\ [ [g:hunk_re, -1] ],
 				\ "")
 endfunction
 
@@ -318,14 +313,15 @@ endfunction
 "         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
 	return magit#search_block(
-				\ [s:hunk_re, 0],
-				\ [ [s:hunk_re, -1],
-				\   [s:diff_re, -1],
-				\   [s:stash_re, -1],
-				\   [s:title_re, -2],
-				\   [ s:eof_re, 0 ]
+				\ [g:hunk_re, 0],
+				\ [ [g:hunk_re, -1],
+				\   [g:diff_re, -1],
+				\   [g:file_re, -1],
+				\   [g:stash_re, -1],
+				\   [g:title_re, -2],
+				\   [g:eof_re, 0 ]
 				\ ],
-				\ s:diff_re)
+				\ g:diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
