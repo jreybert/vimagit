@@ -78,6 +78,40 @@ function! magit#append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
+function! magit#get_diff(mode)
+
+	let staged_flag=""
+	if ( a:mode == 'staged' )
+		let status_position=0
+		let staged_flag=" --staged "
+	elseif ( a:mode == 'unstaged' )
+		let status_position=1
+	endif
+
+	let status_list=systemlist("git status --porcelain")
+	for file_status_line in status_list
+		let file_status=file_status_line[status_position]
+		let file_name=substitute(file_status_line, '.. \(.*\)$', '\1', '')
+		" untracked code apperas in staged column, we skip it
+		if ( file_status == ' ' || ( ( a:mode == 'staged' ) && file_status == '?' ) )
+			continue
+		endif
+		put =g:magit_git_status_code[file_status] . ': ' . file_name
+		let dev_null=""
+		if ( file_status == '?' )
+			let dev_null="/dev/null"
+		endif
+		if ( file_name =~ " -> " )
+			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
+		endif
+		" git is supposed to add quotes " for file names with spaces
+		let diff_list=systemlist("git diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
+		for diff_line in diff_list
+			put =diff_line
+		endfor
+	endfor
+endfunction
+
 " magit#get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
@@ -86,7 +120,8 @@ function! magit#get_staged()
 	put =g:magit_sections['staged']
 	put =magit#underline(g:magit_sections['staged'])
 	put =''
-	silent! read !git diff --staged --no-color
+
+	call magit#get_diff('staged')
 endfunction
 
 " magit#get_unstaged: this function writes in current buffer all unstaged
@@ -99,8 +134,7 @@ function! magit#get_unstaged()
 	put =magit#underline(g:magit_sections['unstaged'])
 	put =''
 
-	silent! read !git diff --no-color
-	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
+	call magit#get_diff('unstaged')
 endfunction
 
 " magit#get_stashes: this function write in current buffer all stashes
@@ -125,7 +159,6 @@ function! magit#get_stashes()
 		endfor
 	endif
 endfunction
-
 
 " s:magit_commit_mode: global variable which states in which commit mode we are
 " values are:
