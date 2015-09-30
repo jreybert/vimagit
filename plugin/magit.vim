@@ -408,7 +408,7 @@ function! magit#update_buffer()
 	" Playing with foldenable around does not help.
 	" mkview does not help either.
 	let l:winview = winsaveview()
-	silent! execute "normal! ggdG"
+	silent! %d
 	
 	if ( s:magit_commit_mode != '' )
 		call magit#get_commit_section()
