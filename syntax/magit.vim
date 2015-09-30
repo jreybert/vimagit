@@ -1,7 +1,3 @@
-" Vim syntax file
-" Language:     magit buffer syntax
-" Maintainer:	Jerome Reybert <jreybert@gmail.com>
-
 if exists("b:current_syntax")
   finish
 endif
