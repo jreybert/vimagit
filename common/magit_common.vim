@@ -36,7 +36,6 @@ let g:diff_re  = '^diff --git'
 let g:stash_re = '^stash@{\d\+}:'
 let g:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let g:bin_re   = '^Binary files '
-let g:title_re = '^&@\%([^&@]\|\s\)\+@&$'
 let g:eof_re   = '\%$'
 
 
