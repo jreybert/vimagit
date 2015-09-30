@@ -300,13 +300,13 @@ endfunction
 "         @[1]: List of lines containing the patch for the whole file
 function! magit#select_file()
 	return magit#search_block(
-				\ [g:diff_re, 0],
-				\ [ [g:diff_re, -1],
-				\   [g:file_re, -1],
-				\   [g:stash_re, -1],
-				\   [g:section_re, -2],
-				\   [g:bin_re, 0],
-				\   [g:eof_re, 0 ]
+				\ [g:magit_diff_re, 0],
+				\ [ [g:magit_diff_re, -1],
+				\   [g:magit_file_re, -1],
+				\   [g:magit_stash_re, -1],
+				\   [g:magit_section_re, -2],
+				\   [g:magit_bin_re, 0],
+				\   [g:magit_eof_re, 0 ]
 				\ ],
 				\ "")
 endfunction
@@ -320,8 +320,8 @@ endfunction
 "         @[1]: List of lines containing the diff header
 function! magit#select_file_header()
 	return magit#search_block(
-				\ [g:diff_re, 0],
-				\ [ [g:hunk_re, -1] ],
+				\ [g:magit_diff_re, 0],
+				\ [ [g:magit_hunk_re, -1] ],
 				\ "")
 endfunction
 
@@ -333,15 +333,15 @@ endfunction
 "         @[1]: List of lines containing the hunk
 function! magit#select_hunk()
 	return magit#search_block(
-				\ [g:hunk_re, 0],
-				\ [ [g:hunk_re, -1],
-				\   [g:diff_re, -1],
-				\   [g:file_re, -1],
-				\   [g:stash_re, -1],
-				\   [g:section_re, -2],
-				\   [g:eof_re, 0 ]
+				\ [g:magit_hunk_re, 0],
+				\ [ [g:magit_hunk_re, -1],
+				\   [g:magit_diff_re, -1],
+				\   [g:magit_file_re, -1],
+				\   [g:magit_stash_re, -1],
+				\   [g:magit_section_re, -2],
+				\   [g:magit_eof_re, 0 ]
 				\ ],
-				\ g:diff_re)
+				\ g:magit_diff_re)
 endfunction
 
 " magit#git_apply: helper function to stage a selection
@@ -445,7 +445,7 @@ endfunction
 " cursor position
 " return: string of the current section, without decoration
 function! magit#get_section()
-	let section_line=search(g:section_re, "bnW")
+	let section_line=search(g:magit_section_re, "bnW")
 	return getline(section_line)
 endfunction
 

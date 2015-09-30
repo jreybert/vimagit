@@ -21,21 +21,22 @@ let g:magit_git_status_code = {
  \ }
 
 " Regular expressions used to select blocks
-let g:file_re  = '^\('
+let g:magit_file_re  = '^\('
 for status_code in values(g:magit_git_status_code)
-	let g:file_re .= status_code . '\|'
+	let g:magit_file_re .= status_code . '\|'
 endfor
-let g:file_re .= 'unknown status\): \(.*\)$'
+let g:magit_file_re .= 'unknown status\): \(.*\)$'
 
-let g:section_re  = '^\('
+let g:magit_section_re  = '^\('
 for section_name in values(g:magit_sections)
-	let g:section_re .= section_name . '\|'
+	let g:magit_section_re .= section_name . '\|'
 endfor
-let g:section_re .= 'unknown section\)$'
-let g:diff_re  = '^diff --git'
-let g:stash_re = '^stash@{\d\+}:'
-let g:hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
-let g:bin_re   = '^Binary files '
-let g:eof_re   = '\%$'
+let g:magit_section_re .= 'unknown section\)$'
+
+let g:magit_diff_re  = '^diff --git'
+let g:magit_stash_re = '^stash@{\d\+}:'
+let g:magit_hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
+let g:magit_bin_re   = '^Binary files '
+let g:magit_eof_re   = '\%$'
 
 
