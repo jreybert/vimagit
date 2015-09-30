@@ -1,9 +1,9 @@
 scriptencoding utf-8
 
-"if exists('g:loaded_magit') || !executable('git') || &cp
-"  finish
-"endif
-"let g:loaded_magit = 1
+if exists('g:loaded_magit') || !executable('git') || &cp
+  finish
+endif
+let g:loaded_magit = 1
 " Initialisation {{{
 
 " FIXME: find if there is a minimum vim version required
