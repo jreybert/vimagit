@@ -478,15 +478,20 @@ function! magit#stage_hunk()
 		return
 	endif
 	let [ret, hunk] = magit#select_hunk()
-	if ( ret != 0 )
-		call magit#stage_file()
-		return
+	if ( ret == 0 )
+		let selection = header + hunk
+	else
+		let [ret, selection] = magit#select_file()
+		if ( ret != 0 )
+			echoerr "Can't find diff header"
+			return
+		endif
 	endif
 	let section=magit#get_section()
 	if ( section == g:magit_sections['unstaged'] )
-		call magit#git_apply(header + hunk)
+		call magit#git_apply(selection)
 	elseif ( section == g:magit_sections['staged'] )
-		call magit#git_unapply(header + hunk, 'staged')
+		call magit#git_unapply(selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['staged'] . "\" or \"" . 
@@ -530,13 +535,18 @@ function! magit#discard_hunk()
 		return
 	endif
 	let [ret, hunk] = magit#select_hunk()
-	if ( ret != 0 )
-		echoerr "Not in a hunk region"
-		return
+	if ( ret == 0 )
+		let selection = header + hunk
+	else
+		let [ret, selection] = magit#select_file()
+		if ( ret != 0 )
+			echoerr "Can't find diff header"
+			return
+		endif
 	endif
 	let section=magit#get_section()
 	if ( section == g:magit_sections['unstaged'] )
-		call magit#git_unapply(header + hunk, 'unstaged')
+		call magit#git_unapply(selection, 'unstaged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['unstaged'] . "\" section"
