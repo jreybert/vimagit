@@ -468,7 +468,7 @@ function! magit#stage_hunk()
 	endif
 	let [ret, hunk] = magit#select_hunk()
 	if ( ret != 0 )
-		echoerr "Not in a hunk region"
+		call magit#stage_file()
 		return
 	endif
 	let section=magit#get_section()
