@@ -14,7 +14,7 @@ syn sync minlines=50
 
 syn include @diff syntax/diff.vim
 
-execute 'syn match titleEntry "' . g:title_re . '" contains=titleSign'
+execute 'syn match titleEntry "' . g:section_re . '" contains=titleSign'
 if has("conceal")
 	syn match titleSign contained "\%(&@\|@&\)" conceal
 else
@@ -29,21 +29,21 @@ hi def link stashEntry String
 execute 'syn match fileEntry "' . g:file_re . '"'
 hi def link fileEntry String
 
-execute 'syn region gitTitle start=/^$\n' . g:title_re . '/ end=/^$/ contains=titleEntry'
+execute 'syn region gitTitle start=/^$\n' . g:section_re . '/ end=/^$/ contains=titleEntry'
 
 execute 'syn region gitStash start=/' . g:stash_re . '/ end=/^\%(' .
  \ g:stash_re . '\)\@=/ contains=gitDiff,stashEntry fold'
 
 execute 'syn region gitFile start=/' . g:file_re . '/ end=/^\%(' .
- \ g:file_re . '\)\@=/ contains=gitDiff,fileEntry fold'
+ \ g:file_re . '\|' . g:section_re '\)\@=/ contains=gitDiff,fileEntry fold'
 
 execute 'syn region gitDiff start=/' . g:diff_re . '/ end=/^\%(' .
- \ g:diff_re . '\|' . g:title_re. '\|' . g:stash_re . '\|' . g:file_re .
+ \ g:diff_re . '\|' . g:section_re. '\|' . g:stash_re . '\|' . g:file_re .
  \ '\)\@=/ contains=@diff,gitHunk fold'
 
 execute 'syn region gitHunk start=/' .
  \ g:hunk_re . '/ end=/^\%(' .
- \ g:diff_re . '\|' . g:hunk_re . '\|' . g:title_re. '\|' . g:stash_re . '\|' . g:file_re .
+ \ g:diff_re . '\|' . g:hunk_re . '\|' . g:section_re. '\|' . g:stash_re . '\|' . g:file_re .
  \ '\)\@=/ contains=@diff fold contained'
 
 let b:current_syntax = "gitdiff"

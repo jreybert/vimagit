@@ -43,14 +43,6 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
-" Section names
-" These are used to beautify the magit buffer and to help for some block
-" selection
-let s:magit_staged_section=         'Staged changes'
-let s:magit_unstaged_section=       'Unstaged changes'
-let s:magit_commit_section_start=   'Commit message'
-let s:magit_commit_section_end=     'Commit message end'
-let s:magit_stash_section=          'Stash list'
 
 " magit#underline: helper function to underline a string
 " param[in] title: string to underline
@@ -73,7 +65,7 @@ endfunction
 " param[in] string: string to decorate
 " return: decorated string
 function! magit#decorate_section(string)
-	return '&@'.a:string.'@&'
+	return a:string
 endfunction
 
 " magit#join_list: helper function to concatente a list of strings with newlines
@@ -100,8 +92,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_staged()
 	put =''
-	put =magit#decorate_section(s:magit_staged_section)
-	put =magit#decorate_section(magit#underline(s:magit_staged_section))
+	put =magit#decorate_section(g:magit_sections['staged'])
+	put =magit#decorate_section(magit#underline(g:magit_sections['staged']))
 	put =''
 	silent! read !git diff --staged --no-color
 endfunction
@@ -112,8 +104,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
 	put =''
-	put =magit#decorate_section(s:magit_unstaged_section)
-	put =magit#decorate_section(magit#underline(s:magit_unstaged_section))
+	put =magit#decorate_section(g:magit_sections['unstaged'])
+	put =magit#decorate_section(magit#underline(g:magit_sections['unstaged']))
 	put =''
 
 	silent! read !git diff --no-color
@@ -131,8 +123,8 @@ function! magit#get_stashes()
 
 	if (!empty(stash_list))
 		put =''
-		put =magit#decorate_section(s:magit_stash_section)
-		put =magit#decorate_section(magit#underline(s:magit_stash_section))
+		put =magit#decorate_section(g:magit_sections['stash'])
+		put =magit#decorate_section(magit#underline(g:magit_sections['stash']))
 		put =''
 
 		for stash in stash_list
@@ -167,9 +159,9 @@ function! magit#get_commit_section()
 		let commit_mode_str="amend"
 	endif
 	put =''
-	put =magit#decorate_section(s:magit_commit_section_start)
+	put =magit#decorate_section(g:magit_sections['commit_start'])
 	put =magit#decorate_section('Commit mode: '.commit_mode_str)
-	put =magit#decorate_section(magit#underline(s:magit_commit_section_start))
+	put =magit#decorate_section(magit#underline(g:magit_sections['commit_start']))
 	put =''
 
 	silent! let git_dir=magit#strip(system("git rev-parse --git-dir"))
@@ -184,7 +176,7 @@ function! magit#get_commit_section()
 	endif
 	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^#"'))
 	put =commit_msg
-	put =magit#decorate_section(s:magit_commit_section_end)
+	put =magit#decorate_section(g:magit_sections['commit_end'])
 endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
@@ -257,8 +249,8 @@ function! magit#git_commit(mode)
 	if ( a:mode == 'CF' )
 		silent let git_result=system("git commit --amend -C HEAD")
 	else
-		let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
-		let commit_section_pat_end='^'.magit#decorate_section(s:magit_commit_section_end).'$'
+		let commit_section_pat_start='^'.magit#decorate_section(g:magit_sections['commit_start']).'$'
+		let commit_section_pat_end='^'.magit#decorate_section(g:magit_sections['commit_end']).'$'
 		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +3], [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
 		if ( a:mode == 'CA' )
@@ -284,7 +276,7 @@ function! magit#select_file()
 				\ [ [g:diff_re, -1],
 				\   [g:file_re, -1],
 				\   [g:stash_re, -1],
-				\   [g:title_re, -2],
+				\   [g:section_re, -2],
 				\   [g:bin_re, 0],
 				\   [g:eof_re, 0 ]
 				\ ],
@@ -318,7 +310,7 @@ function! magit#select_hunk()
 				\   [g:diff_re, -1],
 				\   [g:file_re, -1],
 				\   [g:stash_re, -1],
-				\   [g:title_re, -2],
+				\   [g:section_re, -2],
 				\   [g:eof_re, 0 ]
 				\ ],
 				\ g:diff_re)
@@ -384,7 +376,7 @@ function! magit#update_buffer()
 	call winrestview(l:winview)
 
 	if ( s:magit_commit_mode != '' )
-		let commit_section_pat_start='^'.magit#decorate_section(s:magit_commit_section_start).'$'
+		let commit_section_pat_start='^'.magit#decorate_section(g:magit_sections['commit_start']).'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+3, 0)
 	endif
@@ -423,8 +415,8 @@ endfunction
 " cursor position
 " return: string of the current section, without decoration
 function! magit#get_section()
-	let section_line=search('^&@[a-zA-Z ]\+@&$', "bnW")
-	return substitute(getline(section_line), '^&@\([a-zA-Z ]\+\)@&$', '\1', '')
+	let section_line=search(g:section_re, "bnW")
+	return getline(section_line)
 endfunction
 
 " magit#stage_hunk: this function stage a single hunk, from the current
@@ -444,12 +436,14 @@ function! magit#stage_hunk()
 		return
 	endif
 	let section=magit#get_section()
-	if ( section == s:magit_unstaged_section )
+	if ( section == g:magit_sections['unstaged'] )
 		call magit#git_apply(header + hunk)
-	elseif ( section == s:magit_staged_section )
+	elseif ( section == g:magit_sections['staged'] )
 		call magit#git_unapply(header + hunk)
 	else
-		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
+		echoerr "Must be in \"" . 
+		 \ g:magit_sections['staged'] . "\" or \"" . 
+		 \ g:magit_sections['unstaged'] . "\" section"
 	endif
 	call magit#update_buffer()
 endfunction
@@ -466,12 +460,14 @@ function! magit#stage_file()
 		return
 	endif
 	let section=magit#get_section()
-	if ( section == s:magit_unstaged_section )
+	if ( section == g:magit_sections['unstaged'] )
 		call magit#git_apply(selection)
-	elseif ( section == s:magit_staged_section )
+	elseif ( section == g:magit_sections['staged'] )
 		call magit#git_unapply(selection)
 	else
-		echoerr "Must be in \"".s:magit_unstaged_section."\" or \"".s:magit_staged_section."\" section"
+		echoerr "Must be in \"" . 
+		 \ g:magit_sections['staged'] . "\" or \"" . 
+		 \ g:magit_sections['unstaged'] . "\" section"
 	endif
 	call magit#update_buffer()
 endfunction
@@ -514,7 +510,7 @@ function! magit#commit_command(mode)
 	if ( a:mode == 'CF' )
 		call magit#git_commit(a:mode)
 	else
-		if ( section == s:magit_commit_section_start )
+		if ( section == g:magit_sections['commit_start'] )
 			if ( s:magit_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
