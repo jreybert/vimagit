@@ -118,6 +118,9 @@ function! magit#get_unstaged()
 	silent! read !git ls-files --others --exclude-standard | while read -r i; do git diff --no-color -- /dev/null "$i"; done
 endfunction
 
+" magit#get_stashes: this function write in current buffer all stashes
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
 function! magit#get_stashes()
 	silent! let stash_list=systemlist("git stash list")
 	if ( v:shell_error != 0 )
