@@ -352,10 +352,15 @@ endfunction
 " header plus one or more hunks
 " return: no
 function! magit#git_apply(selection)
-	let selection=magit#join_list(a:selection)
+	let selection = a:selection
+	if ( selection[-1] != '' )
+		let selection += [ '' ]
+	endif
 	silent let git_result=system("git apply --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
+		echoerr "Tried to unaply this"
+		echoerr string(a:selection)
 	endif
 endfunction
 
@@ -370,9 +375,15 @@ function! magit#git_unapply(selection, mode)
 	if ( a:mode == 'staged' )
 		let cached_flag=' --cached '
 	endif
-	silent let git_result=system("git apply " . cached_flag . " --reverse - ", a:selection)
+	let selection = a:selection
+	if ( selection[-1] != '' )
+		let selection += [ '' ]
+	endif
+	silent let git_result=system("git apply " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
+		echoerr "Tried to unaply this"
+		echoerr string(a:selection)
 	endif
 endfunction
 
