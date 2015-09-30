@@ -69,7 +69,7 @@ These mappings work in normal mode.
 
                 S     if cursor is in a hunk, stage/unstage hunk at
                       cursor position
-                      if cursor is in a file,  stage/unstage whole file
+                      if cursor is in diff header, stage/unstage whole file
                       at cursor position
                       When cursor is in "Unstaged changes" section, it will
                       stage the hunk/file.
@@ -81,8 +81,8 @@ These mappings work in normal mode.
                       On the other side, when cursor is in "Staged changes"
                       section, it will unstage file.
                 D     if cursor is in a hunk, discard hunk at cursor position
-                      if cursor is in a file, discard whole file at cursor
-                      position
+                      if cursor is in diff header, discard whole file at
+                      cursor position
                       When cursor is in "Unstaged changes" section, it will
                       discard the hunk/file.
                 R     refresh vimagit buffer
