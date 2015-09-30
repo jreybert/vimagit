@@ -409,6 +409,8 @@ function! magit#update_buffer()
 		silent! call cursor(section_line+3, 0)
 	endif
 
+	set filetype=magit
+
 endfunction
 
 " magit#show_magit: prepare and show magit buffer
