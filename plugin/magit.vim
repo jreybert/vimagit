@@ -102,9 +102,11 @@ function! magit#get_diff(mode)
 			let dev_null="/dev/null"
 		endif
 		if ( file_name =~ " -> " )
+			" git status add quotes " for file names with spaces only for rename mode
 			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
+		else
+			let file_name='"' . file_name . '"'
 		endif
-		" git is supposed to add quotes " for file names with spaces
 		let diff_list=systemlist("git diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
 		for diff_line in diff_list
 			put =diff_line
