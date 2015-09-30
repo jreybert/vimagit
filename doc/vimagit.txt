@@ -67,8 +67,24 @@ There are 3 sections:
 
 These mappings work in normal mode.
 
-                S     stage/unstage hunk at cursor position
+                S     if cursor is in a hunk, stage/unstage hunk at
+                      cursor position
+                      if cursor is in a file,  stage/unstage whole file
+                      at cursor position
+                      When cursor is in "Unstaged changes" section, it will
+                      stage the hunk/file.
+                      On the other side, when cursor is in "Staged changes"
+                      section, it will unstage hunk/file.
                 F     stage/unstage the whole file at cursor position
+                      When cursor is in "Unstaged changes" section, it will
+                      stage the file.
+                      On the other side, when cursor is in "Staged changes"
+                      section, it will unstage file.
+                D     if cursor is in a hunk, discard hunk at cursor position
+                      if cursor is in a file, discard whole file at cursor
+                      position
+                      When cursor is in "Unstaged changes" section, it will
+                      discard the hunk/file.
                 R     refresh vimagit buffer
                 CC    if not in commit section, set commit mode to "New
                       commit" and show "Commit message" section with brand new
@@ -85,9 +101,6 @@ These mappings work in normal mode.
                 I     add the file under the cursor in .gitgnore
                 
 
-When cursor is in "Unstaged changes" section, S/F mappings will stage. On the
-other side, when cursor is in "Staged changes" section, S/F mappings will
-unstage.
 
 ===============================================================================
 5. CUSTOMISATION                                         *vimagitCustomization*
