@@ -30,6 +30,7 @@ endfunction
 
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
+call s:set('g:magit_discard_hunk_mapping',      "D")
 call s:set('g:magit_commit_mapping1',           "C")
 call s:set('g:magit_commit_mapping2',           "CC")
 call s:set('g:magit_commit_amend_mapping',      "CA")
@@ -364,8 +365,12 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! magit#git_unapply(selection)
-	silent let git_result=system("git apply --cached --reverse -", a:selection)
+function! magit#git_unapply(selection, mode)
+	let cached_flag=''
+	if ( a:mode == 'staged' )
+		let cached_flag=' --cached '
+	endif
+	silent let git_result=system("git apply " . cached_flag . " --reverse - ", a:selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 	endif
@@ -430,6 +435,7 @@ function! magit#show_magit(orientation)
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#discard_hunk()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping1 .      " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping2 .      " :call magit#commit_command('CC')<cr>"
@@ -469,7 +475,7 @@ function! magit#stage_hunk()
 	if ( section == g:magit_sections['unstaged'] )
 		call magit#git_apply(header + hunk)
 	elseif ( section == g:magit_sections['staged'] )
-		call magit#git_unapply(header + hunk)
+		call magit#git_unapply(header + hunk, 'staged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['staged'] . "\" or \"" . 
@@ -493,10 +499,35 @@ function! magit#stage_file()
 	if ( section == g:magit_sections['unstaged'] )
 		call magit#git_apply(selection)
 	elseif ( section == g:magit_sections['staged'] )
-		call magit#git_unapply(selection)
+		call magit#git_unapply(selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['staged'] . "\" or \"" . 
+		 \ g:magit_sections['unstaged'] . "\" section"
+	endif
+	call magit#update_buffer()
+endfunction
+
+" magit#discard_hunk: this function discard a single hunk, from the current
+" cursor position
+" INFO: only works in unstaged section
+" return: no
+function! magit#discard_hunk()
+	let [ret, header] = magit#select_file_header()
+	if ( ret != 0 )
+		echoerr "Can't find diff header"
+		return
+	endif
+	let [ret, hunk] = magit#select_hunk()
+	if ( ret != 0 )
+		echoerr "Not in a hunk region"
+		return
+	endif
+	let section=magit#get_section()
+	if ( section == g:magit_sections['unstaged'] )
+		call magit#git_unapply(header + hunk, 'unstaged')
+	else
+		echoerr "Must be in \"" . 
 		 \ g:magit_sections['unstaged'] . "\" section"
 	endif
 	call magit#update_buffer()
