@@ -170,7 +170,7 @@ function! magit#get_commit_section()
 	elseif ( s:magit_commit_mode == 'CA' )
 		silent! call system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
-	let commit_msg=join(readfile(git_dir . '/COMMIT_EDITMSG'), "\n") . "\n"
+	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^#"'))
 	put =commit_msg
 	put =magit#decorate_section(s:magit_commit_section_end)
 endfunction
