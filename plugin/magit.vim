@@ -44,6 +44,56 @@ call s:set('g:magit_enabled',               1)
 
 " {{{ Internal functions
 
+" magit#system: wrapper for system, which only takes String as input in vim,
+" although it can take String or List input in neovim.
+" param[in] cmd: command to execute
+" param[in] arg: List or string to pass to stdin
+" return: command output as a string
+function! magit#system(cmd, ...)
+	" I imagine that system getting input as List came the same time than
+	" systemlist
+	if exists('systemlist')
+		if ( a:0 == 1 )
+			return system(a:cmd, a:1)
+		else
+			return system(a:cmd)
+		endif
+	else
+		if ( a:0 == 1 )
+			if ( type(a:1) == type([]) )
+				" ouch, this one is tough: input is very very sensitive, join
+				" MUST BE done with "\n", not '\n' !!
+				let arg=join(a:1, "\n")
+			else
+				let arg=a:1
+			endif
+			return system(a:cmd, arg)
+		else
+			return system(a:cmd)
+		endif
+	endif
+endfunction
+
+" magit#systemlist: wrapper for systemlist, which only exists in neovim for
+" the moment.
+" param[in] cmd: command to execute, can be List or String
+" param[in] arg: List or string to pass to stdin
+" return: command output as a list
+function! magit#systemlist(cmd, ...)
+	if exists('systemlist')
+		if ( a:0 == 1 )
+			return systemlist(a:cmd, a:1)
+		else
+			return systemlist(a:cmd)
+		endif
+	else
+		if ( a:0 == 1 )
+			return split(magit#system(a:cmd, a:1), '\n')
+		else
+			return split(magit#system(a:cmd), '\n')
+		endif
+	endif
+endfunction
 
 " magit#underline: helper function to underline a string
 " param[in] title: string to underline
@@ -89,7 +139,7 @@ function! magit#get_diff(mode)
 		let status_position=1
 	endif
 
-	let status_list=systemlist("git status --porcelain")
+	let status_list=magit#systemlist("git status --porcelain")
 	for file_status_line in status_list
 		let file_status=file_status_line[status_position]
 		let file_name=substitute(file_status_line, '.. \(.*\)$', '\1', '')
@@ -108,7 +158,7 @@ function! magit#get_diff(mode)
 		else
 			let file_name='"' . file_name . '"'
 		endif
-		let diff_list=systemlist("git diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
+		let diff_list=magit#systemlist("git diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
 		for diff_line in diff_list
 			put =diff_line
 		endfor
@@ -146,7 +196,7 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_stashes()
-	silent! let stash_list=systemlist("git stash list")
+	silent! let stash_list=magit#systemlist("git stash list")
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . stash_list
 	endif
@@ -193,15 +243,15 @@ function! magit#get_commit_section()
 	put =magit#underline(g:magit_sections['commit_start'])
 	put =''
 
-	silent! let git_dir=magit#strip(system("git rev-parse --git-dir"))
+	silent! let git_dir=magit#strip(magit#system("git rev-parse --git-dir"))
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_dir
 	endif
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
-		silent! call system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+		silent! call magit#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
 	elseif ( s:magit_commit_mode == 'CA' )
-		silent! call system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+		silent! call magit#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
 	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^#"'))
 	put =commit_msg
@@ -276,7 +326,7 @@ endfunction
 " return no
 function! magit#git_commit(mode)
 	if ( a:mode == 'CF' )
-		silent let git_result=system("git commit --amend -C HEAD")
+		silent let git_result=magit#system("git commit --amend -C HEAD")
 	else
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
@@ -285,7 +335,7 @@ function! magit#git_commit(mode)
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
 		endif
-		silent! let git_result=system("git commit " . amend_flag . " --file -", commit_msg)
+		silent! let git_result=magit#system("git commit " . amend_flag . " --file - ", commit_msg)
 	endif
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
@@ -353,13 +403,13 @@ endfunction
 " return: no
 function! magit#git_apply(selection)
 	let selection = a:selection
-	if ( selection[-1] != '' )
+	if ( selection[-1] !~ '^\s*$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=system("git apply --cached -", selection)
+	silent let git_result=magit#system("git apply --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
-		echoerr "Tried to unaply this"
+		echoerr "Tried to aply this"
 		echoerr string(a:selection)
 	endif
 endfunction
@@ -376,10 +426,10 @@ function! magit#git_unapply(selection, mode)
 		let cached_flag=' --cached '
 	endif
 	let selection = a:selection
-	if ( selection[-1] != '' )
+	if ( selection[-1] !~ '^\s*$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=system("git apply " . cached_flag . " --reverse - ", selection)
+	silent let git_result=magit#system("git apply " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
@@ -573,7 +623,7 @@ function! magit#ignore_file()
 		echoerr "Can not find file to ignore"
 		return
 	endif
-	let top_dir=magit#strip(system("git rev-parse --show-toplevel")) . "/"
+	let top_dir=magit#strip(magit#system("git rev-parse --show-toplevel")) . "/"
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . top_dir
 	endif
