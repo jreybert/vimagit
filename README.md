@@ -39,7 +39,7 @@ There are 3 sections:
 
 These mappings work in normal mode. They can be redefined.
 
-                S     if cursor is in a hunk, stage/unstage hunk at
+        S             if cursor is in a hunk, stage/unstage hunk at
                       cursor position
                       if cursor is in diff header, stage/unstage whole file
                       at cursor position
@@ -47,31 +47,31 @@ These mappings work in normal mode. They can be redefined.
                       stage the hunk/file.
                       On the other side, when cursor is in "Staged changes"
                       section, it will unstage hunk/file.
-                F     stage/unstage the whole file at cursor position
+        F             stage/unstage the whole file at cursor position
                       When cursor is in "Unstaged changes" section, it will
                       stage the file.
                       On the other side, when cursor is in "Staged changes"
                       section, it will unstage file.
-                D     if cursor is in a hunk, discard hunk at cursor position
+        D             if cursor is in a hunk, discard hunk at cursor position
                       if cursor is in diff header, discard whole file at
                       cursor position
                       When cursor is in "Unstaged changes" section, it will
                       discard the hunk/file.
-                R     refresh vimagit buffer
-                CC    if not in commit section, set commit mode to "New
+        R             refresh vimagit buffer
+        C,CC,:w       if not in commit section, set commit mode to "New
                       commit" and show "Commit message" section with brand new
                       commit message
                       if in commit section, commit the all staged changes in
                       commit mode previously set
-                CA    if not in commit section, set commit mode to "Amend
+        CA            if not in commit section, set commit mode to "Amend
                       commit" and show "Commit message" section with previous
                       commit message
                       if in commit section, commit the staged changes in
                       commit mode previously set
-                CA    if not in commit section, amend the staged changes into
+        CA            if not in commit section, amend the staged changes into
                       the previous commit
-                I     add the file under the cursor in .gitgnore
-
+        I             add the file under the cursor in .gitgnore
+                
 ## Installation
 
 The plugin hierarchy tree respects the vim plugin standard. It is compatible
