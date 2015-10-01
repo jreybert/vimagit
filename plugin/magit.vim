@@ -169,7 +169,11 @@ function! magit#get_diff(mode)
 		else
 			let file_name='"' . magit#top_dir() . file_name . '"'
 		endif
-		let diff_list=magit#systemlist("git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
+		let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name
+		let diff_list=magit#systemlist(diff_cmd)
+		if ( empty(diff_list) )
+			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+		endif
 		for diff_line in diff_list
 			put =diff_line
 		endfor
