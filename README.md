@@ -58,7 +58,7 @@ These mappings work in normal mode. They can be redefined.
                       When cursor is in "Unstaged changes" section, it will
                       discard the hunk/file.
         R             refresh vimagit buffer
-        C,CC,:w       if not in commit section, set commit mode to "New
+        C,CC,:w<cr>   if not in commit section, set commit mode to "New
                       commit" and show "Commit message" section with brand new
                       commit message
                       if in commit section, commit the all staged changes in

@@ -31,7 +31,7 @@ endfunction
 call s:set('g:magit_stage_file_mapping',        "F")
 call s:set('g:magit_stage_hunk_mapping',        "S")
 call s:set('g:magit_discard_hunk_mapping',      "DDD")
-call s:set('g:magit_commit_mapping_command',    "w")
+call s:set('g:magit_commit_mapping_command',    "w<cr>")
 call s:set('g:magit_commit_mapping1',           "C")
 call s:set('g:magit_commit_mapping2',           "CC")
 call s:set('g:magit_commit_amend_mapping',      "CA")
