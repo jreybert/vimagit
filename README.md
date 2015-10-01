@@ -52,7 +52,7 @@ These mappings work in normal mode. They can be redefined.
                       stage the file.
                       On the other side, when cursor is in "Staged changes"
                       section, it will unstage file.
-        D             if cursor is in a hunk, discard hunk at cursor position
+        DDD           if cursor is in a hunk, discard hunk at cursor position
                       if cursor is in diff header, discard whole file at
                       cursor position
                       When cursor is in "Unstaged changes" section, it will
