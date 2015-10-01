@@ -130,6 +130,16 @@ function! magit#append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
+" magit#top_dir: return the absolute path of current git worktree
+" return top directory
+function! magit#top_dir()
+	let top_dir=magit#strip(magit#system("git rev-parse --show-toplevel")) . "/"
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . top_dir
+	endif
+	return top_dir
+endfunction
+
 function! magit#get_diff(mode)
 
 	let staged_flag=""
@@ -155,9 +165,9 @@ function! magit#get_diff(mode)
 		endif
 		if ( file_name =~ " -> " )
 			" git status add quotes " for file names with spaces only for rename mode
-			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
+			let file_name=magit#top_dir() . substitute(file_name, '.* -> \(.*\)$', '\1', '')
 		else
-			let file_name='"' . file_name . '"'
+			let file_name='"' . magit#top_dir() . file_name . '"'
 		endif
 		let diff_list=magit#systemlist("git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name )
 		for diff_line in diff_list
@@ -625,11 +635,7 @@ function! magit#ignore_file()
 		echoerr "Can not find file to ignore"
 		return
 	endif
-	let top_dir=magit#strip(magit#system("git rev-parse --show-toplevel")) . "/"
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . top_dir
-	endif
-	call magit#append_file(top_dir . "/.gitignore", [ ignore_file ] )
+	call magit#append_file(magit#top_dir() . ".gitignore", [ ignore_file ] )
 	call magit#update_buffer()
 endfunction
 
