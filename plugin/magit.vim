@@ -268,9 +268,20 @@ function! magit#get_commit_section()
 	elseif ( s:magit_commit_mode == 'CA' )
 		silent! call magit#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
-	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^#"'))
+	let comment_char=magit#comment_char()
+	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 	put =commit_msg
 	put =g:magit_sections['commit_end']
+endfunction
+
+" magit#comment_char: this function gets the commentChar from git config
+function magit#comment_char()
+	silent! let git_result=magit#strip(magit#system("git config --get core.commentChar"))
+	if ( v:shell_error != 0 )
+		return '#'
+	else
+		return git_result
+	endif
 endfunction
 
 " magit#search_block: helper function, to get a block of text, giving a start
