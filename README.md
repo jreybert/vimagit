@@ -9,8 +9,10 @@ vimagit is an attempt to reproduce the magnificent emacs Magit plugin to vim. Th
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Visualize stashes. Apply, pop, drop are on going.
 * [x] Add file to .gitignore file.
+* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an issue on github :heart: !
 
 More to come:
+* Accelerate magit buffer refreshing.
 * Line and partial line staging.
 * Vizualize and checkout branches.
 * Go through history, cherry-pick changes.
