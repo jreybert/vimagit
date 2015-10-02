@@ -38,6 +38,7 @@ call s:set('g:magit_commit_amend_mapping',      "CA")
 call s:set('g:magit_commit_fixup_mapping',      "CF")
 call s:set('g:magit_reload_mapping',            "R")
 call s:set('g:magit_ignore_mapping',            "I")
+call s:set('g:magit_close_mapping',             "q")
 
 call s:set('g:magit_enabled',               1)
 
@@ -530,6 +531,7 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
