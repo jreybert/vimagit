@@ -275,7 +275,7 @@ function! magit#get_commit_section()
 endfunction
 
 " magit#comment_char: this function gets the commentChar from git config
-function magit#comment_char()
+function! magit#comment_char()
 	silent! let git_result=magit#strip(magit#system("git config --get core.commentChar"))
 	if ( v:shell_error != 0 )
 		return '#'
