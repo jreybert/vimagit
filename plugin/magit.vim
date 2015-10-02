@@ -181,50 +181,25 @@ function! s:mg_append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
-" s:mg_get_diff: this function write in current buffer all file names and
-" related diffs for a given mode
-" filename are prefixed in git status ('new: ' , 'modified: ', ...)
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-" param[in] mode: can be 'staged' or 'unstaged'
-function! s:mg_get_diff(mode)
-
-	let staged_flag=""
-	if ( a:mode == 'staged' )
-		let status_position=0
-		let staged_flag=" --staged "
-	elseif ( a:mode == 'unstaged' )
-		let status_position=1
-	endif
+" s:mg_get_status_list: this function returns the git status output formated
+" into a List of Dict as
+" [ {staged', 'unstaged', 'filename'}, ... ]
+function! s:mg_get_status_list()
+	let file_list = []
 
 	let status_list=<SID>mg_systemlist("git status --porcelain")
 	for file_status_line in status_list
-		let file_status=file_status_line[status_position]
-		let file_name=substitute(file_status_line, '.. \(.*\)$', '\1', '')
-		" untracked code apperas in staged column, we skip it
-		if ( file_status == ' ' || ( ( a:mode == 'staged' ) && file_status == '?' ) )
-			continue
-		endif
-		put =g:magit_git_status_code[file_status] . ': ' . file_name
-		let dev_null=""
-		if ( file_status == '?' )
-			let dev_null="/dev/null"
-		endif
-		if ( file_name =~ " -> " )
+		let line_match = matchlist(file_status_line, '\(.\)\(.\) \(.*\)$')
+		let filename = line_match[3]
+		if ( filename =~ " -> " )
 			" git status add quotes " for file names with spaces only for rename mode
-			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
+			let file_name=substitute(filename, '.* -> \(.*\)$', '\1', '')
 		else
-			let file_name='"' . file_name . '"'
+			let file_name='"' . filename . '"'
 		endif
-		let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name
-		let diff_list=<SID>mg_systemlist(diff_cmd)
-		if ( empty(diff_list) )
-			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-		endif
-		silent put =diff_list
-		" add missing new line
-		put =''
+		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
+	return file_list
 endfunction
 
 " s:magit_inline_help: Dict containing inline help for each section
@@ -294,31 +269,110 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
-" s:mg_get_staged: this function writes in current buffer all staged files
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-function! s:mg_get_staged()
-	silent put =''
-	silent put =g:magit_sections['staged']
-	call <SID>mg_section_help('staged')
-	silent put =<SID>mg_underline(g:magit_sections['staged'])
-	silent put =''
+" s:mg_diff_dict: big main global variable, containing all diffs
+" It is formatted as follow
+" { 'staged_or_unstaged': staged/unstaged
+"     [
+"         { 'filename':
+"             { 'visible': bool,
+"               'status' : g:magit_git_status_code,
+"               'exists' : bool
+"               'diff'   : [ [header], [hunk0], [hunk1], ...]
+"             }
+"          },
+"          ...
+"      ]
+" }
+let s:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
 
-	call <SID>mg_get_diff('staged')
+" s:mg_update_diff_dict: update s:mg_diff_dict
+" if a file does not exists anymore (because all its changes have been
+" committed, deleted, discarded), it is removed from s:mg_diff_dict
+" else, its diff is discarded and regenrated
+" what is resilient is its 'visible' parameter
+function! s:mg_update_diff_dict()
+	for diff_dict_mode in values(s:mg_diff_dict)
+		for file in values(diff_dict_mode)
+			let file['exists'] = 0
+			" always discard previous diff
+			unlet file['diff']
+		endfor
+	endfor
+
+	for [mode, diff_dict_mode] in items(s:mg_diff_dict)
+		let staged_flag = ( mode == 'staged' ) ? " --staged " : " "
+
+		let status_list = s:mg_get_status_list()
+		for file_status in status_list
+			let status=file_status[mode]
+
+			" untracked code apperas in staged column, we skip it
+			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
+				continue
+			endif
+			let dev_null = ( status == '?' ) ? " /dev/null " : " "
+
+			let filename = file_status['filename']
+			let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  filename
+			let diff_list=s:mg_systemlist(diff_cmd)
+			if ( empty(diff_list) )
+				echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+			endif
+			if (!has_key(diff_dict_mode, filename))
+				let diff_dict_mode[filename] = {}
+				let diff_dict_mode[filename]['visible'] = 1
+			endif
+			let diff_dict_mode[filename]['diff'] = []
+			let diff_dict_mode[filename]['exists'] = 1
+			let diff_dict_mode[filename]['status'] = status
+			let index = 0
+			call add(diff_dict_mode[filename]['diff'], [])
+			for diff_line in diff_list
+				if ( diff_line =~ "^@.*" )
+					let index+=1
+					call add(diff_dict_mode[filename]['diff'], [])
+				endif
+				call add(diff_dict_mode[filename]['diff'][index], diff_line)
+			endfor
+		endfor
+	endfor
+
+	" remove files that have changed their mode or been committed/deleted/discarded...
+	for diff_dict_mode in values(s:mg_diff_dict)
+		for [key, file] in items(diff_dict_mode)
+			if ( file['exists'] == 0 )
+				unlet diff_dict_mode[key]
+			endif
+		endfor
+	endfor
 endfunction
 
-" s:mg_get_unstaged: this function writes in current buffer all unstaged
-" and untracked files
+
+" s:mg_get_staged_section: this function writes in current buffer all staged
+" or unstaged files, using s:mg_diff_dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
-function! s:mg_get_unstaged()
-	silent put =''
-	silent put =g:magit_sections['unstaged']
-	call <SID>mg_section_help('unstaged')
-	silent put =<SID>mg_underline(g:magit_sections['unstaged'])
-	silent put =''
+" param[in] mode: 'staged' or 'unstaged'
+function! s:mg_get_staged_section(mode)
+	put =''
+	put =g:magit_sections[a:mode]
+	call <SID>mg_section_help(a:mode)
+	put =s:mg_underline(g:magit_sections[a:mode])
+	put =''
 
-	call <SID>mg_get_diff('unstaged')
+	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
+		if ( file_props['visible'] == 0 )
+			continue
+		endif
+		if ( file_props['exists'] == 0 )
+			echoerr "Error, " . filename . " should not exists"
+		endif
+		put =g:magit_git_status_code[file_props['status']] . ': ' . filename
+		for diff_line in file_props['diff']
+			silent put =diff_line
+		endfor
+		put =''
+	endfor
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -611,8 +665,9 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()
 	endif
-	call <SID>mg_get_staged()
-	call <SID>mg_get_unstaged()
+	call <SID>mg_update_diff_dict()
+	call <SID>mg_get_staged_section('staged')
+	call <SID>mg_get_staged_section('unstaged')
 	call <SID>mg_get_stashes()
 
 	call winrestview(l:winview)
