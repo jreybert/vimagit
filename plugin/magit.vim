@@ -175,9 +175,7 @@ function! magit#get_diff(mode)
 		if ( empty(diff_list) )
 			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 		endif
-		for diff_line in diff_list
-			put =diff_line
-		endfor
+		silent put =diff_list
 		" add missing new line
 		put =''
 	endfor
