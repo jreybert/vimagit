@@ -70,8 +70,8 @@ These mappings work in normal mode. They can be redefined.
                       commit message
                       if in commit section, commit the staged changes in
                       commit mode previously set
-        CA            if not in commit section, amend the staged changes into
-                      the previous commit
+        CF            amend the staged changes into the previous commit,
+                      without modifying previous commit message
         I             add the file under the cursor in .gitgnore
                 
 ## Installation
