@@ -39,8 +39,10 @@ call s:set('g:magit_commit_fixup_mapping',      "CF")
 call s:set('g:magit_reload_mapping',            "R")
 call s:set('g:magit_ignore_mapping',            "I")
 call s:set('g:magit_close_mapping',             "q")
+call s:set('g:magit_toggle_help_mapping',       "h")
 
-call s:set('g:magit_enabled',               1)
+call s:set('g:magit_enabled',                   1)
+call s:set('g:magit_show_help',                 1)
 
 " }}}
 
@@ -181,14 +183,55 @@ function! magit#get_diff(mode)
 	endfor
 endfunction
 
+let s:magit_inline_help = {
+			\ 'staged': [
+\'S      if cursor in diff header, unstage file',
+\'       if cursor in hunk, unstage hunk',
+\'F      if cursor in diff header or hunk, unstage file',
+\],
+			\ 'unstaged': [
+\'S      if cursor in diff header, stage file',
+\'       if cursor in hunk, stage hunk',
+\'F      if cursor in diff header or hunk, stage file',
+\'DDD    discard file changes (warning, changes will be lost)',
+\'I      add file in .gitgnore',
+\],
+			\ 'global': [
+\'C CC   set commit mode to normal, and show "Commit message" section',
+\'CA     set commit mode amend, and show "Commit message" section with previous',
+\'       commit message',
+\'CF     amend staged changes to previous commit without modifying the previous',
+\'       commit message',
+\'R      refresh magit buffer',
+\'h      toggle help showing in magit buffer',
+\'To disable this help by default, add "let g:magit_show_help=0" to .vimrc',
+\],
+			\ 'commit': [
+\'C CC   commit all staged changes with commit mode previously set (normal or',
+\':w<cr> amend) with message written in this section',
+\],
+\}
+
+function! magit#get_inline_help_line_nb(section)
+	return ( g:magit_show_help == 1 ) ?
+		\ len(s:magit_inline_help[a:section]) : 0
+endfunction
+
+function! magit#section_help(section)
+	if ( g:magit_show_help == 1 )
+		silent put =s:magit_inline_help[a:section]
+	endif
+endfunction
+
 " magit#get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_staged()
-	put =''
-	put =g:magit_sections['staged']
-	put =magit#underline(g:magit_sections['staged'])
-	put =''
+	silent put =''
+	silent put =g:magit_sections['staged']
+	call magit#section_help('staged')
+	silent put =magit#underline(g:magit_sections['staged'])
+	silent put =''
 
 	call magit#get_diff('staged')
 endfunction
@@ -198,10 +241,11 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! magit#get_unstaged()
-	put =''
-	put =g:magit_sections['unstaged']
-	put =magit#underline(g:magit_sections['unstaged'])
-	put =''
+	silent put =''
+	silent put =g:magit_sections['unstaged']
+	call magit#section_help('unstaged')
+	silent put =magit#underline(g:magit_sections['unstaged'])
+	silent put =''
 
 	call magit#get_diff('unstaged')
 endfunction
@@ -216,10 +260,10 @@ function! magit#get_stashes()
 	endif
 
 	if (!empty(stash_list))
-		put =''
-		put =g:magit_sections['stash']
-		put =magit#underline(g:magit_sections['stash'])
-		put =''
+		silent put =''
+		silent put =g:magit_sections['stash']
+		silent put =magit#underline(g:magit_sections['stash'])
+		silent put =''
 
 		for stash in stash_list
 			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
@@ -251,11 +295,12 @@ function! magit#get_commit_section()
 	elseif ( s:magit_commit_mode == 'CA' )
 		let commit_mode_str="amend"
 	endif
-	put =''
-	put =g:magit_sections['commit_start']
-	put ='Commit mode: '.commit_mode_str
-	put =magit#underline(g:magit_sections['commit_start'])
-	put =''
+	silent put =''
+	silent put =g:magit_sections['commit_start']
+	silent put ='Commit mode: '.commit_mode_str
+	call magit#section_help('commit')
+	silent put =magit#underline(g:magit_sections['commit_start'])
+	silent put =''
 
 	silent! let git_dir=magit#strip(magit#system("git rev-parse --git-dir"))
 	if ( v:shell_error != 0 )
@@ -355,7 +400,10 @@ function! magit#git_commit(mode)
 	else
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
-		let [ret, commit_msg]=magit#search_block([commit_section_pat_start, +3], [ [commit_section_pat_end, -1] ], "")
+		let commit_jump_line = 3 + magit#get_inline_help_line_nb('commit')
+		let [ret, commit_msg]=magit#search_block(
+		 \ [commit_section_pat_start, commit_jump_line],
+		 \ [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
@@ -485,6 +533,7 @@ function! magit#update_buffer()
 	let l:winview = winsaveview()
 	silent! %d
 	
+	call magit#section_help('global')
 	if ( s:magit_commit_mode != '' )
 		call magit#get_commit_section()
 	endif
@@ -497,11 +546,16 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
-		silent! call cursor(section_line+3, 0)
+		silent! call cursor(section_line+3+magit#get_inline_help_line_nb('commit'), 0)
 	endif
 
 	set filetype=magit
 
+endfunction
+
+function! magit#toggle_help()
+	let g:magit_show_help = ( g:magit_show_help == 0 ) ? 1 : 0
+	call magit#update_buffer()
 endfunction
 
 " magit#show_magit: prepare and show magit buffer
@@ -530,6 +584,7 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
