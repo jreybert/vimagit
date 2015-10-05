@@ -588,7 +588,7 @@ endfunction
 " magit#show_magit: prepare and show magit buffer
 " it also set local mappings to magit buffer
 function! magit#show_magit(orientation)
-	if ( system("git --is-inside-git-dir") != 1 )
+	if ( magit#strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
 		echoerr "Magit must be started from a git repository"
 		return
 	endif
