@@ -50,52 +50,38 @@ call s:set('g:magit_show_help',                 1)
 
 " magit#system: wrapper for system, which only takes String as input in vim,
 " although it can take String or List input in neovim.
-" param[in] cmd: command to execute
-" param[in] arg: List or string to pass to stdin
+" param[in] ...: command + optional args
 " return: command output as a string
-function! magit#system(cmd, ...)
+function! magit#system(...)
 	" I imagine that system getting input as List came the same time than
 	" systemlist
 	if exists('systemlist')
-		if ( a:0 == 1 )
-			return system(a:cmd, a:1)
-		else
-			return system(a:cmd)
-		endif
+		return call('system', a:000)
 	else
-		if ( a:0 == 1 )
-			if ( type(a:1) == type([]) )
+		if ( a:0 == 2 )
+			if ( type(a:2) == type([]) )
 				" ouch, this one is tough: input is very very sensitive, join
 				" MUST BE done with "\n", not '\n' !!
-				let arg=join(a:1, "\n")
+				let arg=join(a:2, "\n")
 			else
-				let arg=a:1
+				let arg=a:2
 			endif
-			return system(a:cmd, arg)
+			return system(a:1, arg)
 		else
-			return system(a:cmd)
+			return system(a:1)
 		endif
 	endif
 endfunction
 
 " magit#systemlist: wrapper for systemlist, which only exists in neovim for
 " the moment.
-" param[in] cmd: command to execute, can be List or String
-" param[in] arg: List or string to pass to stdin
+" param[in] ...: command + optional args to execute, args can be List or String
 " return: command output as a list
-function! magit#systemlist(cmd, ...)
+function! magit#systemlist(...)
 	if exists('systemlist')
-		if ( a:0 == 1 )
-			return systemlist(a:cmd, a:1)
-		else
-			return systemlist(a:cmd)
-		endif
+		return call('systemlist', a:000)
 	else
-		if ( a:0 == 1 )
-			return split(magit#system(a:cmd, a:1), '\n')
-		else
-			return split(magit#system(a:cmd), '\n')
-		endif
+		return split(call('magit#system', a:000), '\n')
 	endif
 endfunction
 
