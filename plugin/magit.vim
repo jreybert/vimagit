@@ -588,6 +588,10 @@ endfunction
 " magit#show_magit: prepare and show magit buffer
 " it also set local mappings to magit buffer
 function! magit#show_magit(orientation)
+	if ( system("git --is-inside-git-dir") != 1 )
+		echoerr "Magit must be started from a git repository"
+		return
+	endif
 	vnew 
 	setlocal buftype=nofile
 	setlocal bufhidden=delete
