@@ -48,41 +48,95 @@ call s:set('g:magit_show_help',                 1)
 
 " {{{ Internal functions
 
+" s:magit_top_dir: top directory of git tree
+" it is evaluated only once
+" FIXME: it won't work when playing with multiple git directories wihtin one
+" vim session
+let s:magit_top_dir=''
+" magit#top_dir: return the absolute path of current git worktree
+" return top directory
+function! magit#top_dir()
+	if ( s:magit_top_dir == '' )
+		let s:magit_top_dir=magit#strip(system("git rev-parse --show-toplevel")) . "/"
+		if ( v:shell_error != 0 )
+			echoerr "Git error: " . top_dir
+		endif
+	endif
+	return s:magit_top_dir
+endfunction
+
+" s:magit_git_dir: git directory
+" it is evaluated only once
+" FIXME: it won't work when playing with multiple git directories wihtin one
+" vim session
+let s:magit_git_dir=''
+" magit#git_dir: return the absolute path of current git worktree
+" return git directory
+function! magit#git_dir()
+	if ( s:magit_git_dir == '' )
+		let s:magit_git_dir=magit#strip(system("git rev-parse --git-dir")) . "/"
+		if ( v:shell_error != 0 )
+			echoerr "Git error: " . git_dir
+		endif
+	endif
+	return s:magit_git_dir
+endfunction
+
+" s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
+" 'cd' otherwise
+let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
+
 " magit#system: wrapper for system, which only takes String as input in vim,
 " although it can take String or List input in neovim.
+" INFO: temporarly change pwd to git top directory, then restore to previous
+" pwd at the end of function
 " param[in] ...: command + optional args
 " return: command output as a string
 function! magit#system(...)
-	" I imagine that system getting input as List came the same time than
-	" systemlist
-	if exists('systemlist')
-		return call('system', a:000)
-	else
-		if ( a:0 == 2 )
-			if ( type(a:2) == type([]) )
-				" ouch, this one is tough: input is very very sensitive, join
-				" MUST BE done with "\n", not '\n' !!
-				let arg=join(a:2, "\n")
-			else
-				let arg=a:2
-			endif
-			return system(a:1, arg)
+	let dir = getcwd()
+	try
+		execute s:magit_cd_cmd . magit#top_dir()
+		" I imagine that system getting input as List came the same time than
+		" systemlist
+		if exists('systemlist')
+			return call('system', a:000)
 		else
-			return system(a:1)
+			if ( a:0 == 2 )
+				if ( type(a:2) == type([]) )
+					" ouch, this one is tough: input is very very sensitive, join
+					" MUST BE done with "\n", not '\n' !!
+					let arg=join(a:2, "\n")
+				else
+					let arg=a:2
+				endif
+				return system(a:1, arg)
+			else
+				return system(a:1)
+			endif
 		endif
-	endif
+	finally
+		execute s:magit_cd_cmd . dir
+	endtry
 endfunction
 
 " magit#systemlist: wrapper for systemlist, which only exists in neovim for
 " the moment.
+" INFO: temporarly change pwd to git top directory, then restore to previous
+" pwd at the end of function
 " param[in] ...: command + optional args to execute, args can be List or String
 " return: command output as a list
 function! magit#systemlist(...)
+	let dir = getcwd()
+	try
+		execute s:magit_cd_cmd . magit#top_dir()
 	if exists('systemlist')
 		return call('systemlist', a:000)
 	else
 		return split(call('magit#system', a:000), '\n')
 	endif
+	finally
+		execute s:magit_cd_cmd . dir
+	endtry
 endfunction
 
 " magit#underline: helper function to underline a string
@@ -119,16 +173,6 @@ function! magit#append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
-" magit#top_dir: return the absolute path of current git worktree
-" return top directory
-function! magit#top_dir()
-	let top_dir=magit#strip(magit#system("git rev-parse --show-toplevel")) . "/"
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . top_dir
-	endif
-	return top_dir
-endfunction
-
 function! magit#get_diff(mode)
 
 	let staged_flag=""
@@ -154,9 +198,9 @@ function! magit#get_diff(mode)
 		endif
 		if ( file_name =~ " -> " )
 			" git status add quotes " for file names with spaces only for rename mode
-			let file_name=magit#top_dir() . substitute(file_name, '.* -> \(.*\)$', '\1', '')
+			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
 		else
-			let file_name='"' . magit#top_dir() . file_name . '"'
+			let file_name='"' . file_name . '"'
 		endif
 		let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name
 		let diff_list=magit#systemlist(diff_cmd)
@@ -288,10 +332,7 @@ function! magit#get_commit_section()
 	silent put =magit#underline(g:magit_sections['commit_start'])
 	silent put =''
 
-	silent! let git_dir=magit#strip(magit#system("git rev-parse --git-dir"))
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_dir
-	endif
+	let git_dir=magit#git_dir()
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
 		silent! call magit#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
@@ -299,7 +340,7 @@ function! magit#get_commit_section()
 		silent! call magit#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
 	let comment_char=magit#comment_char()
-	let commit_msg=magit#join_list(filter(readfile(git_dir . '/COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+	let commit_msg=magit#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 	put =commit_msg
 	put =g:magit_sections['commit_end']
 endfunction
