@@ -1,10 +1,20 @@
 language: vim
 
-before_script: |
-    git clone https://github.com/jreybert/djooks
-    git clone https://github.com/junegunn/vader.vim
+sudo: false
 
-script: |
-    ./test/run.sh . vader.vim djooks
+env:
+  matrix:
+    - TEST_SUB_PATH=./
+    - TEST_SUB_PATH=books/templates/
+
+before_script:
+  - git clone https://github.com/jreybert/djooks
+  - git clone https://github.com/junegunn/vader.vim
+
+script:
+  - ./test/run.sh . vader.vim djooks
 
 install: true
+
+after_success:
+  - ./test/merge.sh

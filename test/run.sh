@@ -1,3 +1,4 @@
+set -xe
 
 if [[ $# -ne 3 ]]; then
 	echo "Usage $0 VIMAGIT_PATH VADER_PATH TEST_PATH"
@@ -7,9 +8,10 @@ fi
 export VIMAGIT_PATH=$(readlink -f $1)
 export VADER_PATH=$(readlink -f $2)
 export TEST_PATH=$(readlink -f $3)
+export TEST_SUB_PATH=$(readlink -f $TEST_PATH/$TEST_SUB_PATH)
 
-if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH ) ]]; then
-	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH'"
+if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH && -d $TEST_SUB_PATH) ]]; then
+	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH' '$TEST_SUB_PATH'"
 	exit 1
 fi
 
