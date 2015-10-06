@@ -11,4 +11,15 @@ Execute (Add file):
     let diff=Git_diff('staged', 'bootstrap')
     call Expect_diff(g:test_dir . 'addFile_bootstrap.expect', diff)
 
+Execute (Commit file):
+    call Cd_test_sub()
+    Magit
+    call magit#commit_command('CC')
+    put =['Add bootstrap file', '', 'Some description text', 'On multiple lines', '', 'With blanks']
+    call magit#commit_command('CC')
+    call Cd_test()
+    let commit_msg=Git_commit_msg('HEAD')
+    call Expect_diff(g:test_dir . 'addFile_bootstrap_commit.expect', commit_msg)
+    
+
 Include: cleanup.inc
