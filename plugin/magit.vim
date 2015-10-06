@@ -96,8 +96,8 @@ function! magit#system(...)
 	let dir = getcwd()
 	try
 		execute s:magit_cd_cmd . magit#top_dir()
-		" I imagine that system getting input as List came the same time than
-		" systemlist
+		" List as system() input is since v7.4.247, it is safe to check
+		" systemlist, which is sine v7.4.248
 		if exists('*systemlist')
 			return call('system', a:000)
 		else
@@ -129,11 +129,12 @@ function! magit#systemlist(...)
 	let dir = getcwd()
 	try
 		execute s:magit_cd_cmd . magit#top_dir()
-	if exists('*systemlist')
-		return call('systemlist', a:000)
-	else
-		return split(call('magit#system', a:000), '\n')
-	endif
+		" systemlist since v7.4.248
+		if exists('*systemlist')
+			return call('systemlist', a:000)
+		else
+			return split(call('magit#system', a:000), '\n')
+		endif
 	finally
 		execute s:magit_cd_cmd . dir
 	endtry
