@@ -4,4 +4,3 @@
 * fix new empty file staging
 * add tests
 * add tutorial
-* fix new/renamed file diff: it gives an absolute pathname, which is wrong fir diff
