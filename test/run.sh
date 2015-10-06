@@ -9,9 +9,6 @@ function prealpath() {
 python -c "import os,sys; print(os.path.realpath(os.path.expanduser(sys.argv[1])))" "${1}"
 }
 
-export GIT_COMMITTER_EMAIL='tester@vimagit.org'
-export GIT_COMMITTER_NAME='vimagit tester'
-
 export VIMAGIT_PATH=$(prealpath $1)
 export VADER_PATH=$(prealpath $2)
 export TEST_PATH=$(prealpath $3)
@@ -22,7 +19,11 @@ if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH && -d $TEST_SUB_PA
 	exit 1
 fi
 
+pushd $TEST_PATH
+git config --local user.email 'tester@vimagit.org'
+git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='6efcd49'
+popd
 
 vim -Nu <(cat << EOF
 filetype off
