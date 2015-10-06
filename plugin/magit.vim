@@ -275,6 +275,21 @@ function! s:mg_section_help(section)
 	endif
 endfunction
 
+" s:mg_get_info: this function writes in current buffer current git state
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+function! s:mg_get_info()
+	silent put =''
+	silent put =g:magit_sections['info']
+	silent put =<SID>mg_underline(g:magit_sections['info'])
+	silent put =''
+	let branch=<SID>mg_system("git rev-parse --abbrev-ref HEAD")
+	let commit=<SID>mg_system("git show -s --oneline")
+	silent put ='Current branch: ' . branch
+	silent put ='Last commit:    ' . commit
+	silent put =''
+endfunction
+
 " s:mg_get_staged: this function writes in current buffer all staged files
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
@@ -589,6 +604,7 @@ function! magit#update_buffer()
 	let l:winview = winsaveview()
 	silent! %d
 	
+	call <SID>mg_get_info()
 	call <SID>mg_section_help('global')
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()

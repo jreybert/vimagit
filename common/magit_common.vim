@@ -2,6 +2,7 @@
 " These are used to beautify the magit buffer and to help for some block
 " selection
 let g:magit_sections = {
+ \ 'info':           'Info',
  \ 'staged':         'Staged changes',
  \ 'unstaged':       'Unstaged changes',
  \ 'commit_start':   'Commit message',
