@@ -5,6 +5,10 @@ endif
 
 let g:test_dir = $VIMAGIT_PATH . '/test/'
 
+function! Is_crafting()
+	return exists("$VIMAGIT_CRAFT_EXPECT") ? $VIMAGIT_CRAFT_EXPECT : 0
+endfunction
+
 function! Move_relative(nb_lines)
 	call cursor(line('.') + a:nb_lines, 0)
 endfunction
@@ -22,11 +26,20 @@ function! Git_diff(state, file)
 endfunction
 
 function! Expect_diff(gold_file, test_diff)
-    let diff=system("diff " . a:gold_file . " - ", a:test_diff)
-	if ( v:shell_error != 0 )
-		echoerr "diff: " . diff
+	if ( Is_crafting() == 0 )
+		let diff_cmd="diff " . a:gold_file . " - "
+		let diff=system(diff_cmd, a:test_diff)
+		if ( v:shell_error != 0 )
+			echoerr "diff: " . diff
+			echoerr "diffcmd: " . diff_cmd
+		endif
+		return v:shell_error
+	else
+		let ret=writefile(split(a:test_diff, '\n'), a:gold_file, "w")
+		if ( ret != 0 )
+			echoerr 'Error while writing ' . a:gold_file
+		endif
 	endif
-	return v:shell_error
 endfunction
 
 function! Cd_vimagit()
