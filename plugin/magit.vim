@@ -376,9 +376,11 @@ function! s:mg_get_commit_section()
 	elseif ( s:magit_commit_mode == 'CA' )
 		silent! call <SID>mg_system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
-	let comment_char=<SID>mg_comment_char()
-	let commit_msg=<SID>mg_join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
-	put =commit_msg
+	if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
+		let comment_char=<SID>mg_comment_char()
+		let commit_msg=<SID>mg_join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+		put =commit_msg
+	endif
 	put =g:magit_sections['commit_end']
 endfunction
 
