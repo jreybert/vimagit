@@ -4,14 +4,18 @@ if exists('g:loaded_magit') || !executable('git') || &cp
   finish
 endif
 let g:loaded_magit = 1
+
 " Initialisation {{{
 
 " FIXME: find if there is a minimum vim version required
 " if v:version < 703
 " endif
 
+" source common file. variables in common file are shared with plugin and
+" syntax files
 execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
 
+" g:magit_unstaged_buffer_name: vim buffer name for vimagit
 let g:magit_unstaged_buffer_name = "magit-playground"
 
 " s:set: helper function to set user definable variable
@@ -174,6 +178,12 @@ function! magit#append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
+" magit#get_diff: this function write in current buffer all file names and
+" related diffs for a given mode
+" filename are prefixed in git status ('new: ' , 'modified: ', ...)
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+" param[in] mode: can be 'staged' or 'unstaged'
 function! magit#get_diff(mode)
 
 	let staged_flag=""
@@ -214,6 +224,7 @@ function! magit#get_diff(mode)
 	endfor
 endfunction
 
+" s:magit_inline_help: Dict containing inline help for each section
 let s:magit_inline_help = {
 			\ 'staged': [
 \'S      if cursor in diff header, unstage file',
@@ -244,11 +255,20 @@ let s:magit_inline_help = {
 \],
 \}
 
+" magit#get_inline_help_line_nb: this function returns the number of lines of
+" a given section, or 0 if help is disabled.
+" param[in] section: section identifier
+" return number of lines
 function! magit#get_inline_help_line_nb(section)
 	return ( g:magit_show_help == 1 ) ?
 		\ len(s:magit_inline_help[a:section]) : 0
 endfunction
 
+" magit#section_help: this function writes in current buffer the inline help
+" for a given section, it does nothing if inline help is disabled.
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+" param[in] section: section identifier
 function! magit#section_help(section)
 	if ( g:magit_show_help == 1 )
 		silent put =s:magit_inline_help[a:section]
@@ -582,6 +602,7 @@ function! magit#update_buffer()
 
 endfunction
 
+" magit#toggle_help: toggle inline help showing in magit buffer
 function! magit#toggle_help()
 	let g:magit_show_help = ( g:magit_show_help == 0 ) ? 1 : 0
 	call magit#update_buffer()
