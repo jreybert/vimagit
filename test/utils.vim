@@ -11,10 +11,11 @@ endfunction
 
 function! Git_diff(state, file, output)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
-    let diff=system("git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
-				\ staged_flag . a:file .
+	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
+				\ staged_flag . " -- " . a:file .
 				\ " | \\grep -v \"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\" > " .
 				\ a:output)
+	let diff=system(diff_cmd)
 	if ( v:shell_error != 0 )
 		echoerr "git diff: " . diff
 	endif
@@ -24,7 +25,19 @@ endfunction
 function! Expect_diff(gold_file, test_file)
     let diff=system("diff " . a:gold_file . " " . a:test_file)
 	if ( v:shell_error != 0 )
-		echoerr "git diff: " . diff
+		echoerr "diff: " . diff
 	endif
 	return v:shell_error
+endfunction
+
+function! Cd_vimagit()
+	cd $VIMAGIT_PATH
+endfunction
+
+function! Cd_test()
+	cd $TEST_PATH
+endfunction
+
+function! Cd_test_sub()
+	cd $TEST_SUB_PATH
 endfunction

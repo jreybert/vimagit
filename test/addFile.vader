@@ -2,10 +2,12 @@ Include: setup.inc
 
 # add test
 Execute (Add file):
+    call Cd_test_sub()
     Magit
     /untracked: bootstrap
     call Move_relative(+1)
     call magit#stage_file()
+    call Cd_test()
     call Git_diff('staged', 'bootstrap', '/tmp/addFile_bootstrap.test')
     call Expect_diff(g:test_dir . 'addFile_bootstrap.expect', '/tmp/addFile_bootstrap.test')
 
