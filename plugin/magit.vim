@@ -137,7 +137,7 @@ function! s:mg_systemlist(...)
 		if exists('*systemlist')
 			return call('systemlist', a:000)
 		else
-			return split(call('magit#system', a:000), '\n')
+			return split(call('<SID>mg_system', a:000), '\n')
 		endif
 	finally
 		execute s:magit_cd_cmd . dir
