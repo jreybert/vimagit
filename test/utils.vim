@@ -9,21 +9,20 @@ function! Move_relative(nb_lines)
 	call cursor(line('.') + a:nb_lines, 0)
 endfunction
 
-function! Git_diff(state, file, output)
+function! Git_diff(state, file)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
 				\ staged_flag . " -- " . a:file .
-				\ " | \\grep -v \"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\" > " .
-				\ a:output)
+				\ " | \\grep -v \"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\""
 	let diff=system(diff_cmd)
 	if ( v:shell_error != 0 )
 		echoerr "git diff: " . diff
 	endif
-	return v:shell_error
+	return diff
 endfunction
 
-function! Expect_diff(gold_file, test_file)
-    let diff=system("diff " . a:gold_file . " " . a:test_file)
+function! Expect_diff(gold_file, test_diff)
+    let diff=system("diff " . a:gold_file . " - ", a:test_diff)
 	if ( v:shell_error != 0 )
 		echoerr "diff: " . diff
 	endif
