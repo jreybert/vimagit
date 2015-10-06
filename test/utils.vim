@@ -4,6 +4,7 @@ if ( ! ( exists("$VIMAGIT_PATH") && exists("$VADER_PATH") && exists("$TEST_PATH"
 endif
 
 let g:test_dir = $VIMAGIT_PATH . '/test/'
+let g:index_regex = "\"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\""
 
 function! Is_crafting()
 	return exists("$VIMAGIT_CRAFT_EXPECT") ? $VIMAGIT_CRAFT_EXPECT : 0
@@ -13,14 +14,26 @@ function! Move_relative(nb_lines)
 	call cursor(line('.') + a:nb_lines, 0)
 endfunction
 
+function! Git_commit_msg(sha1)
+	let git_cmd="git show --src-prefix='' --dst-prefix='' --format='%s%B' " . a:sha1 .
+				\ " | \\grep -v " . g:index_regex
+	let commit_msg=system(git_cmd)
+	if ( v:shell_error != 0 )
+		echoerr "git show: " . commit_msg
+		echoerr "git cmd: " . git_cmd 
+	endif
+	return commit_msg
+endfunction
+
 function! Git_diff(state, file)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
 				\ staged_flag . " -- " . a:file .
-				\ " | \\grep -v \"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\""
+				\ " | \\grep -v " . g:index_regex
 	let diff=system(diff_cmd)
 	if ( v:shell_error != 0 )
 		echoerr "git diff: " . diff
+		echoerr "git cmd: " . diff_cmd
 	endif
 	return diff
 endfunction
