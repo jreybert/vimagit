@@ -98,7 +98,7 @@ function! magit#system(...)
 		execute s:magit_cd_cmd . magit#top_dir()
 		" I imagine that system getting input as List came the same time than
 		" systemlist
-		if exists('systemlist')
+		if exists('*systemlist')
 			return call('system', a:000)
 		else
 			if ( a:0 == 2 )
@@ -129,7 +129,7 @@ function! magit#systemlist(...)
 	let dir = getcwd()
 	try
 		execute s:magit_cd_cmd . magit#top_dir()
-	if exists('systemlist')
+	if exists('*systemlist')
 		return call('systemlist', a:000)
 	else
 		return split(call('magit#system', a:000), '\n')
