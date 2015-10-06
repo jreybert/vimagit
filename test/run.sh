@@ -5,10 +5,14 @@ if [[ $# -ne 3 ]]; then
 	exit 1
 fi
 
-export VIMAGIT_PATH=$(readlink -f $1)
-export VADER_PATH=$(readlink -f $2)
-export TEST_PATH=$(readlink -f $3)
-export TEST_SUB_PATH=$(readlink -f $TEST_PATH/$TEST_SUB_PATH)
+function prealpath() {
+python -c "import os,sys; print(os.path.realpath(os.path.expanduser(sys.argv[1])))" "${1}"
+}
+
+export VIMAGIT_PATH=$(prealpath $1)
+export VADER_PATH=$(prealpath $2)
+export TEST_PATH=$(prealpath $3)
+export TEST_SUB_PATH=$(prealpath $TEST_PATH/$TEST_SUB_PATH)
 
 if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH && -d $TEST_SUB_PATH) ]]; then
 	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH' '$TEST_SUB_PATH'"
