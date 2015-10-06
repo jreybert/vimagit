@@ -235,6 +235,7 @@ let s:magit_inline_help = {
 \'       commit message',
 \'R      refresh magit buffer',
 \'h      toggle help showing in magit buffer',
+\'',
 \'To disable this help by default, add "let g:magit_show_help=0" to .vimrc',
 \],
 			\ 'commit': [
