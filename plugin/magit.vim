@@ -765,7 +765,13 @@ function! magit#ignore_file()
 		echoerr "Not in a file region"
 		return
 	endif
-	let ignore_file=substitute(selection[0], g:magit_file_re, '\2', '')
+	let ignore_file=""
+	for line in selection
+		if ( match(line, "^+++ ") != -1 )
+			let ignore_file=<SID>mg_strip(substitute(line, '^+++ ./\(.*\)$', '\1', ''))
+			break
+		endif
+	endfor
 	if ( ignore_file == "" )
 		echoerr "Can not find file to ignore"
 		return
