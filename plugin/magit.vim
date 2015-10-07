@@ -171,7 +171,10 @@ endfunction
 " param[in] file: filename to append
 " param[in] lines: List of lines to append
 function! s:mg_append_file(file, lines)
-	let fcontents=readfile(a:file, 'b')
+	let fcontents=[]
+	if ( filereadable(a:file) )
+		let fcontents=readfile(a:file, 'b')
+	endif
 	if !empty(fcontents) && empty(fcontents[-1])
 		call remove(fcontents, -1)
 	endif
