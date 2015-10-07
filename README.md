@@ -2,7 +2,13 @@
 
 vimagit is an attempt to reproduce the magnificent emacs Magit plugin to vim. The main idea is to manage all git operations in one single buffer, as efficiently as possible.
 
-[![Build Status](https://travis-ci.org/jreybert/vimagit.svg)](https://travis-ci.org/jreybert/vimagit)
+<div style="text-align:right">
+
+**master** [![Build Status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit.svg?branch=master)
+
+**next** [![Build Status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)](https://travis-ci.org/jreybert/vimagit.svg?branch=next)
+
+</div>
 
 ## Outstanding features
 
