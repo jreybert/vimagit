@@ -419,12 +419,10 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 
 	let upper_limit=0
 	if ( a:upper_limit_pattern != "" )
-		let upper_limit=search(a:upper_limit_pattern, "bnW")
+		let upper_limit=search(a:upper_limit_pattern, "cbnW")
 	endif
 
-	" important if backward regex is at the beginning of the current line
-	call cursor(0, 100)
-	let start=search(a:start_pattern[0], "bW")
+	let start=search(a:start_pattern[0], "cbW")
 	if ( start == 0 )
 		call winrestview(l:winview)
 		return [1, ""]
@@ -494,9 +492,8 @@ endfunction
 "         @[1]: List of lines containing the patch for the whole file
 function! s:mg_select_file()
 	return <SID>mg_search_block(
-				\ [g:magit_diff_re, 0],
-				\ [ [g:magit_diff_re, -1],
-				\   [g:magit_file_re, -1],
+				\ [g:magit_file_re, 1],
+				\ [ [g:magit_file_re, -1],
 				\   [g:magit_stash_re, -1],
 				\   [g:magit_section_re, -2],
 				\   [g:magit_bin_re, 0],
@@ -514,7 +511,7 @@ endfunction
 "         @[1]: List of lines containing the diff header
 function! s:mg_select_file_header()
 	return <SID>mg_search_block(
-				\ [g:magit_diff_re, 0],
+				\ [g:magit_file_re, 1],
 				\ [ [g:magit_hunk_re, -1] ],
 				\ "")
 endfunction
@@ -529,13 +526,12 @@ function! s:mg_select_hunk()
 	return <SID>mg_search_block(
 				\ [g:magit_hunk_re, 0],
 				\ [ [g:magit_hunk_re, -1],
-				\   [g:magit_diff_re, -1],
 				\   [g:magit_file_re, -1],
 				\   [g:magit_stash_re, -1],
 				\   [g:magit_section_re, -2],
 				\   [g:magit_eof_re, 0 ]
 				\ ],
-				\ g:magit_diff_re)
+				\ g:magit_file_re)
 endfunction
 
 " s:mg_git_apply: helper function to stage a selection
@@ -769,13 +765,7 @@ function! magit#ignore_file()
 		echoerr "Not in a file region"
 		return
 	endif
-	let ignore_file=""
-	for line in selection
-		if ( match(line, "^+++ ") != -1 )
-			let ignore_file=<SID>mg_strip(substitute(line, '^+++ ./\(.*\)$', '\1', ''))
-			break
-		endif
-	endfor
+	let ignore_file=substitute(selection[0], g:magit_file_re, '\2', '')
 	if ( ignore_file == "" )
 		echoerr "Can not find file to ignore"
 		return
