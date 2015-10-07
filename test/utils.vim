@@ -14,15 +14,18 @@ function! Move_relative(nb_lines)
 	call cursor(line('.') + a:nb_lines, 0)
 endfunction
 
-function! Git_commit_msg(sha1)
-	let git_cmd="git show --src-prefix='' --dst-prefix='' --format='%s%B' " . a:sha1 .
-				\ " | \\grep -v " . g:index_regex
-	let commit_msg=system(git_cmd)
+function! Git_cmd(...)
+	let ret=call('system', a:000)
 	if ( v:shell_error != 0 )
-		echoerr "git show: " . commit_msg
-		echoerr "git cmd: " . git_cmd 
+		echoerr "Error:\ncommand:\n" . join(a:000, "\n") . "\nret:\n" . ret
 	endif
-	return commit_msg
+	return ret
+endfunction
+
+function! Git_commit_msg(sha1)
+	let commit_cmd="git show --src-prefix='' --dst-prefix='' --format='%s%B' " . a:sha1 .
+				\ " | \\grep -v " . g:index_regex
+	return Git_cmd(commit_cmd)
 endfunction
 
 function! Git_diff(state, file)
@@ -30,12 +33,7 @@ function! Git_diff(state, file)
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
 				\ staged_flag . " -- " . a:file .
 				\ " | \\grep -v " . g:index_regex
-	let diff=system(diff_cmd)
-	if ( v:shell_error != 0 )
-		echoerr "git diff: " . diff
-		echoerr "git cmd: " . diff_cmd
-	endif
-	return diff
+	return Git_cmd(diff_cmd)
 endfunction
 
 function! Expect_diff(gold_file, test_diff)
