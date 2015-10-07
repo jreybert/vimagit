@@ -25,19 +25,25 @@ git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='6efcd49'
 popd
 
-for i in 1 0; do
-export VIMAGIT_TEST_FROM_EOL=$i
+for filename in 'books/models.py' 'bootstrap'; do
 
-echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
+	export VIMAGIT_TEST_FILENAME=$filename
 
-vim -Nu <(cat << EOF
-filetype off
-set rtp-=~/.vim
-set rtp-=~/.vim/after
-set rtp+=$VIMAGIT_PATH
-set rtp+=$VADER_PATH
-filetype plugin indent on
-syntax enable
+	for i in 1 0; do
+		export VIMAGIT_TEST_FROM_EOL=$i
+
+		echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
+
+		vim -Nu <(cat << EOF
+		filetype off
+		set rtp-=~/.vim
+		set rtp-=~/.vim/after
+		set rtp+=$VIMAGIT_PATH
+		set rtp+=$VADER_PATH
+		filetype plugin indent on
+		syntax enable
 EOF) -c "Vader! $VIMAGIT_PATH/test/*"
+
+	done
 
 done

@@ -3,6 +3,10 @@ if ( ! ( exists("$VIMAGIT_PATH") && exists("$VADER_PATH") && exists("$TEST_PATH"
 	echoerr "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH'"
 endif
 
+if ( ! ( exists('$VIMAGIT_TEST_FILENAME') ) )
+	echoerr "env VIMAGIT_TEST_FILENAME is not set"
+endif
+
 let g:test_dir = $VIMAGIT_PATH . '/test/'
 let g:index_regex = "\"^index [[:xdigit:]]\\{7\\}\\.\\.[[:xdigit:]]\\{7\\}\""
 
@@ -29,8 +33,11 @@ function! Git_commit_msg(sha1)
 endfunction
 
 function! Git_status(file)
+	call Cd_test()
 	let status_cmd="git status --porcelain -- " . a:file
-	return Git_cmd(status_cmd)
+	let status=Git_cmd(status_cmd)
+	call Cd_test_sub()
+	return status
 endfunction
 
 function! Git_diff(state, file)
@@ -76,4 +83,18 @@ endfunction
 
 function! Cd_test_sub()
 	cd $TEST_SUB_PATH
+endfunction
+
+function! Search_file(mode)
+	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
+	let position = ( a:mode == 'staged' ) ? 0 : 1
+	call search("^.*: " . $VIMAGIT_TEST_FILENAME)
+endfunction
+
+function! Get_filename()
+	return $VIMAGIT_TEST_FILENAME
+endfunction
+
+function! Get_safe_filename()
+	return substitute($VIMAGIT_TEST_FILENAME, '[/.]', '_', 'g')
 endfunction
