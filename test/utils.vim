@@ -28,6 +28,11 @@ function! Git_commit_msg(sha1)
 	return Git_cmd(commit_cmd)
 endfunction
 
+function! Git_status(file)
+	let status_cmd="git status --porcelain -- " . a:file
+	return Git_cmd(status_cmd)
+endfunction
+
 function! Git_diff(state, file)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .

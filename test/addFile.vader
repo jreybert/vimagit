@@ -1,7 +1,24 @@
 Include: setup.inc
 
-# add test
-Execute (Add file):
+Execute (Stage untracked file with magit#stage_file at file header):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_file at file header):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_file):
     call Cd_test_sub()
     Magit
     /untracked: bootstrap
@@ -9,7 +26,106 @@ Execute (Add file):
     call magit#stage_file()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
-    call Expect_diff(g:test_dir . 'addFile_bootstrap.expect', diff)
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_file):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    call Move_relative(+1)
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_hunk at file header):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_hunk at file header):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_hunk on diff header):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    call Move_relative(+1)
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_hunk on diff header):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    call Move_relative(+1)
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_hunk on start hunk):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    /^@@ 
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_hunk on diff header):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    /^@@ 
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_hunk on end hunk):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    /^@@ 
+    call Move_relative(+3)
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
+
+Execute (Unstage file with magit#stage_hunk on diff header):
+    call Cd_test_sub()
+    Magit
+    /added: bootstrap
+    /^@@ 
+    call Move_relative(+3)
+    call magit#stage_hunk()
+    call Cd_test()
+    let diff=Git_status('bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_unstaged_status.expect', diff)
+
+Execute (Stage untracked file with magit#stage_file at file header):
+    call Cd_test_sub()
+    Magit
+    /untracked: bootstrap
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged', 'bootstrap')
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap.expect', diff)
 
 Execute (Commit file):
     call Cd_test_sub()
@@ -19,7 +135,7 @@ Execute (Commit file):
     call magit#commit_command('CC')
     call Cd_test()
     let commit_msg=Git_commit_msg('HEAD')
-    call Expect_diff(g:test_dir . 'addFile_bootstrap_commit.expect', commit_msg)
+    call Expect_diff(g:test_dir . 'addFile/addFile_bootstrap_commit.expect', commit_msg)
     
 
 Include: cleanup.inc
