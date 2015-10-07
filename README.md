@@ -4,11 +4,12 @@ vimagit is an attempt to reproduce the magnificent emacs Magit plugin to vim. Th
 
 <div style="text-align:right">
 
-**master** [![Build Status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit.svg?branch=master)
+<b>master</b> <a href="https://travis-ci.org/jreybert/vimagit/branches"><img src="https://travis-ci.org/jreybert/vimagit.svg?branch=master"></a>
 
-**next** [![Build Status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)](https://travis-ci.org/jreybert/vimagit.svg?branch=next)
+<b>next</b> <a href="https://travis-ci.org/jreybert/vimagit/branches"><img src="https://travis-ci.org/jreybert/vimagit.svg?branch=next"></a>
 
 </div>
+
 
 ## Outstanding features
 
