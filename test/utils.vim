@@ -88,7 +88,7 @@ endfunction
 function! Search_file(mode)
 	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
 	let position = ( a:mode == 'staged' ) ? 0 : 1
-	call search("^.*: " . $VIMAGIT_TEST_FILENAME)
+	return search("^.*: " . $VIMAGIT_TEST_FILENAME)
 endfunction
 
 function! Get_filename()

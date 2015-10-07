@@ -1,0 +1,9 @@
+diff --git .gitignore .gitignore
+--- .gitignore
++++ .gitignore
+@@ -1,3 +1,4 @@
+ *.py[co]
+ /db.sqlite3
+ /books.cfg
++bootstrap
+\ No newline at end of file
