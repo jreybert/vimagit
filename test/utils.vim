@@ -58,6 +58,14 @@ function! Expect_diff(gold_file, test_diff)
 	endif
 endfunction
 
+function! Cursor_position()
+	if ( exists("$VIMAGIT_TEST_FROM_EOL") ? $VIMAGIT_TEST_FROM_EOL : 0 )
+		call cursor(0, virtcol('$'))
+	else
+		call cursor(0, 1)
+	endif
+endfunction
+
 function! Cd_vimagit()
 	cd $VIMAGIT_PATH
 endfunction

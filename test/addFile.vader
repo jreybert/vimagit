@@ -4,6 +4,7 @@ Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     /untracked: bootstrap
+    call Cursor_position()
     call magit#stage_file()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -13,6 +14,7 @@ Execute (Unstage file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     /added: bootstrap
+    call Cursor_position()
     call magit#stage_file()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -23,6 +25,7 @@ Execute (Stage untracked file with magit#stage_file):
     Magit
     /untracked: bootstrap
     call Move_relative(+1)
+    call Cursor_position()
     call magit#stage_file()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -33,6 +36,7 @@ Execute (Unstage file with magit#stage_file):
     Magit
     /added: bootstrap
     call Move_relative(+1)
+    call Cursor_position()
     call magit#stage_file()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -42,6 +46,7 @@ Execute (Stage untracked file with magit#stage_hunk at file header):
     call Cd_test_sub()
     Magit
     /untracked: bootstrap
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -51,6 +56,7 @@ Execute (Unstage file with magit#stage_hunk at file header):
     call Cd_test_sub()
     Magit
     /added: bootstrap
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -61,6 +67,7 @@ Execute (Stage untracked file with magit#stage_hunk on diff header):
     Magit
     /untracked: bootstrap
     call Move_relative(+1)
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -71,6 +78,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     Magit
     /added: bootstrap
     call Move_relative(+1)
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -81,6 +89,7 @@ Execute (Stage untracked file with magit#stage_hunk on start hunk):
     Magit
     /untracked: bootstrap
     /^@@ 
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -91,6 +100,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     Magit
     /added: bootstrap
     /^@@ 
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -102,6 +112,7 @@ Execute (Stage untracked file with magit#stage_hunk on end hunk):
     /untracked: bootstrap
     /^@@ 
     call Move_relative(+3)
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
@@ -113,6 +124,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     /added: bootstrap
     /^@@ 
     call Move_relative(+3)
+    call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status('bootstrap')
@@ -122,6 +134,7 @@ Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     /untracked: bootstrap
+    call Cursor_position()
     call magit#stage_file()
     call Cd_test()
     let diff=Git_diff('staged', 'bootstrap')
