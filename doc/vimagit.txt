@@ -69,6 +69,11 @@ There are 3 sections:
     files/hunks.
   * Stash list: this section contains all stahes.
 
+Inline modifications:
+  * It is possible to modify the content to be staged or unstaged in vimagit buffer, with some limitations:
+    * only lines starting with a + sign can be modified
+    * no line can be deleted
+
 These mappings work in normal mode.                           *vimagit-mappings*
 
                                       *vimagit-S*             *magit#stage_hunk()*

@@ -545,7 +545,7 @@ function! s:mg_git_apply(selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply --cached -", selection)
+	silent let git_result=<SID>mg_system("git apply --no-index --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to aply this"
@@ -568,7 +568,7 @@ function! s:mg_git_unapply(selection, mode)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply " . cached_flag . " --reverse - ", selection)
+	silent let git_result=<SID>mg_system("git apply --no-index " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"

@@ -26,13 +26,14 @@
 * [x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.
 * [x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.
 * [x] Start to write the commit message in one key press, commit also in one key press.
+* [x] Modify in line the content just before staging it.
 * [x] Visualize stashes. Apply, pop, drop are on going.
 * [x] Add file to .gitignore file.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an issue on github :heart: !
 
 More to come:
 * Accelerate magit buffer refreshing.
-* Line and partial line staging.
+* Partial hunk staging.
 * Vizualize and checkout branches.
 * Go through history, cherry-pick changes.
 
@@ -58,6 +59,11 @@ There are 3 sections:
 * Unstaged changes: this section contains all unstaged and untracked
   files/hunks.
 * Stash list: this section contains all stahes.
+
+Inline modifications:
+* It is possible to modify the content to be staged or unstaged in vimagit buffer, with some limitations:
+  * only lines starting with a + sign can be modified
+  * no line can be deleted
 
 ### Mapping
 
