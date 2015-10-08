@@ -1,7 +1,5 @@
 language: vim
 
-sudo: false
-
 branches:
   only:
     - master
@@ -12,22 +10,71 @@ os:
   - osx
 
 env:
-  matrix:
-    - TEST_SUB_PATH=./
-    - TEST_SUB_PATH=books/templates/
+  - VIM_VERSION=normal TEST_SUB_PATH=./
+  - VIM_VERSION=normal TEST_SUB_PATH=books/templates/
+  - VIM_VERSION=last   TEST_SUB_PATH=./
+  - VIM_VERSION=last   TEST_SUB_PATH=books/templates/
+  - VIM_VERSION=neovim TEST_SUB_PATH=./
+  - VIM_VERSION=neovim TEST_SUB_PATH=books/templates/
+  - VIM_VERSION=macvim TEST_SUB_PATH=./
+  - VIM_VERSION=macvim TEST_SUB_PATH=books/templates/
 
 matrix:
-  allow_failures:
+  exclude:
     - os: osx
+      env: VIM_VERSION=last   TEST_SUB_PATH=./
+    - os: osx
+      env: VIM_VERSION=last   TEST_SUB_PATH=books/templates/
+# neovim build fails with homebrew
+# Error: undefined method `desc' for Neovim:Class
+    - os: osx
+      env: VIM_VERSION=neovim TEST_SUB_PATH=./
+    - os: osx
+      env: VIM_VERSION=neovim TEST_SUB_PATH=books/templates/
+    - os: linux
+      env: VIM_VERSION=macvim TEST_SUB_PATH=./
+    - os: linux
+      env: VIM_VERSION=macvim TEST_SUB_PATH=books/templates/
+
+install:
+  - if [ "$TRAVIS_OS_NAME" = 'osx' ]; then
+      if [ "$VIM_VERSION" = 'neovim' ]; then
+        brew tap neovim/neovim &&
+        brew tap --repair &&
+        brew install --HEAD neovim;
+      elif [ "$VIM_VERSION" = 'macvim' ]; then
+        brew install macvim;
+      elif [ "$VIM_VERSION" = 'normal' ]; then
+        echo "use normal vim";
+      else
+        echo "VIM_VERSION is not set";
+        exit 1;
+      fi
+    elif [ "$TRAVIS_OS_NAME" = 'linux' ]; then
+      if [ "$VIM_VERSION" = 'last' ]; then
+        sudo add-apt-repository -y ppa:fcwu-tw/ppa &&
+        sudo apt-get -qq update &&
+        sudo apt-get -qq -f install &&
+        sudo apt-get -qq install vim;
+      elif [ "$VIM_VERSION" = 'neovim' ]; then
+        sudo add-apt-repository -y ppa:neovim-ppa/unstable &&
+        sudo apt-get -qq update &&
+        sudo apt-get -qq -f install &&
+        sudo apt-get -qq install neovim;
+      elif [ "$VIM_VERSION" = 'normal' ]; then
+        echo "use normal vim";
+      else
+        echo "VIM_VERSION is not set";
+        exit 1;
+      fi
+    fi
 
 before_script:
   - git clone https://github.com/jreybert/djooks
   - git clone https://github.com/junegunn/vader.vim
 
 script:
-  - ./test/run.sh . vader.vim djooks
-
-install: true
+  - ./test/run.sh . vader.vim djooks $VIM_VERSION
 
 after_success:
   - ./test/merge.sh

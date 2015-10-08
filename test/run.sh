@@ -1,7 +1,7 @@
 set -xe
 
-if [[ $# -ne 3 ]]; then
-	echo "Usage $0 VIMAGIT_PATH VADER_PATH TEST_PATH"
+if [[ $# -ne 4 ]]; then
+	echo "Usage $0 VIMAGIT_PATH VADER_PATH TEST_PATH VIM_VERSION"
 	exit 1
 fi
 
@@ -13,6 +13,7 @@ export VIMAGIT_PATH=$(prealpath $1)
 export VADER_PATH=$(prealpath $2)
 export TEST_PATH=$(prealpath $3)
 export TEST_SUB_PATH=$(prealpath $TEST_PATH/$TEST_SUB_PATH)
+export VIM_VERSION=$4
 
 if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH && -d $TEST_SUB_PATH) ]]; then
 	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH' '$TEST_SUB_PATH'"
@@ -24,6 +25,17 @@ git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='6efcd49'
 popd
+
+if [ "$VIM_VERSION" = 'neovim' ]; then
+	VIM=nvim
+elif [ "$VIM_VERSION" = 'macvim' ]; then
+	VIM=mvim
+else
+	VIM=vim
+fi
+
+echo 'Vim version'
+$VIM --version
 
 for line in $(cat "$VIMAGIT_PATH/test/test.run"); do
 
@@ -40,7 +52,7 @@ for line in $(cat "$VIMAGIT_PATH/test/test.run"); do
 
 			echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
 
-			vim -Nu <(cat << EOF
+			$VIM -Nu <(cat << EOF
 			filetype off
 			set rtp-=~/.vim
 			set rtp-=~/.vim/after
