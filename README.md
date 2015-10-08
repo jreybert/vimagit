@@ -43,9 +43,12 @@ More to come:
 
 ## Usage
 
-IMPORTANT: mappings can have different meanings regarding the cursor position.
+**:Magit**
+The main magical command, showing vimagit buffer.
 
 ### Sections:
+
+IMPORTANT: mappings can have different meanings regarding the cursor position.
 
 There are 3 sections:
 * Commit message: this section appears in commit mode (see below). It
@@ -60,38 +63,43 @@ There are 3 sections:
 
 These mappings work in normal mode. They can be redefined.
 
-        S             if cursor is in a hunk, stage/unstage hunk at
-                      cursor position
-                      if cursor is in diff header, stage/unstage whole file
-                      at cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      stage the hunk/file.
-                      On the other side, when cursor is in "Staged changes"
-                      section, it will unstage hunk/file.
-        F             stage/unstage the whole file at cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      stage the file.
-                      On the other side, when cursor is in "Staged changes"
-                      section, it will unstage file.
-        DDD           if cursor is in a hunk, discard hunk at cursor position
-                      if cursor is in diff header, discard whole file at
-                      cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      discard the hunk/file.
-        R             refresh vimagit buffer
-        C,CC,:w<cr>   if not in commit section, set commit mode to "New
-                      commit" and show "Commit message" section with brand new
-                      commit message
-                      if in commit section, commit the all staged changes in
-                      commit mode previously set
-        CA            if not in commit section, set commit mode to "Amend
-                      commit" and show "Commit message" section with previous
-                      commit message
-                      if in commit section, commit the staged changes in
-                      commit mode previously set
-        CF            amend the staged changes into the previous commit,
-                      without modifying previous commit message
-        I             add the file under the cursor in .gitgnore
+**S**
+ * If cursor is in a hunk, stage/unstage hunk at cursor position.
+ * If cursor is in diff header, stage/unstage whole file at cursor position.
+ * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
+ * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
+
+**F**
+ * Stage/unstage the whole file at cursor position.
+ * When cursor is in "Unstaged changes" section, it will stage the file.
+ * On the other side, when cursor is in "Staged changes" section, it will unstage file.
+
+**DDD**
+ * If cursor is in a hunk, discard hunk at cursor position.
+ * If cursor is in diff header, discard whole file at cursor position.
+ * Only works in "Unstaged changes" section.
+
+**C**
+**CC**
+**:w<cr>**
+ * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
+ * If in commit section, commit the all staged changes in commit mode previously set.
+
+**CA**
+ * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
+ * If in commit section, commit the staged changes in commit mode previously set.
+
+**CF**
+ * Amend the staged changes into the previous commit, without modifying previous commit message.
+
+**I**
+ * Add the file under the cursor in .gitgnore
+
+**R**
+ * Refresh vimagit buffer
+
+**h**
+ * Toggle help showing in magit buffer
                 
 ## Installation
 

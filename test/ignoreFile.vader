@@ -1,0 +1,20 @@
+Include: setup.inc
+
+Execute (Ignore untracked file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call Cursor_position()
+    call magit#ignore_file()
+    call Cd_test()
+    let diff=Git_diff('unstaged', '.gitignore')
+    call Expect_diff(g:test_script_dir . 'ignoreFile/ignoreFile_' . Get_safe_filename() . '_ignore_diff.expect', diff)
+    call magit#update_buffer()
+    Assert (Search_file('unstaged') == 0), $VIMAGIT_TEST_FILENAME . 'should be ignored'
+    call search('^modified: .gitignore$')
+    call magit#discard_hunk()
+    call magit#update_buffer()
+    Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
+
+
+Include: cleanup.inc

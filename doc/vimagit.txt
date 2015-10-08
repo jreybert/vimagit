@@ -11,19 +11,18 @@ Plugin Homepage:   <https://github.com/jreybert/vimagit>
                                                              ----- ~
 
 ===============================================================================
-CONTENTS                                                      *vimagitContents*
+CONTENTS                                                      *vimagit-contents*
 
-  1.  Introduction ................. |vimagitIntroduction|
-  2.  Installation ................. |vimagitInstallation|
-  3.  Usage ........................ |vimagitUsage|
-  4.  Commands ..................... |vimagitCommands|
-  5.  Customization ................ |vimagitCustomization|
-  6.  FAQ .......................... |vimagitFAQ|
+  1.  Introduction ................. |vimagit-introduction|
+  2.  Installation ................. |vimagit-installation|
+  3.  Usage ........................ |vimagit-usage|
+  4.  Commands ..................... |vimagit-commands|
+  5.  Customization ................ |vimagit-customization|
+  6.  FAQ .......................... |vimagit-FAQ|
 
 
 ===============================================================================
-1. INTRODUCTION                                           *vimagitIntroduction*
-                                                                      *vimagit*
+1. INTRODUCTION                                           *vimagit-introduction*
 
 vimagit is a plugin which try to mimic the fantastic magit emacs plugin. If you
 already know the original plugin, give it a try. If you never have heard about
@@ -31,7 +30,7 @@ magit (or maybe emacs), this is IMO the most efficient way to stage hunks and
 craft nice commits.
 
 ===============================================================================
-2. INSTALLATION                                           *vimagitInstallation*
+2. INSTALLATION                                           *vimagit-installation*
 
 The plugin hierarchy tree respects the vim plugin standard. It is compatible
 with pathogen (and most probably vundle).
@@ -43,18 +42,23 @@ To install:
 <
 
 ===============================================================================
-3. USAGE                                                         *vimagitUsage*
+3. USAGE                                                         *vimagit-usage*
 
 In a git'ed source directory, once you have some unstaged work, simply type
 with :Magit , and here is the magic. A new window appears, with all the diffs
 and new files in your directory.
 
 ===============================================================================
-4. COMMANDS                                                   *vimagitCommands*
+4. COMMANDS                                                   *vimagit-commands*
+
+
+                                      *:Magit*             *magit#show_magit('v')*
+  :Magit    the main magical command, showing vimagit buffer
+
+Sections:                                                     *vimagit-sections*
+---------
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
-
-Sections:
 
 There are 3 sections:
   * Commit message: this section appears in commit mode (see below). It
@@ -65,45 +69,60 @@ There are 3 sections:
     files/hunks.
   * Stash list: this section contains all stahes.
 
-These mappings work in normal mode.
+These mappings work in normal mode.                           *vimagit-mappings*
 
-        S             if cursor is in a hunk, stage/unstage hunk at
-                      cursor position
-                      if cursor is in diff header, stage/unstage whole file
-                      at cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      stage the hunk/file.
-                      On the other side, when cursor is in "Staged changes"
-                      section, it will unstage hunk/file.
-        F             stage/unstage the whole file at cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      stage the file.
-                      On the other side, when cursor is in "Staged changes"
-                      section, it will unstage file.
-        DDD           if cursor is in a hunk, discard hunk at cursor position
-                      if cursor is in diff header, discard whole file at
-                      cursor position
-                      When cursor is in "Unstaged changes" section, it will
-                      discard the hunk/file.
-        R             refresh vimagit buffer
-        C,CC,:w<cr>   if not in commit section, set commit mode to "New
-                      commit" and show "Commit message" section with brand new
-                      commit message
-                      if in commit section, commit the all staged changes in
-                      commit mode previously set
-        CA            if not in commit section, set commit mode to "Amend
-                      commit" and show "Commit message" section with previous
-                      commit message
-                      if in commit section, commit the staged changes in
-                      commit mode previously set
-        CF            amend the staged changes into the previous commit,
-                      without modifying previous commit message
-        I             add the file under the cursor in .gitgnore
+                                      *vimagit-S*             *magit#stage_hunk()*
+  S         If cursor is in a hunk, stage/unstage hunk at cursor position.
+            If cursor is in diff header, stage/unstage whole file at cursor
+            position.
+            When cursor is in "Unstaged changes" section, it will stage the
+            hunk/file.
+            On the other side, when cursor is in "Staged changes" section, it
+            will unstage hunk/file.
+
+                                      *vimagit-F*             *magit#stage_file()*
+  F         Stage/unstage the whole file at cursor position.
+            When cursor is in "Unstaged changes" section, it will stage the
+            file.
+            On the other side, when cursor is in "Staged changes" section, it
+            will unstage file.
+
+
+                                    *vimagit-DDD*           *magit#discard_hunk()*
+  DDD       If cursor is in a hunk, discard hunk at cursor position.
+            If cursor is in diff header, discard whole file at cursor
+            position.
+            Only works in "Unstaged changes" section.
+
+            *vimagit-C* *vimagit-CC* *vimagit-:w<cr>*     *magit#commit_command('CC')*
+  C,CC,     If not in commit section, set commit mode to "New commit" and show 
+  :w<cr>    "Commit message" section with brand new commit message.
+            If in commit section, commit the all staged changes in commit mode
+            previously set.
+
+                                     *vimagit-CA*     *magit#commit_command('CA')*
+  CA        If not in commit section, set commit mode to "Amend commit" and
+            show "Commit message" section with previous commit message.
+            If in commit section, commit the staged changes in commit mode
+            previously set.
+
+                                     *vimagit-CF*     *magit#commit_command('CF')*
+  CF        Amend the staged changes into the previous commit, without
+            modifying previous commit message
+
+                                      *vimagit-I*            *magit#ignore_file()*
+  I         Add the file under the cursor in .gitgnore
+
+                                      *vimagit-R*          *magit#update_buffer()*
+  R         Refresh vimagit buffer.
+
+                                      *vimagit-h*            *magit#toggle_help()*
+  h         Toggle help showing in magit buffer
 
 
 ===============================================================================
-5. CUSTOMISATION                                         *vimagitCustomization*
+5. CUSTOMISATION                                         *vimagit-customization*
 
 ===============================================================================
-6. FAQ                                                             *vimagitFAQ*
+6. FAQ                                                             *vimagit-FAQ*
 
