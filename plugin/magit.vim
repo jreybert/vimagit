@@ -542,20 +542,15 @@ endfunction
 " return: no
 function! s:mg_git_apply(selection)
 	let selection = a:selection
-	if ( selection[-1] !~ '^\s*$' )
+	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	" when passing List to system as input, there are some rare and
-	" difficultly reproductable cases failing because of whitespaces
-	let tmp=tempname()
-	call writefile(selection, tmp)
-	silent let git_result=<SID>mg_system("git apply --cached - < " . tmp)
+	silent let git_result=<SID>mg_system("git apply --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to aply this"
 		echoerr string(a:selection)
 	endif
-	call delete(tmp)
 endfunction
 
 " s:mg_git_unapply: helper function to unstage a selection
@@ -570,20 +565,15 @@ function! s:mg_git_unapply(selection, mode)
 		let cached_flag=' --cached '
 	endif
 	let selection = a:selection
-	if ( selection[-1] !~ '^\s*$' )
+	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	" when passing List to system as input, there are some rare and
-	" difficultly reproductable cases failing because of whitespaces
-	let tmp=tempname()
-	call writefile(selection, tmp)
-	silent let git_result=<SID>mg_system("git apply " . cached_flag . " --reverse - < " . tmp)
+	silent let git_result=<SID>mg_system("git apply " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
 		echoerr string(a:selection)
 	endif
-	call delete(tmp)
 endfunction
 
 " s:mg_get_section: helper function to get the current section, according to
