@@ -25,25 +25,32 @@ git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='6efcd49'
 popd
 
-for filename in 'books/models.py' 'bootstrap'; do
+for line in $(cat "$VIMAGIT_PATH/test/test.run"); do
 
-	export VIMAGIT_TEST_FILENAME=$filename
+	IFS=':' read -a arr <<< "$line"
+	script_filename=${arr[0]}
+	IFS=',' read -a test_files <<< "${arr[1]}"
 
-	for i in 1 0; do
-		export VIMAGIT_TEST_FROM_EOL=$i
+	for filename in ${test_files[@]}; do
+		echo "Test $script_filename with $filename"
+		export VIMAGIT_TEST_FILENAME=$filename
 
-		echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
+		for i in 1 0; do
+			export VIMAGIT_TEST_FROM_EOL=$i
 
-		vim -Nu <(cat << EOF
-		filetype off
-		set rtp-=~/.vim
-		set rtp-=~/.vim/after
-		set rtp+=$VIMAGIT_PATH
-		set rtp+=$VADER_PATH
-		filetype plugin indent on
-		syntax enable
-EOF) -c "Vader! $VIMAGIT_PATH/test/*"
+			echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
 
+			vim -Nu <(cat << EOF
+			filetype off
+			set rtp-=~/.vim
+			set rtp-=~/.vim/after
+			set rtp+=$VIMAGIT_PATH
+			set rtp+=$VADER_PATH
+			filetype plugin indent on
+			syntax enable
+EOF) -c "Vader! $VIMAGIT_PATH/test/$script_filename"
+
+		done
 	done
 
 done
