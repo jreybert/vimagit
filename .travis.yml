@@ -10,31 +10,21 @@ os:
   - osx
 
 env:
-  - VIM_VERSION=normal TEST_SUB_PATH=./
-  - VIM_VERSION=normal TEST_SUB_PATH=books/templates/
-  - VIM_VERSION=last   TEST_SUB_PATH=./
-  - VIM_VERSION=last   TEST_SUB_PATH=books/templates/
-  - VIM_VERSION=neovim TEST_SUB_PATH=./
-  - VIM_VERSION=neovim TEST_SUB_PATH=books/templates/
-  - VIM_VERSION=macvim TEST_SUB_PATH=./
-  - VIM_VERSION=macvim TEST_SUB_PATH=books/templates/
+  - VIM_VERSION=normal
+  - VIM_VERSION=last
+  - VIM_VERSION=neovim
+  - VIM_VERSION=macvim
 
 matrix:
   exclude:
     - os: osx
-      env: VIM_VERSION=last   TEST_SUB_PATH=./
-    - os: osx
-      env: VIM_VERSION=last   TEST_SUB_PATH=books/templates/
+      env: VIM_VERSION=last
 # neovim build fails with homebrew
 # Error: undefined method `desc' for Neovim:Class
     - os: osx
-      env: VIM_VERSION=neovim TEST_SUB_PATH=./
-    - os: osx
-      env: VIM_VERSION=neovim TEST_SUB_PATH=books/templates/
+      env: VIM_VERSION=neovim
     - os: linux
-      env: VIM_VERSION=macvim TEST_SUB_PATH=./
-    - os: linux
-      env: VIM_VERSION=macvim TEST_SUB_PATH=books/templates/
+      env: VIM_VERSION=macvim
 
 install:
   - if [ "$TRAVIS_OS_NAME" = 'osx' ]; then

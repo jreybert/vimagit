@@ -1,2 +1,0 @@
-addFile.vader:bootstrap,books/models.py
-ignoreFile.vader:bootstrap

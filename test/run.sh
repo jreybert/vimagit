@@ -12,11 +12,10 @@ python -c "import os,sys; print(os.path.realpath(os.path.expanduser(sys.argv[1])
 export VIMAGIT_PATH=$(prealpath $1)
 export VADER_PATH=$(prealpath $2)
 export TEST_PATH=$(prealpath $3)
-export TEST_SUB_PATH=$(prealpath $TEST_PATH/$TEST_SUB_PATH)
 export VIM_VERSION=$4
 
-if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH && -d $TEST_SUB_PATH) ]]; then
-	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH' '$TEST_SUB_PATH'"
+if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH ) ]]; then
+	echo "can't access to one of them '$VIMAGIT_PATH' '$VADER_PATH' '$TEST_PATH'"
 	exit 1
 fi
 
@@ -37,32 +36,31 @@ fi
 echo 'Vim version'
 $VIM --version
 
-for line in $(cat "$VIMAGIT_PATH/test/test.run"); do
+source $VIMAGIT_PATH/test/test.config
 
-	IFS=':' read -a arr <<< "$line"
-	script_filename=${arr[0]}
-	IFS=',' read -a test_files <<< "${arr[1]}"
+for script in ${!test_scripts[@]}; do
 
-	for filename in ${test_files[@]}; do
-		echo "Test $script_filename with $filename"
-		export VIMAGIT_TEST_FILENAME=$filename
+	for filename in ${test_scripts[$script]}; do
+		for test_path in ${test_paths[@]}; do
+			export TEST_SUB_PATH=$(prealpath $TEST_PATH/$test_path)
+			export VIMAGIT_TEST_FILENAME=$filename
 
-		for i in 1 0; do
-			export VIMAGIT_TEST_FROM_EOL=$i
+			for i in 1 0; do
+				export VIMAGIT_TEST_FROM_EOL=$i
 
-			echo "Test commands from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
+				echo "Test $script with $filename from path $TEST_SUB_PATH and from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
 
-			$VIM -Nu <(cat << EOF
-			filetype off
-			set rtp-=~/.vim
-			set rtp-=~/.vim/after
-			set rtp+=$VIMAGIT_PATH
-			set rtp+=$VADER_PATH
-			filetype plugin indent on
-			syntax enable
-EOF) -c "Vader! $VIMAGIT_PATH/test/$script_filename"
+				$VIM -Nu <(cat << EOF
+				filetype off
+				set rtp-=~/.vim
+				set rtp-=~/.vim/after
+				set rtp+=$VIMAGIT_PATH
+				set rtp+=$VADER_PATH
+				filetype plugin indent on
+				syntax enable
+EOF) -c "Vader! $VIMAGIT_PATH/test/$script"
 
+			done
 		done
 	done
-
 done
