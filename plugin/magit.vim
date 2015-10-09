@@ -167,6 +167,24 @@ function! s:mg_join_list(list)
 	return join(a:list, "\n") . "\n"
 endfunction
 
+" s:mg_fatten: flat a nested list. it return a one dimensional list with
+" primary elements
+" https://gist.github.com/dahu/3322468
+" param[in] list: a List, can be nested or not
+" return: one dimensional list
+function! s:mg_flatten(list)
+  let val = []
+  for elem in a:list
+    if type(elem) == type([])
+      call extend(val, <SID>mg_flatten(elem))
+    else
+      call extend(val, [elem])
+    endif
+    unlet elem
+  endfor
+  return val
+endfunction
+
 " s:mg_append_file: helper function to append to a file
 " Version working with file *possibly* containing trailing newline
 " param[in] file: filename to append
@@ -747,18 +765,36 @@ function! magit#show_magit(orientation)
 	execute "normal! gg"
 endfunction
 
+function! s:mg_select_closed_file()
+	if ( getline(".") =~ g:magit_file_re )
+		let list = matchlist(getline("."), g:magit_file_re)
+		let filename = list[2]
+		let section=<SID>mg_get_section()
+		if ( has_key(s:mg_diff_dict[section], filename) &&
+		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) )
+			let selection = <SID>mg_flatten(s:mg_diff_dict[section][filename]['diff'])
+			return selection
+		endif
+	endif
+	throw "out_of_block"
+endfunction
+
 " magit#stage_hunk: this function stage a single hunk, from the current
 " cursor position
 " INFO: in unstaged section, it stages the hunk, and in staged section, it
 " unstages the hunk
 " return: no
 function! magit#stage_hunk() abort
-	let header = <SID>mg_select_file_header()
 	try
-		let hunk = <SID>mg_select_hunk()
-		let selection = header + hunk
+		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let selection = <SID>mg_select_file()
+		let header = <SID>mg_select_file_header()
+		try
+			let hunk = <SID>mg_select_hunk()
+			let selection = header + hunk
+		catch 'out_of_block'
+			let selection = <SID>mg_select_file()
+		endtry
 	endtry
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
@@ -779,7 +815,11 @@ endfunction
 " unstages the file
 " return: no
 function! magit#stage_file() abort
-	let selection = <SID>mg_select_file()
+	try
+		let selection = <SID>mg_select_closed_file()
+	catch 'out_of_block'
+		let selection = <SID>mg_select_file()
+	endtry
 
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
@@ -799,12 +839,16 @@ endfunction
 " INFO: only works in unstaged section
 " return: no
 function! magit#discard_hunk() abort
-	let header = <SID>mg_select_file_header()
 	try
-		let hunk = <SID>mg_select_hunk()
-		let selection = header + hunk
+		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let selection = <SID>mg_select_file()
+		let header = <SID>mg_select_file_header()
+		try
+			let hunk = <SID>mg_select_hunk()
+			let selection = header + hunk
+		catch 'out_of_block'
+			let selection = <SID>mg_select_file()
+		endtry
 	endtry
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
@@ -819,7 +863,11 @@ endfunction
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
-	let selection = <SID>mg_select_file()
+	try
+		let selection = <SID>mg_select_closed_file()
+	catch 'out_of_block'
+		let selection = <SID>mg_select_file()
+	endtry
 	let ignore_file=""
 	for line in selection
 		if ( match(line, "^+++ ") != -1 )
