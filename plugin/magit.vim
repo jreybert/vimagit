@@ -479,11 +479,11 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let start=search(a:start_pattern[0], "cbW")
 	if ( start == 0 )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 	if ( start < upper_limit )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 	let start+=a:start_pattern[1]
 
@@ -498,13 +498,13 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	endfor
 	if ( end == 0 )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 
 	let lines=getline(start, end)
 
 	call winrestview(l:winview)
-	return [0, lines]
+	return lines
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
@@ -516,14 +516,14 @@ endfunction
 "       'CA': commit staged stuff with message in commit section amending last
 "       commit
 " return no
-function! s:mg_git_commit(mode)
+function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
 		silent let git_result=<SID>mg_system("git commit --amend -C HEAD")
 	else
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
 		let commit_jump_line = 3 + <SID>mg_get_inline_help_line_nb('commit')
-		let [ret, commit_msg]=<SID>mg_search_block(
+		let commit_msg = <SID>mg_search_block(
 		 \ [commit_section_pat_start, commit_jump_line],
 		 \ [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
@@ -752,22 +752,14 @@ endfunction
 " INFO: in unstaged section, it stages the hunk, and in staged section, it
 " unstages the hunk
 " return: no
-function! magit#stage_hunk()
-	let [ret, header] = <SID>mg_select_file_header()
-	if ( ret != 0 )
-		echoerr "Can't find diff header"
-		return
-	endif
-	let [ret, hunk] = <SID>mg_select_hunk()
-	if ( ret == 0 )
+function! magit#stage_hunk() abort
+	let header = <SID>mg_select_file_header()
+	try
+		let hunk = <SID>mg_select_hunk()
 		let selection = header + hunk
-	else
-		let [ret, selection] = <SID>mg_select_file()
-		if ( ret != 0 )
-			echoerr "Can't find diff header"
-			return
-		endif
-	endif
+	catch 'out_of_block'
+		let selection = <SID>mg_select_file()
+	endtry
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
 		call <SID>mg_git_apply(selection)
@@ -786,12 +778,9 @@ endfunction
 " INFO: in unstaged section, it stages the file, and in staged section, it
 " unstages the file
 " return: no
-function! magit#stage_file()
-	let [ret, selection] = <SID>mg_select_file()
-	if ( ret != 0 )
-		echoerr "Not in a file region"
-		return
-	endif
+function! magit#stage_file() abort
+	let selection = <SID>mg_select_file()
+
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
 		call <SID>mg_git_apply(selection)
@@ -809,22 +798,14 @@ endfunction
 " cursor position
 " INFO: only works in unstaged section
 " return: no
-function! magit#discard_hunk()
-	let [ret, header] = <SID>mg_select_file_header()
-	if ( ret != 0 )
-		echoerr "Can't find diff header"
-		return
-	endif
-	let [ret, hunk] = <SID>mg_select_hunk()
-	if ( ret == 0 )
+function! magit#discard_hunk() abort
+	let header = <SID>mg_select_file_header()
+	try
+		let hunk = <SID>mg_select_hunk()
 		let selection = header + hunk
-	else
-		let [ret, selection] = <SID>mg_select_file()
-		if ( ret != 0 )
-			echoerr "Can't find diff header"
-			return
-		endif
-	endif
+	catch 'out_of_block'
+		let selection = <SID>mg_select_file()
+	endtry
 	let section=<SID>mg_get_section()
 	if ( section == 'unstaged' )
 		call <SID>mg_git_unapply(selection, 'unstaged')
@@ -837,12 +818,8 @@ endfunction
 
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
-function! magit#ignore_file()
-	let [ret, selection] = <SID>mg_select_file()
-	if ( ret != 0 )
-		echoerr "Not in a file region"
-		return
-	endif
+function! magit#ignore_file() abort
+	let selection = <SID>mg_select_file()
 	let ignore_file=""
 	for line in selection
 		if ( match(line, "^+++ ") != -1 )
