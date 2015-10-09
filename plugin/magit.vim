@@ -632,10 +632,15 @@ endfunction
 
 " s:mg_get_section: helper function to get the current section, according to
 " cursor position
-" return: string of the current section, without decoration
+" return: section id, empty string if no section found
 function! s:mg_get_section()
-	let section_line=search(g:magit_section_re, "bnW")
-	return getline(section_line)
+	let section_line=getline(search(g:magit_section_re, "bnW"))
+	for [section_name, section_str] in items(g:magit_sections)
+		if ( section_line == section_str )
+			return section_name
+		endif
+	endfor
+	return ''
 endfunction
 " }}}
 
@@ -648,12 +653,6 @@ function! magit#open_close_folding(...)
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		let section_line = <SID>mg_get_section()
-		for [section_name, section_str] in items(g:magit_sections)
-			if ( section_line == section_str )
-				let section = section_name
-			endif
-		endfor
 		" if first param is set, force visible to this value
 		" else, toggle value
 		let s:mg_diff_dict[section][filename]['visible'] =
@@ -770,9 +769,9 @@ function! magit#stage_hunk()
 		endif
 	endif
 	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
+	if ( section == 'unstaged' )
 		call <SID>mg_git_apply(selection)
-	elseif ( section == g:magit_sections['staged'] )
+	elseif ( section == 'staged' )
 		call <SID>mg_git_unapply(selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
@@ -794,9 +793,9 @@ function! magit#stage_file()
 		return
 	endif
 	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
+	if ( section == 'unstaged' )
 		call <SID>mg_git_apply(selection)
-	elseif ( section == g:magit_sections['staged'] )
+	elseif ( section == 'staged' )
 		call <SID>mg_git_unapply(selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
@@ -827,7 +826,7 @@ function! magit#discard_hunk()
 		endif
 	endif
 	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
+	if ( section == 'unstaged' )
 		call <SID>mg_git_unapply(selection, 'unstaged')
 	else
 		echoerr "Must be in \"" . 
@@ -866,11 +865,11 @@ endfunction
 "   'CA'/'CF': if in commit section mode, call magit#git_commit, else just set
 "   global state variable s:magit_commit_mode,
 function! magit#commit_command(mode)
-	let section=<SID>mg_get_section()
 	if ( a:mode == 'CF' )
 		call <SID>mg_git_commit(a:mode)
 	else
-		if ( section == g:magit_sections['commit_start'] )
+		let section=<SID>mg_get_section()
+		if ( section == 'commit_start' )
 			if ( s:magit_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
