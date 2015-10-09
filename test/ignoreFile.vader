@@ -13,6 +13,7 @@ Execute (Ignore untracked file):
     call magit#update_buffer()
     Assert (Search_file('unstaged') == 0), $VIMAGIT_TEST_FILENAME . 'should be ignored'
     call search('^modified: .gitignore$')
+    call magit#open_close_folding(1)
     call magit#discard_hunk()
     call magit#update_buffer()
     Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
