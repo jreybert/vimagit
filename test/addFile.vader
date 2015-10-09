@@ -4,7 +4,7 @@ Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Cursor_position()
     call magit#stage_file()
     call Cd_test()
@@ -15,7 +15,7 @@ Execute (Unstage file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Cursor_position()
     call magit#stage_file()
     call Cd_test()
@@ -26,7 +26,7 @@ Execute (Stage untracked file with magit#stage_file):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Move_relative(+1)
     call Cursor_position()
     call magit#stage_file()
@@ -38,7 +38,7 @@ Execute (Unstage file with magit#stage_file):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Move_relative(+1)
     call Cursor_position()
     call magit#stage_file()
@@ -50,7 +50,7 @@ Execute (Stage untracked file with magit#stage_hunk at file header):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
@@ -61,7 +61,7 @@ Execute (Unstage file with magit#stage_hunk at file header):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
@@ -72,7 +72,7 @@ Execute (Stage untracked file with magit#stage_hunk on diff header):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Move_relative(+1)
     call Cursor_position()
     call magit#stage_hunk()
@@ -84,7 +84,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Move_relative(+1)
     call Cursor_position()
     call magit#stage_hunk()
@@ -96,7 +96,7 @@ Execute (Stage untracked file with magit#stage_hunk on start hunk):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     /^@@ 
     call Cursor_position()
     call magit#stage_hunk()
@@ -108,7 +108,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     /^@@ 
     call Cursor_position()
     call magit#stage_hunk()
@@ -120,7 +120,7 @@ Execute (Stage untracked file with magit#stage_hunk on end hunk):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     /^@@ 
     call Move_relative(+3)
     call Cursor_position()
@@ -133,7 +133,7 @@ Execute (Unstage file with magit#stage_hunk on diff header):
     call Cd_test_sub()
     Magit
     call Search_file('staged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     /^@@ 
     call Move_relative(+3)
     call Cursor_position()
@@ -146,7 +146,7 @@ Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
-    call magit#open_close_folding()
+    call magit#open_close_folding(1)
     call Cursor_position()
     call magit#stage_file()
     call Cd_test()
