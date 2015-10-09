@@ -642,7 +642,7 @@ endfunction
 " {{{ User functions and commands
 
 " magit#open_close_folding()
-function! magit#open_close_folding(open_close)
+function! magit#open_close_folding()
 	if ( getline(".") =~ g:magit_file_re )
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
@@ -738,7 +738,7 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_folding_mapping .      " :call magit#open_close_folding('open')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_folding_mapping .      " :call magit#open_close_folding()<cr>"
 	
 	call magit#update_buffer()
 	execute "normal! gg"
