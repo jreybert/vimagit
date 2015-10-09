@@ -4,6 +4,7 @@ Execute (Ignore untracked file):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
+    call magit#open_close_folding()
     call Cursor_position()
     call magit#ignore_file()
     call Cd_test()
