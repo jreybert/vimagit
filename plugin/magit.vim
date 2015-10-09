@@ -642,7 +642,8 @@ endfunction
 " {{{ User functions and commands
 
 " magit#open_close_folding()
-function! magit#open_close_folding()
+" param[in] visible : boolean, force visible value
+function! magit#open_close_folding(...)
 	if ( getline(".") =~ g:magit_file_re )
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
@@ -653,7 +654,10 @@ function! magit#open_close_folding()
 				let section = section_name
 			endif
 		endfor
+		" if first param is set, force visible to this value
+		" else, toggle value
 		let s:mg_diff_dict[section][filename]['visible'] =
+		 \ ( a:0 == 1 ) ? a:1 :
 		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
 	endif
 	call magit#update_buffer()
