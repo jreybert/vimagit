@@ -45,7 +45,12 @@ More to come:
 ## Usage
 
 **:Magit**
+
 The main magical command, showing vimagit buffer.
+
+**Enter**
+
+All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
 
 ### Sections:
 

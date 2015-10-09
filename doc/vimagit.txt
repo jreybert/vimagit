@@ -52,8 +52,13 @@ and new files in your directory.
 4. COMMANDS                                                   *vimagit-commands*
 
 
-                                      *:Magit*             *magit#show_magit('v')*
+                                      *:Magit*           *magit#show_magit('v')*
   :Magit    the main magical command, showing vimagit buffer
+
+                                      *Enter*       *magit#open_close_folding()*
+All files are folded by default. To see the changes in a file, move cursor to
+the filename line, and press Enter. You can close the changes display retyping
+Enter.
 
 Sections:                                                     *vimagit-sections*
 ---------
