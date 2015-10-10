@@ -303,6 +303,32 @@ endfunction
 " }
 let s:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
 
+function! s:mg_add_file_diff_dict(mode, diff_dict_mode, status, filename)
+	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
+	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  a:filename
+	let diff_list=s:mg_systemlist(diff_cmd)
+	if ( empty(diff_list) )
+		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+	endif
+	if (!has_key(a:diff_dict_mode, a:filename))
+		let a:diff_dict_mode[a:filename] = {}
+		let a:diff_dict_mode[a:filename]['visible'] = 0
+	endif
+	let a:diff_dict_mode[a:filename]['diff'] = []
+	let a:diff_dict_mode[a:filename]['exists'] = 1
+	let a:diff_dict_mode[a:filename]['status'] = a:status
+	let index = 0
+	call add(a:diff_dict_mode[a:filename]['diff'], [])
+	for diff_line in diff_list
+		if ( diff_line =~ "^@.*" )
+			let index+=1
+			call add(a:diff_dict_mode[a:filename]['diff'], [])
+		endif
+		call add(a:diff_dict_mode[a:filename]['diff'][index], diff_line)
+	endfor
+endfunction
+
 " s:mg_update_diff_dict: update s:mg_diff_dict
 " if a file does not exists anymore (because all its changes have been
 " committed, deleted, discarded), it is removed from s:mg_diff_dict
@@ -318,7 +344,6 @@ function! s:mg_update_diff_dict()
 	endfor
 
 	for [mode, diff_dict_mode] in items(s:mg_diff_dict)
-		let staged_flag = ( mode == 'staged' ) ? " --staged " : " "
 
 		let status_list = s:mg_get_status_list()
 		for file_status in status_list
@@ -328,30 +353,7 @@ function! s:mg_update_diff_dict()
 			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
 				continue
 			endif
-			let dev_null = ( status == '?' ) ? " /dev/null " : " "
-
-			let filename = file_status['filename']
-			let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  filename
-			let diff_list=s:mg_systemlist(diff_cmd)
-			if ( empty(diff_list) )
-				echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-			endif
-			if (!has_key(diff_dict_mode, filename))
-				let diff_dict_mode[filename] = {}
-				let diff_dict_mode[filename]['visible'] = 0
-			endif
-			let diff_dict_mode[filename]['diff'] = []
-			let diff_dict_mode[filename]['exists'] = 1
-			let diff_dict_mode[filename]['status'] = status
-			let index = 0
-			call add(diff_dict_mode[filename]['diff'], [])
-			for diff_line in diff_list
-				if ( diff_line =~ "^@.*" )
-					let index+=1
-					call add(diff_dict_mode[filename]['diff'], [])
-				endif
-				call add(diff_dict_mode[filename]['diff'][index], diff_line)
-			endfor
+			call <SID>mg_add_file_diff_dict(mode, diff_dict_mode, status, file_status['filename'])
 		endfor
 	endfor
 
