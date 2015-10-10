@@ -21,7 +21,9 @@
   </tr>
 </table>
 
-## Outstanding features
+Take a look at [TL;DR](#tldr) to start using it immediatly.
+
+## Outstanding features
 
 * [x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.
 * [x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.
@@ -42,37 +44,62 @@ More to come:
 * fugitive is a very complete plugin, with a lot of functions. I use it for years, and it is a fundamental tool in my workflow. But visualize your changes and staged them in broad number of files is really a pain.
 * vim-gitgutter is very well integrated into vim, but without the ability to commit stages, it stays an informational plugin.
 
+## TL;DR
+
+This is the minimal required set of command you must know to start playing with vimagit. See [Mapping](#mapping) for a complete description.
+
+#### :Magit
+
+Open magit buffer.
+
+#### Enter,\<CR\>
+
+All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.
+
+#### S
+
+* Modify a file, for example foo.c, in your repository.
+* Move the cursor the line 'modfied: foo.c' in "Unstage changes" section, press **S** in Normal mode: the file is stage, and appears in "Stage changes" section.
+* Move to the line 'modified: foo.c' in "Stage changes" section, press **S** in Normal mode: the file is unstage, and appears in "Unstaged changes" section.
+
+More about **S**:
+
+* It works exactely the same for new/renamed/deleted files.
+* Stage/unstage by hunk is easy: display file diffs with [Enter](#entercr). If diffs are composed of multiple hnuks, move the cursor to a hunk, and press **S** to stage/unstage this hunk.
+
+#### CC
+
+Once you have stage all the required changes, press **CC**. A new section "Commit message" appears and cursor move to it. Type your commit message, in Insert mode this time. Once it's done, go back in Normal mode, and press **CC**: you created your first commit with vimagit!
+
 ## Usage
 
-**:Magit**
-
-The main magical command, showing vimagit buffer.
-
-**Enter**
-
-All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
-
-### Sections:
+### Sections
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
 
-There are 3 sections:
-* Commit message: this section appears in commit mode (see below). It
-  contains the message to be commited.
-* Staged changes: this sections contains all staged files/hunks, ready to
-  commit.
-* Unstaged changes: this section contains all unstaged and untracked
-  files/hunks.
+There are 5 sections:
+* Info: this section display some information about the git repository, like the current branch and the HEAD commit.
+* Commit message: this section appears in commit mode (see below). It contains the message to be commited.
+* Staged changes: this sections contains all staged files/hunks, ready to commit.
+* Unstaged changes: this section contains all unstaged and untracked files/hunks.
 * Stash list: this section contains all stahes.
 
-Inline modifications:
-* It is possible to modify the content to be staged or unstaged in vimagit buffer, with some limitations:
+### Inline modifications
+* It is possible to modify the content to be staged or unstaged in magit buffer, with some limitations:
   * only lines starting with a + sign can be modified
   * no line can be deleted
 
-### Mapping
+### Commands
 
-These mappings work in normal mode. They can be redefined.
+**:Magit**
+ * open magit buffer.
+
+### Mappings
+
+Following mappings are set for magit buffer only, in normal mode. They all can be redefined.
+
+**Enter**,**\<CR\>**
+ * All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
 
 **S**
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
@@ -107,7 +134,10 @@ These mappings work in normal mode. They can be redefined.
  * Add the file under the cursor in .gitgnore
 
 **R**
- * Refresh vimagit buffer
+ * Refresh magit buffer
+
+**q**
+ * Close the magit buffer
 
 **h**
  * Toggle help showing in magit buffer

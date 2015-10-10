@@ -15,8 +15,8 @@ CONTENTS                                                      *vimagit-contents*
 
   1.  Introduction ................. |vimagit-introduction|
   2.  Installation ................. |vimagit-installation|
-  3.  Usage ........................ |vimagit-usage|
-  4.  Commands ..................... |vimagit-commands|
+  3.  TL;DR ........................ |vimagit-TL;DR|
+  4.  Usage ........................ |vimagit-usage|
   5.  Customization ................ |vimagit-customization|
   6.  FAQ .......................... |vimagit-FAQ|
 
@@ -42,45 +42,88 @@ To install:
 <
 
 ===============================================================================
-3. USAGE                                                         *vimagit-usage*
+3. TL;DR                                                         *vimagit-TL;DR*
 
-In a git'ed source directory, once you have some unstaged work, simply type
-with :Magit , and here is the magic. A new window appears, with all the diffs
-and new files in your directory.
+This is the minimal required set of command you must know to start playing
+with vimagit. See |vimagit-commands| for a complete description.
+
+  :Magit
+-----------
+
+Open magit buffer.
+
+  Enter
+-----------
+
+All files diffs are hidden by default. To inspect changes in a file, move
+cursor to the filename line, and press 'Enter' in Normal mode. Diffs are
+displayed below the file name.
+
+  S
+-----------
+
+* Modify a file, for example foo.c, in your repository.
+* Move the cursor the line 'modified: foo.c' in "Unstage changes" section,
+  press S in Normal mode: the file is stage, and appears in "Stage changes"
+  section.
+* Move to the line 'modified: foo.c' in "Stage changes" section, press S in
+  Normal mode: the file is unstage, and appears in "Unstaged changes" section.
+
+More about S:
+
+* It works exactely the same for new/renamed/deleted files.
+* Stage/unstage by hunk is easy: display file diffs with Enter. If
+  diffs are composed of multiple hnuks, move the cursor to a hunk, and press
+  'S' to stage/unstage this hunk.
+
+  CC
+-----------
+
+Once you have stage all the required changes, press CC. A new section
+"Commit message" appears and cursor move to it. Type your commit message, in
+Insert mode this time. Once it's done, go back in Normal mode, and CC: you
+created your first commit with vimagit!
 
 ===============================================================================
-4. COMMANDS                                                   *vimagit-commands*
+4. USAGE                                                         *vimagit-usage*
 
-
-                                      *:Magit*           *magit#show_magit('v')*
-  :Magit    the main magical command, showing vimagit buffer
-
-                                      *Enter*       *magit#open_close_folding()*
-All files are folded by default. To see the changes in a file, move cursor to
-the filename line, and press Enter. You can close the changes display retyping
-Enter.
-
-Sections:                                                     *vimagit-sections*
----------
+SECTIONS                                                      *vimagit-sections*
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
 
-There are 3 sections:
-  * Commit message: this section appears in commit mode (see below). It
-    contains the message to be commited.
-  * Staged changes: this sections contains all staged files/hunks, ready to
-    commit.
-  * Unstaged changes: this section contains all unstaged and untracked
-    files/hunks.
-  * Stash list: this section contains all stahes.
+There are 5 sections:
+* Info: this section display some information about the git repository, like
+  the current branch and the HEAD commit.
+* Commit message: this section appears in commit mode (see below). It contains
+  the message to be commited.
+* Staged changes: this sections contains all staged files/hunks, ready to
+  commit.
+* Unstaged changes: this section contains all unstaged and untracked
+  files/hunks.
+* Stash list: this section contains all stahes.
 
-Inline modifications:
-  * It is possible to modify the content to be staged or unstaged in vimagit buffer, with some limitations:
-    * only lines starting with a + sign can be modified
-    * no line can be deleted
+INLINE MODIFICATIONS                               *vimagit-inline-modification*
 
-These mappings work in normal mode.                           *vimagit-mappings*
+* It is possible to modify the content to be staged or unstaged in magit
+  buffer, with some limitations:
+  * only lines starting with a + sign can be modified
+  * no line can be deleted
 
+
+COMMANDS                                                      *vimagit-commands*
+
+                                        *:Magit*           *magit#show_magit('v')*
+  :Magit    open magit buffer
+
+
+MAPPINGS                                                      *vimagit-mappings*
+
+Following mappings are set for magit buffer only, in normal mode. They all can be redefined.
+
+                                      *vimagit-<CR>*  *magit#open_close_folding()*
+  <CR>      All files are folded by default. To see the changes in a file,
+            move cursor to the filename line, and press Enter. You can close
+            the changes display retyping Enter.
                                       *vimagit-S*             *magit#stage_hunk()*
   S         If cursor is in a hunk, stage/unstage hunk at cursor position.
             If cursor is in diff header, stage/unstage whole file at cursor
@@ -104,9 +147,9 @@ These mappings work in normal mode.                           *vimagit-mappings*
             position.
             Only works in "Unstaged changes" section.
 
-            *vimagit-C* *vimagit-CC* *vimagit-:w<cr>*     *magit#commit_command('CC')*
+            *vimagit-C* *vimagit-CC* *vimagit-:w<CR>*     *magit#commit_command('CC')*
   C,CC,     If not in commit section, set commit mode to "New commit" and show 
-  :w<cr>    "Commit message" section with brand new commit message.
+  :w<CR>    "Commit message" section with brand new commit message.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
@@ -124,7 +167,10 @@ These mappings work in normal mode.                           *vimagit-mappings*
   I         Add the file under the cursor in .gitgnore
 
                                       *vimagit-R*          *magit#update_buffer()*
-  R         Refresh vimagit buffer.
+  R         Refresh magit buffer.
+
+                                      *vimagit-q*
+  q         close magit buffer.
 
                                       *vimagit-h*            *magit#toggle_help()*
   h         Toggle help showing in magit buffer
