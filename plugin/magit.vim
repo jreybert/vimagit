@@ -240,6 +240,7 @@ let s:magit_inline_help = {
 \'CF     amend staged changes to previous commit without modifying the previous',
 \'       commit message',
 \'R      refresh magit buffer',
+\'q      close magit buffer',
 \'h      toggle help showing in magit buffer',
 \'',
 \'To disable inline default appearance, add "let g:magit_show_help=0" to .vimrc',
