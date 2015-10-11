@@ -44,7 +44,9 @@ call s:set('g:magit_reload_mapping',            "R")
 call s:set('g:magit_ignore_mapping',            "I")
 call s:set('g:magit_close_mapping',             "q")
 call s:set('g:magit_toggle_help_mapping',       "h")
-call s:set('g:magit_folding_mapping',           "<cr>")
+call s:set('g:magit_folding_toggle_mapping',    [ "<cr>" ])
+call s:set('g:magit_folding_open_mapping',      [ "zo", "zO" ])
+call s:set('g:magit_folding_close_mapping',     [ "zc", "zC" ])
 
 call s:set('g:magit_enabled',                   1)
 call s:set('g:magit_show_help',                 1)
@@ -699,19 +701,33 @@ endfunction
 
 " {{{ User functions and commands
 
-" magit#open_close_folding()
-" param[in] visible : boolean, force visible value
-function! magit#open_close_folding(...)
+" magit#open_close_folding_wrapper: wrapper function to
+" magit#open_close_folding. If line under cursor is not a cursor, execute
+" normal behavior
+" param[in] mapping: which has been set
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! magit#open_close_folding_wrapper(mapping, ...)
 	if ( getline(".") =~ g:magit_file_re )
-		let list = matchlist(getline("."), g:magit_file_re)
-		let filename = list[2]
-		let section=<SID>mg_get_section()
-		" if first param is set, force visible to this value
-		" else, toggle value
-		let s:mg_diff_dict[section][filename]['visible'] =
-		 \ ( a:0 == 1 ) ? a:1 :
-		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
+		return call('magit#open_close_folding', a:000)
+	else
+		echo "silent! normal! " . a:mapping
+		silent! execute "silent! normal! " . a:mapping
 	endif
+endfunction
+
+" magit#open_close_folding()
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! magit#open_close_folding(...)
+	let list = matchlist(getline("."), g:magit_file_re)
+	let filename = list[2]
+	let section=<SID>mg_get_section()
+	" if first param is set, force visible to this value
+	" else, toggle value
+	let s:mg_diff_dict[section][filename]['visible'] =
+				\ ( a:0 == 1 ) ? a:1 :
+				\ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
 	call magit#update_buffer()
 endfunction
 
@@ -794,7 +810,17 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_folding_mapping .      " :call magit#open_close_folding()<cr>"
+	for mapping in g:magit_folding_toggle_mapping
+		" trick to pass '<cr>' in a mapping command without being interpreted
+		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<cr>"
+	endfor
+	for mapping in g:magit_folding_open_mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<cr>"
+	endfor
+	for mapping in g:magit_folding_close_mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<cr>"
+	endfor
 	
 	call magit#update_buffer()
 	execute "normal! gg"
