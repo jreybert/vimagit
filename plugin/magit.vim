@@ -558,14 +558,14 @@ function! s:mg_git_commit(mode) abort
 	endif
 endfunction
 
-" s:mg_select_file: select the whole diff file, relative to the current
+" s:mg_select_file_block: select the whole diff file, relative to the current
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
 " return: a List
 "         @[0]: return value
 "         @[1]: List of lines containing the patch for the whole file
-function! s:mg_select_file()
+function! s:mg_select_file_block()
 	return <SID>mg_search_block(
 				\ [g:magit_file_re, 1],
 				\ [ [g:magit_file_re, -1],
@@ -577,27 +577,27 @@ function! s:mg_select_file()
 				\ "")
 endfunction
 
-" s:mg_select_file_header: select the upper diff header, relative to the current
+" s:mg_select_header_block: select the upper diff header, relative to the current
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
 " return: a List
 "         @[0]: return value
 "         @[1]: List of lines containing the diff header
-function! s:mg_select_file_header()
+function! s:mg_select_header_block()
 	return <SID>mg_search_block(
 				\ [g:magit_file_re, 1],
 				\ [ [g:magit_hunk_re, -1] ],
 				\ "")
 endfunction
 
-" s:mg_select_hunk: select a hunk, from the current cursor position
+" s:mg_select_hunk_block: select a hunk, from the current cursor position
 " nota: if the cursor is not in a hunk when the function is called, this
 " function will fail
 " return: a List
 "         @[0]: return value
 "         @[1]: List of lines containing the hunk
-function! s:mg_select_hunk()
+function! s:mg_select_hunk_block()
 	return <SID>mg_search_block(
 				\ [g:magit_hunk_re, 0],
 				\ [ [g:magit_hunk_re, -1],
@@ -791,12 +791,12 @@ function! magit#stage_hunk() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let header = <SID>mg_select_file_header()
+		let header = <SID>mg_select_header_block()
 		try
-			let hunk = <SID>mg_select_hunk()
+			let hunk = <SID>mg_select_hunk_block()
 			let selection = header + hunk
 		catch 'out_of_block'
-			let selection = <SID>mg_select_file()
+			let selection = <SID>mg_select_file_block()
 		endtry
 	endtry
 	let section=<SID>mg_get_section()
@@ -821,7 +821,7 @@ function! magit#stage_file() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let selection = <SID>mg_select_file()
+		let selection = <SID>mg_select_file_block()
 	endtry
 
 	let section=<SID>mg_get_section()
@@ -845,12 +845,12 @@ function! magit#discard_hunk() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let header = <SID>mg_select_file_header()
+		let header = <SID>mg_select_header_block()
 		try
-			let hunk = <SID>mg_select_hunk()
+			let hunk = <SID>mg_select_hunk_block()
 			let selection = header + hunk
 		catch 'out_of_block'
-			let selection = <SID>mg_select_file()
+			let selection = <SID>mg_select_file_block()
 		endtry
 	endtry
 	let section=<SID>mg_get_section()
@@ -869,7 +869,7 @@ function! magit#ignore_file() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let selection = <SID>mg_select_file()
+		let selection = <SID>mg_select_file_block()
 	endtry
 	let ignore_file=""
 	for line in selection
