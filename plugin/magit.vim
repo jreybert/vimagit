@@ -840,87 +840,77 @@ function! s:mg_select_closed_file()
 	throw "out_of_block"
 endfunction
 
-" magit#stage_hunk: this function stage a single hunk, from the current
-" cursor position
+" maagit#stage_block: this function (un)stage a block, according to parameter
 " INFO: in unstaged section, it stages the hunk, and in staged section, it
 " unstages the hunk
+" param[in] block_type: can be 'file' or 'hunk'
+" param[in] discard: boolean, if true, discard instead of (un)stage
 " return: no
-function! magit#stage_hunk() abort
+function! magit#stage_block(block_type, discard) abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		try
-			let selection = <SID>mg_select_hunk_block()
-		catch 'out_of_block'
+		if ( a:block_type == 'hunk')
+			try
+				let selection = <SID>mg_select_hunk_block()
+			catch 'out_of_block'
+				let selection = <SID>mg_select_file_block()
+			endtry
+		else
 			let selection = <SID>mg_select_file_block()
-		endtry
+		endif
 	endtry
+
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
 	let header = <SID>mg_diff_dict_get_header(section, filename)
-	if ( section == 'unstaged' )
-		call <SID>mg_git_apply(header, selection)
-	elseif ( section == 'staged' )
-		call <SID>mg_git_unapply(header, selection, 'staged')
+
+	if ( a:discard == 0 )
+		if ( section == 'unstaged' )
+			call <SID>mg_git_apply(header, selection)
+		elseif ( section == 'staged' )
+			call <SID>mg_git_unapply(header, selection, 'staged')
+		else
+			echoerr "Must be in \"" . 
+						\ g:magit_sections['staged'] . "\" or \"" . 
+						\ g:magit_sections['unstaged'] . "\" section"
+		endif
 	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['staged'] . "\" or \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
+		if ( section == 'unstaged' )
+			call <SID>mg_git_unapply(header, selection, 'unstaged')
+		else
+			echoerr "Must be in \"" . 
+						\ g:magit_sections['unstaged'] . "\" section"
+		endif
 	endif
+
 	call magit#update_buffer()
 endfunction
 
-" magit#stage_file: this function stage a whole file, from the current
+" magit#stage_file: this function (un)stage a whole file, from the current
 " cursor position
 " INFO: in unstaged section, it stages the file, and in staged section, it
 " unstages the file
 " return: no
-function! magit#stage_file() abort
-	try
-		let selection = <SID>mg_select_closed_file()
-	catch 'out_of_block'
-		let selection = <SID>mg_select_file_block()
-	endtry
-
-	let section=<SID>mg_get_section()
-	let filename=<SID>mg_get_filename()
-	let header = <SID>mg_diff_dict_get_header(section, filename)
-	if ( section == 'unstaged' )
-		call <SID>mg_git_apply(header, selection)
-	elseif ( section == 'staged' )
-		call <SID>mg_git_unapply(header, selection, 'staged')
-	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['staged'] . "\" or \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
-	endif
-	call magit#update_buffer()
+function! magit#stage_file()
+	return magit#stage_block('file', 0)
+endfunction
+"
+" magit#stage_hunk: this function (un)stage a hunk, from the current
+" cursor position
+" INFO: in unstaged section, it stages the hunk, and in staged section, it
+" unstages the hunk
+" return: no
+function! magit#stage_hunk()
+	return magit#stage_block('hunk', 0)
 endfunction
 
 " magit#discard_hunk: this function discard a single hunk, from the current
 " cursor position
 " INFO: only works in unstaged section
 " return: no
-function! magit#discard_hunk() abort
-	try
-		let selection = <SID>mg_select_closed_file()
-	catch 'out_of_block'
-		try
-			let selection = <SID>mg_select_hunk_block()
-		catch 'out_of_block'
-			let selection = <SID>mg_select_file_block()
-		endtry
-	endtry
-	let section=<SID>mg_get_section()
-	let filename=<SID>mg_get_filename()
-	let header = <SID>mg_diff_dict_get_header(section, filename)
-	if ( section == 'unstaged' )
-		call <SID>mg_git_unapply(header, selection, 'unstaged')
-	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
-	endif
-	call magit#update_buffer()
+function! magit#discard_hunk()
+	return magit#stage_block('hunk', 1)
 endfunction
 
 " magit#ignore_file: this function add the file under cursor to .gitignore
