@@ -167,7 +167,7 @@ Execute (Stage untracked file with magit#stage_hunk modified hunk):
     call Search_file('unstaged')
     call magit#open_close_folding(1)
     /^+
-    substitute/^\(+.*\) .\{-\}$/\1 poulet/
+    call setline(line('.'), substitute(getline('.'), '^\(+.*\) .\{-\}$', '\1 vimatest', ''))
     call Cursor_position()
     call magit#stage_hunk()
     call Cd_test()
