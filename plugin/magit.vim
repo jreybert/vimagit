@@ -303,7 +303,47 @@ endfunction
 " }
 let s:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
 
-function! s:mg_add_file_diff_dict(mode, diff_dict_mode, status, filename)
+" s:mg_diff_dict_get_file: mg_diff_dict accessor for file
+" param[in] mode: can be staged or unstaged
+" param[in] filename: filename to access
+" param[in] create: boolean. If 1, non existing file in Dict will be created.
+" if 0, 'file_doesnt_exists' exception will be thrown
+" return: Dict of file
+function! s:mg_diff_dict_get_file(mode, filename, create)
+	let file_exists = has_key(s:mg_diff_dict[a:mode], a:filename)
+	if ( file_exists == 0 && a:create == 1 )
+		let s:mg_diff_dict[a:mode][a:filename] = {}
+		let s:mg_diff_dict[a:mode][a:filename]['visible'] = 0
+	elseif ( file_exists == 0 && a:create == 0 )
+		throw 'file_doesnt_exists'
+	endif
+	return s:mg_diff_dict[a:mode][a:filename]
+endfunction
+
+" s:mg_diff_dict_get_header: mg_diff_dict accessor for diff header
+" param[in] mode: can be staged or unstaged
+" param[in] filename: header of filename to access
+" return: List of diff header lines
+function! s:mg_diff_dict_get_header(mode, filename)
+	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
+	return diff_dict_file['diff'][0]
+endfunction
+
+" s:mg_diff_dict_get_hunks: mg_diff_dict accessor for hunks
+" param[in] mode: can be staged or unstaged
+" param[in] filename: hunks of filename to access
+" return: List of List of hunks lines
+function! s:mg_diff_dict_get_hunks(mode, filename)
+	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
+	return diff_dict_file['diff'][1:-1]
+endfunction
+
+" s:mg_diff_dict_add_file: mg_diff_dict method to add a file with all its
+" properties (filename, exists, status, header and hunks)
+" param[in] mode: can be staged or unstaged
+" param[in] status: one character status code of the file (AMDRCU?)
+" param[in] filename: filename
+function! s:mg_diff_dict_add_file(mode, status, filename)
 	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  a:filename
@@ -311,21 +351,18 @@ function! s:mg_add_file_diff_dict(mode, diff_dict_mode, status, filename)
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
-	if (!has_key(a:diff_dict_mode, a:filename))
-		let a:diff_dict_mode[a:filename] = {}
-		let a:diff_dict_mode[a:filename]['visible'] = 0
-	endif
-	let a:diff_dict_mode[a:filename]['diff'] = []
-	let a:diff_dict_mode[a:filename]['exists'] = 1
-	let a:diff_dict_mode[a:filename]['status'] = a:status
+	let diff_dict_file = <SID>mg_diff_dict_get_file(a:mode, a:filename, 1)
+	let diff_dict_file['diff'] = []
+	let diff_dict_file['exists'] = 1
+	let diff_dict_file['status'] = a:status
 	let index = 0
-	call add(a:diff_dict_mode[a:filename]['diff'], [])
+	call add(diff_dict_file['diff'], [])
 	for diff_line in diff_list
 		if ( diff_line =~ "^@.*" )
 			let index+=1
-			call add(a:diff_dict_mode[a:filename]['diff'], [])
+			call add(diff_dict_file['diff'], [])
 		endif
-		call add(a:diff_dict_mode[a:filename]['diff'][index], diff_line)
+		call add(diff_dict_file['diff'][index], diff_line)
 	endfor
 endfunction
 
@@ -353,7 +390,7 @@ function! s:mg_update_diff_dict()
 			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
 				continue
 			endif
-			call <SID>mg_add_file_diff_dict(mode, diff_dict_mode, status, file_status['filename'])
+			call <SID>mg_diff_dict_add_file(mode, status, file_status['filename'])
 		endfor
 	endfor
 
@@ -389,7 +426,8 @@ function! s:mg_get_staged_section(mode)
 		if ( file_props['exists'] == 0 )
 			echoerr "Error, " . filename . " should not exists"
 		endif
-		for diff_line in file_props['diff']
+		let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
+		for diff_line in hunks
 			silent put =diff_line
 		endfor
 		put =''
@@ -577,20 +615,6 @@ function! s:mg_select_file_block()
 				\ "")
 endfunction
 
-" s:mg_select_header_block: select the upper diff header, relative to the current
-" cursor position
-" nota: if the cursor is not in a diff file when the function is called, this
-" function will fail
-" return: a List
-"         @[0]: return value
-"         @[1]: List of lines containing the diff header
-function! s:mg_select_header_block()
-	return <SID>mg_search_block(
-				\ [g:magit_file_re, 1],
-				\ [ [g:magit_hunk_re, -1] ],
-				\ "")
-endfunction
-
 " s:mg_select_hunk_block: select a hunk, from the current cursor position
 " nota: if the cursor is not in a hunk when the function is called, this
 " function will fail
@@ -615,8 +639,8 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! s:mg_git_apply(selection)
-	let selection = a:selection
+function! s:mg_git_apply(header, selection)
+	let selection = <SID>mg_flatten(a:header + a:selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
@@ -634,12 +658,12 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! s:mg_git_unapply(selection, mode)
+function! s:mg_git_unapply(header, selection, mode)
 	let cached_flag=''
 	if ( a:mode == 'staged' )
 		let cached_flag=' --cached '
 	endif
-	let selection = a:selection
+	let selection = <SID>mg_flatten(a:header + a:selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
@@ -663,6 +687,14 @@ function! s:mg_get_section()
 	endfor
 	return ''
 endfunction
+
+" s:mg_get_filename: helper function to get the current filename, according to
+" cursor position
+" return: filename
+function! s:mg_get_filename()
+	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
+endfunction
+
 " }}}
 
 " {{{ User functions and commands
@@ -775,7 +807,7 @@ function! s:mg_select_closed_file()
 		let section=<SID>mg_get_section()
 		if ( has_key(s:mg_diff_dict[section], filename) &&
 		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) )
-			let selection = <SID>mg_flatten(s:mg_diff_dict[section][filename]['diff'])
+			let selection = <SID>mg_diff_dict_get_hunks(section, filename)
 			return selection
 		endif
 	endif
@@ -791,19 +823,19 @@ function! magit#stage_hunk() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let header = <SID>mg_select_header_block()
 		try
-			let hunk = <SID>mg_select_hunk_block()
-			let selection = header + hunk
+			let selection = <SID>mg_select_hunk_block()
 		catch 'out_of_block'
 			let selection = <SID>mg_select_file_block()
 		endtry
 	endtry
 	let section=<SID>mg_get_section()
+	let filename=<SID>mg_get_filename()
+	let header = <SID>mg_diff_dict_get_header(section, filename)
 	if ( section == 'unstaged' )
-		call <SID>mg_git_apply(selection)
+		call <SID>mg_git_apply(header, selection)
 	elseif ( section == 'staged' )
-		call <SID>mg_git_unapply(selection, 'staged')
+		call <SID>mg_git_unapply(header, selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['staged'] . "\" or \"" . 
@@ -825,10 +857,12 @@ function! magit#stage_file() abort
 	endtry
 
 	let section=<SID>mg_get_section()
+	let filename=<SID>mg_get_filename()
+	let header = <SID>mg_diff_dict_get_header(section, filename)
 	if ( section == 'unstaged' )
-		call <SID>mg_git_apply(selection)
+		call <SID>mg_git_apply(header, selection)
 	elseif ( section == 'staged' )
-		call <SID>mg_git_unapply(selection, 'staged')
+		call <SID>mg_git_unapply(header, selection, 'staged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['staged'] . "\" or \"" . 
@@ -845,17 +879,17 @@ function! magit#discard_hunk() abort
 	try
 		let selection = <SID>mg_select_closed_file()
 	catch 'out_of_block'
-		let header = <SID>mg_select_header_block()
 		try
-			let hunk = <SID>mg_select_hunk_block()
-			let selection = header + hunk
+			let selection = <SID>mg_select_hunk_block()
 		catch 'out_of_block'
 			let selection = <SID>mg_select_file_block()
 		endtry
 	endtry
 	let section=<SID>mg_get_section()
+	let filename=<SID>mg_get_filename()
+	let header = <SID>mg_diff_dict_get_header(section, filename)
 	if ( section == 'unstaged' )
-		call <SID>mg_git_unapply(selection, 'unstaged')
+		call <SID>mg_git_unapply(header, selection, 'unstaged')
 	else
 		echoerr "Must be in \"" . 
 		 \ g:magit_sections['unstaged'] . "\" section"
@@ -866,22 +900,7 @@ endfunction
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
-	try
-		let selection = <SID>mg_select_closed_file()
-	catch 'out_of_block'
-		let selection = <SID>mg_select_file_block()
-	endtry
-	let ignore_file=""
-	for line in selection
-		if ( match(line, "^+++ ") != -1 )
-			let ignore_file=<SID>mg_strip(substitute(line, '^+++ ./\(.*\)$', '\1', ''))
-			break
-		endif
-	endfor
-	if ( ignore_file == "" )
-		echoerr "Can not find file to ignore"
-		return
-	endif
+	let ignore_file=<SID>mg_get_filename()
 	call <SID>mg_append_file(<SID>mg_top_dir() . ".gitignore", [ ignore_file ] )
 	call magit#update_buffer()
 endfunction

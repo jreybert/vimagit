@@ -38,7 +38,7 @@ Execute (Ignore untracked file at opened file header):
     call magit#update_buffer()
     Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
 
-Execute (Ignore untracked file at diff header):
+Execute (Ignore untracked file at hunk position):
     call Cd_test_sub()
     Magit
     call Search_file('unstaged')
