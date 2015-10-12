@@ -123,7 +123,7 @@ endfunction
 " the cursor and return the line
 function! Search_file(mode)
 	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
-	return search("^.*: " . $VIMAGIT_TEST_FILENAME)
+	return search("^.*: " . $VIMAGIT_TEST_FILENAME . "$")
 endfunction
 
 " get the filename we curently test
