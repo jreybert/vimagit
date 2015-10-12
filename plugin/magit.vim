@@ -32,21 +32,24 @@ function! s:set(var, default)
 	endif
 endfunction
 
-call s:set('g:magit_stage_file_mapping',        "F")
-call s:set('g:magit_stage_hunk_mapping',        "S")
-call s:set('g:magit_discard_hunk_mapping',      "DDD")
-call s:set('g:magit_commit_mapping_command',    "w<cr>")
-call s:set('g:magit_commit_amend_mapping',      "CA")
-call s:set('g:magit_commit_fixup_mapping',      "CF")
-call s:set('g:magit_reload_mapping',            "R")
-call s:set('g:magit_ignore_mapping',            "I")
-call s:set('g:magit_close_mapping',             "q")
-call s:set('g:magit_toggle_help_mapping',       "h")
-call s:set('g:magit_folding_toggle_mapping',    [ "<cr>" ])
-call s:set('g:magit_folding_open_mapping',      [ "zo", "zO" ])
-call s:set('g:magit_folding_close_mapping',     [ "zc", "zC" ])
-
+" these mapping are applied locally, for magit buffer only
+call s:set('g:magit_stage_file_mapping',        'F' )
+call s:set('g:magit_stage_hunk_mapping',        'S' )
+call s:set('g:magit_discard_hunk_mapping',      'DDD' )
+call s:set('g:magit_commit_mapping_command',    'w<cr>' )
 call s:set('g:magit_commit_mapping',            'CC' )
+call s:set('g:magit_commit_amend_mapping',      'CA' )
+call s:set('g:magit_commit_fixup_mapping',      'CF' )
+call s:set('g:magit_reload_mapping',            'R' )
+call s:set('g:magit_ignore_mapping',            'I' )
+call s:set('g:magit_close_mapping',             'q' )
+call s:set('g:magit_toggle_help_mapping',       'h' )
+
+call s:set('g:magit_folding_toggle_mapping',    [ '<CR>' ])
+call s:set('g:magit_folding_open_mapping',      [ 'zo', 'zO' ])
+call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
+
+" user options
 call s:set('g:magit_enabled',                   1)
 call s:set('g:magit_show_help',                 1)
 
@@ -946,6 +949,6 @@ function! magit#commit_command(mode)
 	call magit#update_buffer()
 endfunction
 
-command! Magit call magit#show_magit("v")
+command! Magit call magit#show_magit('v')
 
 " }}}
