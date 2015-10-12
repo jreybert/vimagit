@@ -787,12 +787,24 @@ endfunction
 
 " magit#show_magit: prepare and show magit buffer
 " it also set local mappings to magit buffer
-function! magit#show_magit(orientation)
+" param[in] display:
+"     'v': vertical split
+"     'h': horizontal split
+"     'c': current buffer (should be used when opening vim in vimagit mode
+function! magit#show_magit(display)
 	if ( <SID>mg_strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
 		echoerr "Magit must be started from a git repository"
 		return
 	endif
-	vnew 
+	if ( a:display == 'v' )
+		vnew 
+	elseif ( a:display == 'h' )
+		new 
+	elseif ( a:display == 'c' )
+		"nothing, use current buffer
+	else
+		throw 'parameter_error'
+	endif
 	setlocal buftype=nofile
 	setlocal bufhidden=delete
 	setlocal noswapfile
