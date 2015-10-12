@@ -717,7 +717,6 @@ function! magit#open_close_folding_wrapper(mapping, ...)
 	if ( getline(".") =~ g:magit_file_re )
 		return call('magit#open_close_folding', a:000)
 	else
-		echo "silent! normal! " . a:mapping
 		silent! execute "silent! normal! " . a:mapping
 	endif
 endfunction
