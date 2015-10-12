@@ -17,7 +17,7 @@ CONTENTS                                                      *vimagit-contents*
   2.  Installation ................. |vimagit-installation|
   3.  TL;DR ........................ |vimagit-TL;DR|
   4.  Usage ........................ |vimagit-usage|
-  5.  Customization ................ |vimagit-customization|
+  5.  Options ...................... |vimagit-options|
   6.  FAQ .......................... |vimagit-FAQ|
 
 
@@ -118,13 +118,41 @@ COMMANDS                                                      *vimagit-commands*
 
 MAPPINGS                                                      *vimagit-mappings*
 
-Following mappings are set for magit buffer only, in normal mode. They all can be redefined.
+For each mapping, user can redefine the behavior with its own mapping. Each
+variable is described below as           *vimagit-g:magit_nameofmapping_mapping*
+
+For example, to redefine the <leader>M mapping, user should add this line in
+its |vimrc|:
+let g:magit_show_magit_mapping='itsnewmapping'
+
+Global mappings
+---------------
+Following mappings are broadly set, and are applied in all vim buffers.
+
+                                      *vimagit-<leader>M*  *magit#show_magit('v')*
+                                      *vimagit-g:magit_show_magit_mapping*
+ <leader>M  Open Magit buffer
+
+Local mappings
+--------------
+Following mappings are set locally, for magit buffer only, in normal mode.
 
                                       *vimagit-<CR>*  *magit#open_close_folding()*
-  <CR>      All files are folded by default. To see the changes in a file,
-            move cursor to the filename line, and press Enter. You can close
-            the changes display retyping Enter.
+                                      *vimagit-g:magit_folding_toggle_mapping*
+  <CR>      All file diffs are hidden by default. To see the changes in a
+            file, move cursor to the filename line, and press Enter. You can
+            close the changes display retyping Enter.
+
+                                      *vimagit-zo*   *magit#open_close_folding(1)*
+                                      *vimagit-g:magit_folding_open_mapping*
+  zo,zO     Typing zo on a file will unhide its diffs.
+
+                                      *vimagit-zo*   *magit#open_close_folding(0)*
+                                      *vimagit-g:magit_folding_close_mapping*
+  zc,zC     Typing zc on a file will hide its diffs.
+
                                       *vimagit-S*             *magit#stage_hunk()*
+                                      *vimagit-g:magit_stage_hunk_mapping*
   S         If cursor is in a hunk, stage/unstage hunk at cursor position.
             If cursor is in diff header, stage/unstage whole file at cursor
             position.
@@ -134,6 +162,7 @@ Following mappings are set for magit buffer only, in normal mode. They all can b
             will unstage hunk/file.
 
                                       *vimagit-F*             *magit#stage_file()*
+                                      *vimagit-g:magit_stage_file_mapping*
   F         Stage/unstage the whole file at cursor position.
             When cursor is in "Unstaged changes" section, it will stage the
             file.
@@ -142,42 +171,65 @@ Following mappings are set for magit buffer only, in normal mode. They all can b
 
 
                                     *vimagit-DDD*           *magit#discard_hunk()*
+                                    *vimagit-g:magit_discard_hunk_mapping*
   DDD       If cursor is in a hunk, discard hunk at cursor position.
             If cursor is in diff header, discard whole file at cursor
             position.
             Only works in "Unstaged changes" section.
 
-            *vimagit-C* *vimagit-CC* *vimagit-:w<CR>*     *magit#commit_command('CC')*
-  C,CC,     If not in commit section, set commit mode to "New commit" and show 
-  :w<CR>    "Commit message" section with brand new commit message.
+                                    *vimagit-CC*      *magit#commit_command('CC')*
+                                    *vimagit-g:magit_commit_mapping*
+  CC        If not in commit section, set commit mode to "New commit" and show 
+           "Commit message" section with brand new commit message.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
-                                     *vimagit-CA*     *magit#commit_command('CA')*
+                                    *vimagit-:w<CR>*  *magit#commit_command('CC')*
+                                    *vimagit-g:magit_commit_mapping_command*
+  :w<CR>    If in commit section, commit the all staged changes in commit mode
+            previously set.
+
+                                    *vimagit-CA*     *magit#commit_command('CA')*
+                                    *vimagit-g:magit_commit_amend_mapping*
   CA        If not in commit section, set commit mode to "Amend commit" and
             show "Commit message" section with previous commit message.
             If in commit section, commit the staged changes in commit mode
             previously set.
 
-                                     *vimagit-CF*     *magit#commit_command('CF')*
+                                    *vimagit-CF*     *magit#commit_command('CF')*
+                                    *vimagit-g:magit_commit_fixup_mapping*
   CF        Amend the staged changes into the previous commit, without
             modifying previous commit message
 
-                                      *vimagit-I*            *magit#ignore_file()*
+                                    *vimagit-I*            *magit#ignore_file()*
+                                    *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore
 
-                                      *vimagit-R*          *magit#update_buffer()*
+                                    *vimagit-R*          *magit#update_buffer()*
+                                    *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
 
-                                      *vimagit-q*
+                                    *vimagit-q*
+                                    *vimagit-g:magit_close_mapping*
   q         close magit buffer.
 
-                                      *vimagit-h*            *magit#toggle_help()*
+                                    *vimagit-h*            *magit#toggle_help()*
+                                    *vimagit-g:magit_toggle_help_mapping*
   h         Toggle help showing in magit buffer
 
 
 ===============================================================================
-5. CUSTOMISATION                                         *vimagit-customization*
+5. OPTIONS                                                     *vimagit-options*
+
+User can define in its prefered |vimrc| some options.
+
+                                                       *vimagit-g:magit_enabled*
+To disable vimagit plugin
+let g:magit_enabled=0
+
+                                                     *vimagit-g:magit_show_help*
+To disable chatty inline help in magit buffer
+let g:magit_show_help=0
 
 ===============================================================================
 6. FAQ                                                             *vimagit-FAQ*

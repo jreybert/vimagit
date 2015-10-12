@@ -96,10 +96,24 @@ There are 5 sections:
 
 ### Mappings
 
-Following mappings are set for magit buffer only, in normal mode. They all can be redefined.
+For each mapping, user can redefine the behavior with its own mapping. Each variable is described in vimagit help like *vimagit-g:magit_nameofmapping_mapping*
+
+#### Global mappings
+
+Following mappings are broadly set, and are applied in all vim buffers.
+
+#### Local mappings
+
+Following mappings are set locally, for magit buffer only, in normal mode.
 
 **Enter**,**\<CR\>**
  * All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
+
+**zo,zO**
+ * Typing zo on a file will unhide its diffs.
+
+**zc,zC**
+ * Typing zc on a file will hide its diffs.
 
 **S**
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
@@ -117,10 +131,11 @@ Following mappings are set for magit buffer only, in normal mode. They all can b
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
 
-**C**
 **CC**
-**:w<cr>**
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
+ * If in commit section, commit the all staged changes in commit mode previously set.
+
+**:w<cr>**
  * If in commit section, commit the all staged changes in commit mode previously set.
 
 **CA**
@@ -141,7 +156,17 @@ Following mappings are set for magit buffer only, in normal mode. They all can b
 
 **h**
  * Toggle help showing in magit buffer
-                
+
+### Options
+
+User can define in its prefered |vimrc| some options.
+
+To disable vimagit plugin
+> let g:magit_enabled=0
+
+To disable chatty inline help in magit buffer
+> let g:magit_show_help=0
+
 ## Installation
 
 The plugin hierarchy tree respects the vim plugin standard. It is compatible
