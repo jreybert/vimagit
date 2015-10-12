@@ -175,6 +175,22 @@ function! s:mg_join_list(list)
 	return join(a:list, "\n") . "\n"
 endfunction
 
+" s:mg_add_quotes: helper function to protect filename with quotes
+" return quoted filename
+function! s:mg_add_quotes(filename)
+	return '"' . a:filename . '"'
+endfunction
+
+" s:mg_remove_quotes: helper function to remove quotes aroudn filename
+" return unquoted filename
+function! s:mg_remove_quotes(filename)
+	let ret=matchlist(a:filename, '"\([^"]*\)"')
+	if ( empty(ret) )
+		throw 'no quotes found: ' . a:filename
+	endif
+	return ret[1]
+endfunction
+
 " s:mg_fatten: flat a nested list. it return a one dimensional list with
 " primary elements
 " https://gist.github.com/dahu/3322468
@@ -214,14 +230,15 @@ endfunction
 function! s:mg_get_status_list()
 	let file_list = []
 
-	let status_list=<SID>mg_systemlist("git status --porcelain")
+	let status_list=split(<SID>mg_system('git status --porcelain -z'), '')
 	for file_status_line in status_list
 		let line_match = matchlist(file_status_line, '\(.\)\(.\) \(.*\)$')
-		let filename = line_match[3]
-		if ( filename =~ " -> " )
-			" git status add quotes " for file names with spaces only for rename mode
-			let filename=substitute(filename, '.* -> \(.*\)$', '\1', '')
+		" for renamed staged file, the original file is on next line
+		" FIXME: we should handle the original name to display it somewhere
+		if ( empty(line_match) )
+			continue
 		endif
+		let filename = <SID>mg_add_quotes(line_match[3])
 		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
 	return file_list
@@ -354,7 +371,9 @@ endfunction
 function! s:mg_diff_dict_add_file(mode, status, filename)
 	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-	let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  a:filename
+	let diff_cmd="git diff --no-ext-diff " . staged_flag .
+				\ "--no-color --patch -- " . dev_null . " "
+				\ .  a:filename
 	let diff_list=s:mg_systemlist(diff_cmd)
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
@@ -438,12 +457,13 @@ function! s:mg_get_staged_section(mode)
 	put =''
 
 	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
+		let unquoted_filename=<SID>mg_remove_quotes(filename)
 		if ( file_props['empty'] == 1 )
-			put =g:magit_git_status_code['E'] . ': ' . filename
+			put =g:magit_git_status_code['E'] . ': ' . unquoted_filename
 		elseif ( file_props['symlink'] != '' )
-			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
+			put =g:magit_git_status_code['L'] . ': ' . unquoted_filename . ' -> ' . file_props['symlink']
 		else
-			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
+			put =g:magit_git_status_code[file_props['status']] . ': ' . unquoted_filename
 		endif
 		if ( file_props['visible'] == 0 )
 			put =''
@@ -718,7 +738,7 @@ endfunction
 " cursor position
 " return: filename
 function! s:mg_get_filename()
-	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
+	return <SID>mg_add_quotes(substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', ''))
 endfunction
 
 " }}}
@@ -744,7 +764,7 @@ endfunction
 " visibility
 function! magit#open_close_folding(...)
 	let list = matchlist(getline("."), g:magit_file_re)
-	let filename = list[2]
+	let filename = <SID>mg_add_quotes(list[2])
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
