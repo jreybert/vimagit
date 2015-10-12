@@ -32,6 +32,9 @@ function! s:set(var, default)
 	endif
 endfunction
 
+" these mappings are broadly applied, for all vim buffers
+call s:set('g:magit_show_magit_mapping',        '<leader>M' )
+
 " these mapping are applied locally, for magit buffer only
 call s:set('g:magit_stage_file_mapping',        'F' )
 call s:set('g:magit_stage_hunk_mapping',        'S' )
@@ -53,6 +56,7 @@ call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
 call s:set('g:magit_enabled',                   1)
 call s:set('g:magit_show_help',                 1)
 
+execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
 
 " {{{ Internal functions
