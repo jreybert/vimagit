@@ -365,12 +365,14 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 	let diff_dict_file['status'] = a:status
 	let diff_dict_file['empty'] = 0
 	let diff_dict_file['symlink'] = ''
-	if ( a:status == '?' && getfsize(a:filename) == 0 )
-		let diff_dict_file['empty'] = 1
-		call add(diff_dict_file['diff'], ['no header'])
-	elseif ( a:status == '?' && getftype(a:filename) == 'link' )
+	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let diff_dict_file['symlink'] = resolve(a:filename)
 		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['New symbolic link file'])
+	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+		let diff_dict_file['empty'] = 1
+		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['New empty file'])
 	else
 		let index = 0
 		call add(diff_dict_file['diff'], [])
@@ -442,18 +444,18 @@ function! s:mg_get_staged_section(mode)
 			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
 		else
 			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
-			if ( file_props['visible'] == 0 )
-				put =''
-				continue
-			endif
-			if ( file_props['exists'] == 0 )
-				echoerr "Error, " . filename . " should not exists"
-			endif
-			let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
-			for diff_line in hunks
-				silent put =diff_line
-			endfor
 		endif
+		if ( file_props['visible'] == 0 )
+			put =''
+			continue
+		endif
+		if ( file_props['exists'] == 0 )
+			echoerr "Error, " . filename . " should not exists"
+		endif
+		let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
+		for diff_line in hunks
+			silent put =diff_line
+		endfor
 		put =''
 	endfor
 endfunction
