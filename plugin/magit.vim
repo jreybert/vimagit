@@ -363,15 +363,25 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 	let diff_dict_file['diff'] = []
 	let diff_dict_file['exists'] = 1
 	let diff_dict_file['status'] = a:status
-	let index = 0
-	call add(diff_dict_file['diff'], [])
-	for diff_line in diff_list
-		if ( diff_line =~ "^@.*" )
-			let index+=1
-			call add(diff_dict_file['diff'], [])
-		endif
-		call add(diff_dict_file['diff'][index], diff_line)
-	endfor
+	let diff_dict_file['empty'] = 0
+	let diff_dict_file['symlink'] = ''
+	if ( a:status == '?' && getfsize(a:filename) == 0 )
+		let diff_dict_file['empty'] = 1
+		call add(diff_dict_file['diff'], ['no header'])
+	elseif ( a:status == '?' && getftype(a:filename) == 'link' )
+		let diff_dict_file['symlink'] = resolve(a:filename)
+		call add(diff_dict_file['diff'], ['no header'])
+	else
+		let index = 0
+		call add(diff_dict_file['diff'], [])
+		for diff_line in diff_list
+			if ( diff_line =~ "^@.*" )
+				let index+=1
+				call add(diff_dict_file['diff'], [])
+			endif
+			call add(diff_dict_file['diff'][index], diff_line)
+		endfor
+	endif
 endfunction
 
 " s:mg_update_diff_dict: update s:mg_diff_dict
@@ -426,18 +436,24 @@ function! s:mg_get_staged_section(mode)
 	put =''
 
 	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
-		put =g:magit_git_status_code[file_props['status']] . ': ' . filename
-		if ( file_props['visible'] == 0 )
-			put =''
-			continue
+		if ( file_props['empty'] == 1 )
+			put =g:magit_git_status_code['E'] . ': ' . filename
+		elseif ( file_props['symlink'] != '' )
+			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
+		else
+			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
+			if ( file_props['visible'] == 0 )
+				put =''
+				continue
+			endif
+			if ( file_props['exists'] == 0 )
+				echoerr "Error, " . filename . " should not exists"
+			endif
+			let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
+			for diff_line in hunks
+				silent put =diff_line
+			endfor
 		endif
-		if ( file_props['exists'] == 0 )
-			echoerr "Error, " . filename . " should not exists"
-		endif
-		let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
-		for diff_line in hunks
-			silent put =diff_line
-		endfor
 		put =''
 	endfor
 endfunction
@@ -883,9 +899,19 @@ function! magit#stage_block(block_type, discard) abort
 
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			call <SID>mg_git_apply(header, selection)
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+				call <SID>mg_system('git add ' . filename)
+			else
+				call <SID>mg_git_apply(header, selection)
+			endif
 		elseif ( section == 'staged' )
-			call <SID>mg_git_unapply(header, selection, 'staged')
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+				call <SID>mg_system('git reset ' . filename)
+			else
+				call <SID>mg_git_unapply(header, selection, 'staged')
+			endif
 		else
 			echoerr "Must be in \"" . 
 						\ g:magit_sections['staged'] . "\" or \"" . 
@@ -893,7 +919,12 @@ function! magit#stage_block(block_type, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			call <SID>mg_git_unapply(header, selection, 'unstaged')
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+				call delete(filename)
+			else
+				call <SID>mg_git_unapply(header, selection, 'unstaged')
+			endif
 		else
 			echoerr "Must be in \"" . 
 						\ g:magit_sections['unstaged'] . "\" section"

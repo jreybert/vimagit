@@ -18,7 +18,9 @@ let g:magit_git_status_code = {
  \ 'C': 'copied',
  \ 'U': 'updated but unmerged',
  \ '?': 'untracked',
- \ '!': 'ignored'
+ \ '!': 'ignored',
+ \ 'E': 'empty',
+ \ 'L': 'symlink',
  \ }
 
 " Regular expressions used to select blocks
@@ -26,7 +28,7 @@ let g:magit_file_re  = '^\('
 for status_code in values(g:magit_git_status_code)
 	let g:magit_file_re .= status_code . '\|'
 endfor
-let g:magit_file_re .= 'unknown status\): \(.*\)$'
+let g:magit_file_re .= 'unknown status\): \(.\{-\}\)\%( -> .*\)\?$'
 
 let g:magit_section_re  = '^\('
 for section_name in values(g:magit_sections)
