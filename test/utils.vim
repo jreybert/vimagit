@@ -42,10 +42,12 @@ endfunction
 
 " wrapper to execute command, echoerr'ing complete message in case of error
 function! Git_cmd(...)
+	Log 'Git_cmd: ' . string(a:000)
 	let ret=call('system', a:000)
 	if ( v:shell_error != 0 )
 		echoerr "Error:\ncommand:\n" . join(a:000, "\n") . "\nret:\n" . ret
 	endif
+	Log 'Ret: ' . ret
 	return ret
 endfunction
 
@@ -102,8 +104,10 @@ endfunction
 " end of the line before calling the command
 function! Cursor_position()
 	if ( exists("$VIMAGIT_TEST_FROM_EOL") ? $VIMAGIT_TEST_FROM_EOL : 0 )
+		Log 'Move to end of line'
 		call cursor(0, virtcol('$'))
 	else
+		Log 'Move to start of line'
 		call cursor(0, 1)
 	endif
 endfunction
@@ -127,7 +131,11 @@ endfunction
 " the cursor and return the line
 function! Search_file(mode)
 	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
-	return search('^.*: ' . $VIMAGIT_TEST_FILENAME . '\%( -> .*\)\?$')
+	Log 'Search mode: "' . a:mode . '" => ' . getline('.')
+	let pattern='^.*: ' . $VIMAGIT_TEST_FILENAME . '\%( -> .*\)\?$'
+	let ret = search(pattern)
+	Log 'Search: "' . pattern . '" => ' . getline('.')
+	return ret
 endfunction
 
 " get the filename we curently test
