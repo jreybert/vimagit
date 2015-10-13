@@ -382,6 +382,7 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 	let diff_dict_file['exists'] = 1
 	let diff_dict_file['status'] = a:status
 	let diff_dict_file['empty'] = 0
+	let diff_dict_file['binary'] = 0
 	let diff_dict_file['symlink'] = ''
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let diff_dict_file['symlink'] = resolve(a:filename)
@@ -391,6 +392,10 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 		let diff_dict_file['empty'] = 1
 		call add(diff_dict_file['diff'], ['no header'])
 		call add(diff_dict_file['diff'], ['New empty file'])
+	elseif ( match(system("file --mime " . <SID>mg_add_quotes(a:filename)), a:filename . ".*charset=binary") != -1 )
+		let diff_dict_file['binary'] = 1
+		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['Binary file'])
 	else
 		let index = 0
 		call add(diff_dict_file['diff'], [])
@@ -923,14 +928,16 @@ function! magit#stage_block(block_type, discard) abort
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
 				call <SID>mg_system('git add ' . <SID>mg_add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
 				call <SID>mg_system('git reset ' . <SID>mg_add_quotes(filename))
 			else
 				call <SID>mg_git_unapply(header, selection, 'staged')
@@ -943,7 +950,8 @@ function! magit#stage_block(block_type, discard) abort
 	else
 		if ( section == 'unstaged' )
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, selection, 'unstaged')
