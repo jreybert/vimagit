@@ -23,6 +23,7 @@ pushd $TEST_PATH
 git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='8e589e4'
+git show $TEST_HEAD_SHA1 --stat
 popd
 
 if [ "$VIM_VERSION" = 'neovim' ]; then
