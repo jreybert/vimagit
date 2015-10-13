@@ -127,23 +127,27 @@ function! Cd_test_sub()
 	cd $TEST_SUB_PATH
 endfunction
 
+" get the filename we curently test
+" optional parameter for renamed file. In this case, we want to (un)stage 2 times
+function! Get_filename(...)
+	if ( a:0 == 1 )
+		return split($VIMAGIT_TEST_FILENAME, '|')[a:1]
+	else
+		return $VIMAGIT_TEST_FILENAME
+endfunction
+
 " search a file header in magit buffer, for example 'added: bootstrap', move
 " the cursor and return the line
-function! Search_file(mode)
+function! Search_file(mode, ...)
 	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
 	Log 'Search mode: "' . a:mode . '" => ' . getline('.')
-	let pattern='^.*: ' . $VIMAGIT_TEST_FILENAME . '\%( -> .*\)\?$'
+	let pattern='^.*: ' . call('Get_filename', a:000) . '\%( -> .*\)\?$'
 	let ret = search(pattern)
 	Log 'Search: "' . pattern . '" => ' . getline('.')
 	return ret
 endfunction
 
-" get the filename we curently test
-function! Get_filename()
-	return $VIMAGIT_TEST_FILENAME
-endfunction
-
 " get a safe to use string of filename we curently test (for golden files)
-function! Get_safe_filename()
-	return substitute($VIMAGIT_TEST_FILENAME, '[/.]', '_', 'g')
+function! Get_safe_filename(...)
+	return substitute(call('Get_filename', a:000), '[/.]', '_', 'g')
 endfunction
