@@ -373,7 +373,7 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let diff_cmd="git diff --no-ext-diff " . staged_flag .
 				\ "--no-color --patch -- " . dev_null . " "
-				\ .  a:filename
+				\ .  <SID>mg_add_quotes(a:filename)
 	let diff_list=s:mg_systemlist(diff_cmd)
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
@@ -925,14 +925,14 @@ function! magit#stage_block(block_type, discard) abort
 		if ( section == 'unstaged' )
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
 			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
-				call <SID>mg_system('git add ' . filename)
+				call <SID>mg_system('git add ' . <SID>mg_add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
 			\    s:mg_diff_dict[section][filename]['symlink'] != '' )
-				call <SID>mg_system('git reset ' . filename)
+				call <SID>mg_system('git reset ' . <SID>mg_add_quotes(filename))
 			else
 				call <SID>mg_git_unapply(header, selection, 'staged')
 			endif
