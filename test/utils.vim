@@ -61,7 +61,7 @@ endfunction
 " helper function to get status of a given file
 function! Git_status(file)
 	call Cd_test()
-	let status=filter(split(system("git status --porcelain"), "\n"), 'v:val =~ "' . a:file . '"')[0]
+	let status=filter(split(system("git status --porcelain"), "\n"), 'v:val =~ "' . a:file . '"')[0] . "\n"
 	call Cd_test_sub()
 	return status
 endfunction
