@@ -236,7 +236,7 @@ function! s:mg_get_status_list()
 	" instead of NF
 	let status_list=<SID>mg_systemlist("git status --porcelain")
 	for file_status_line in status_list
-		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> "\)\?\(.\{-\}\)"\?$')
+		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
 		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
