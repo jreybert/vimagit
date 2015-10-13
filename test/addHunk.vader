@@ -10,7 +10,7 @@ Execute (Stage untracked file with magit#stage_hunk on start hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_hunk_diff.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_hunk_diff.expect', diff)
 
 Execute (Unstage untracked file with magit#stage_hunk on start hunk):
     call Cd_test_sub()
@@ -22,7 +22,7 @@ Execute (Unstage untracked file with magit#stage_hunk on start hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status(Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_unstaged_status.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_unstaged_status.expect', diff)
 
 Execute (Stage untracked file with magit#stage_hunk on end hunk):
     call Cd_test_sub()
@@ -35,7 +35,7 @@ Execute (Stage untracked file with magit#stage_hunk on end hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_hunk_diff.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_hunk_diff.expect', diff)
 
 Execute (Untage untracked file with magit#stage_hunk on end hunk):
     call Cd_test_sub()
@@ -48,7 +48,7 @@ Execute (Untage untracked file with magit#stage_hunk on end hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status(Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_unstaged_status.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_unstaged_status.expect', diff)
 
 Execute (Stage untracked file with magit#stage_hunk modified hunk):
     call Cd_test_sub()
@@ -61,7 +61,7 @@ Execute (Stage untracked file with magit#stage_hunk modified hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_diff('staged', Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_modified_hunk_diff.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_modified_hunk_diff.expect', diff)
 
 Execute (Unstage untracked file with magit#stage_hunk):
     call Cd_test_sub()
@@ -73,7 +73,7 @@ Execute (Unstage untracked file with magit#stage_hunk):
     call magit#stage_hunk()
     call Cd_test()
     let diff=Git_status(Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_unstaged_status.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_unstaged_status.expect', diff)
 
 Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
@@ -84,7 +84,7 @@ Execute (Stage untracked file with magit#stage_file at file header):
     call magit#stage_file()
     call Cd_test()
     let diff=Git_diff('staged', Get_filename())
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_file_diff.expect', diff)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_file_diff.expect', diff)
 
 Execute (Commit file):
     call Cd_test_sub()
@@ -94,6 +94,6 @@ Execute (Commit file):
     call magit#commit_command('CC')
     call Cd_test()
     let commit_msg=Git_commit_msg('HEAD')
-    call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_commit.expect', commit_msg)
+    call Expect_diff(g:test_script_dir . 'addHunk/addHunk_' . Get_safe_filename() . '_commit.expect', commit_msg)
 
 Include: cleanup.inc
