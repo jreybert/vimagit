@@ -1,0 +1,15 @@
+Add bootstrap fileAdd bootstrap file
+
+Some description text
+On multiple lines
+
+With blanks
+
+
+diff --git bootstrap with spaces.lnk bootstrap with spaces.lnk
+new file mode 120000
+--- /dev/null
++++ bootstrap with spaces.lnk	
+@@ -0,0 +1 @@
++bootstrap
+\ No newline at end of file

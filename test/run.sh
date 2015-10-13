@@ -40,10 +40,11 @@ source $VIMAGIT_PATH/test/test.config
 
 for script in ${!test_scripts[@]}; do
 
-	for filename in ${test_scripts[$script]}; do
+	IFS=';' read -a filename_array <<< "${test_scripts[$script]}"
+	for filename in "${filename_array[@]}"; do
 		for test_path in ${test_paths[@]}; do
 			export TEST_SUB_PATH=$(prealpath $TEST_PATH/$test_path)
-			export VIMAGIT_TEST_FILENAME=$filename
+			export VIMAGIT_TEST_FILENAME="$filename"
 
 			for i in 1 0; do
 				export VIMAGIT_TEST_FROM_EOL=$i
