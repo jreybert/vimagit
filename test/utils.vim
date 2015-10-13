@@ -61,8 +61,7 @@ endfunction
 " helper function to get status of a given file
 function! Git_status(file)
 	call Cd_test()
-	let status_cmd="git status --porcelain -- " . Git_add_quotes(a:file)
-	let status=Git_cmd(status_cmd)
+	let status=filter(split(system("git status --porcelain"), "\n"), 'v:val =~ "' . a:file . '"')[0]
 	call Cd_test_sub()
 	return status
 endfunction
