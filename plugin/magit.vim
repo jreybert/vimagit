@@ -230,14 +230,13 @@ endfunction
 function! s:mg_get_status_list()
 	let file_list = []
 
-	let status_list=split(<SID>mg_system('git status --porcelain -z'), '')
+	" systemlist v7.4.248 problem again
+	" we can't use git status -z here, because system doesn't make the
+	" difference between NUL and NL. -status z terminate entries with NUL,
+	" instead of NF
+	let status_list=<SID>mg_systemlist("git status --porcelain")
 	for file_status_line in status_list
-		let line_match = matchlist(file_status_line, '\(.\)\(.\) \(.*\)$')
-		" for renamed staged file, the original file is on next line
-		" FIXME: we should handle the original name to display it somewhere
-		if ( empty(line_match) )
-			continue
-		endif
+		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> "\)\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
 		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
