@@ -238,7 +238,7 @@ function! s:mg_get_status_list()
 		if ( empty(line_match) )
 			continue
 		endif
-		let filename = <SID>mg_add_quotes(line_match[3])
+		let filename = line_match[3]
 		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
 	return file_list
@@ -457,13 +457,12 @@ function! s:mg_get_staged_section(mode)
 	put =''
 
 	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
-		let unquoted_filename=<SID>mg_remove_quotes(filename)
 		if ( file_props['empty'] == 1 )
-			put =g:magit_git_status_code['E'] . ': ' . unquoted_filename
+			put =g:magit_git_status_code['E'] . ': ' . filename
 		elseif ( file_props['symlink'] != '' )
-			put =g:magit_git_status_code['L'] . ': ' . unquoted_filename . ' -> ' . file_props['symlink']
+			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
 		else
-			put =g:magit_git_status_code[file_props['status']] . ': ' . unquoted_filename
+			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
 		endif
 		if ( file_props['visible'] == 0 )
 			put =''
@@ -738,7 +737,7 @@ endfunction
 " cursor position
 " return: filename
 function! s:mg_get_filename()
-	return <SID>mg_add_quotes(substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', ''))
+	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
 endfunction
 
 " }}}
@@ -764,7 +763,10 @@ endfunction
 " visibility
 function! magit#open_close_folding(...)
 	let list = matchlist(getline("."), g:magit_file_re)
-	let filename = <SID>mg_add_quotes(list[2])
+	if ( empty(list) )
+		throw 'non file header line: ' . getline(".")
+	endif
+	let filename = list[2]
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value

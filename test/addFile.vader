@@ -21,6 +21,7 @@ Execute (Unstage file with magit#stage_file at closed file header):
     call Cd_test()
     let diff=Git_status(Get_filename())
     call Expect_diff(g:test_script_dir . 'addFile/addFile_' . Get_safe_filename() . '_unstaged_status.expect', diff)
+
 Execute (Stage untracked file with magit#stage_file at file header):
     call Cd_test_sub()
     Magit
