@@ -8,7 +8,7 @@ branches:
 
 os:
   - linux
-  - osx
+#  - osx
 
 env:
   - VIM_VERSION=normal
