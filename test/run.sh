@@ -1,4 +1,8 @@
-set -xe
+set -e
+
+if [[ "$VIMGAGIT_TEST_VERBOSE" == "1" ]]; then
+	set -x
+fi
 
 if [[ $# -ne 4 ]]; then
 	echo "Usage $0 VIMAGIT_PATH VADER_PATH TEST_PATH VIM_VERSION"

@@ -2,5 +2,5 @@ Execute (setup):
   source $VIMAGIT_PATH/test/utils.vim
   call Cd_test()
   call system("git reset --mixed " . $TEST_HEAD_SHA1 . "~1")
-  Log system("git status --porcelain")
+  call Git_verbose_log(system("git status --porcelain"))
   call Cd_test_sub()

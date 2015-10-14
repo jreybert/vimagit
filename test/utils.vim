@@ -40,14 +40,20 @@ function! Move_relative(nb_lines)
 	call cursor(line('.') + a:nb_lines, 0)
 endfunction
 
+function! Git_verbose_log(...)
+	if ( $VIMGAGIT_TEST_VERBOSE == "1" )
+		call('vader#log', a:000)
+	endif
+endfunction
+
 " wrapper to execute command, echoerr'ing complete message in case of error
 function! Git_cmd(...)
-	Log 'Git_cmd: ' . string(a:000)
+	call Git_verbose_log('Git_cmd: ' . string(a:000))
 	let ret=call('system', a:000)
 	if ( v:shell_error != 0 )
 		echoerr "Error:\ncommand:\n" . join(a:000, "\n") . "\nret:\n" . ret
 	endif
-	Log 'Ret: ' . ret
+	call Git_verbose_log('Ret: ' . ret)
 	return ret
 endfunction
 
@@ -84,8 +90,8 @@ endfunction
 " - generate gold file with output if VIMAGIT_CRAFT_EXPECT == 0
 function! Expect_diff(gold_file, test_diff)
 	if ( Is_crafting() == 0 )
-		Log "Expect diff: " . a:test_diff
-		Log "With golden file: " . a:gold_file
+		call Git_verbose_log("Expect diff: " . a:test_diff)
+		call Git_verbose_log("With golden file: " . a:gold_file)
 		let diff_cmd="diff " . Git_add_quotes(a:gold_file) . " - "
 		let diff=system(diff_cmd, a:test_diff)
 		if ( v:shell_error != 0 )
@@ -105,10 +111,10 @@ endfunction
 " end of the line before calling the command
 function! Cursor_position()
 	if ( exists("$VIMAGIT_TEST_FROM_EOL") ? $VIMAGIT_TEST_FROM_EOL : 0 )
-		Log 'Move to end of line'
+		call Git_verbose_log('Move to end of line')
 		call cursor(0, virtcol('$'))
 	else
-		Log 'Move to start of line'
+		call Git_verbose_log('Move to start of line')
 		call cursor(0, 1)
 	endif
 endfunction
@@ -141,10 +147,10 @@ endfunction
 " the cursor and return the line
 function! Search_file(mode, ...)
 	call search(substitute(a:mode, '.*', '\u\0', '') . ' changes')
-	Log 'Search mode: "' . a:mode . '" => ' . getline('.')
+	call Git_verbose_log('Search mode: "' . a:mode . '" => ' . getline('.'))
 	let pattern='^.*: ' . call('Get_filename', a:000) . '\%( -> .*\)\?$'
 	let ret = search(pattern)
-	Log 'Search: "' . pattern . '" => ' . getline('.')
+	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.'))
 	return ret
 endfunction
 
