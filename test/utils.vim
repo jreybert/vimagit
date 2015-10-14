@@ -42,7 +42,7 @@ endfunction
 
 function! Git_verbose_log(...)
 	if ( $VIMGAGIT_TEST_VERBOSE == "1" )
-		call('vader#log', a:000)
+		call call('vader#log', a:000)
 	endif
 endfunction
 
