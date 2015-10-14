@@ -148,5 +148,5 @@ endfunction
 
 " get a safe to use string of filename we curently test (for golden files)
 function! Get_safe_filename(...)
-	return substitute(call('Get_filename', a:000), '[/.]', '_', 'g')
+	return substitute(call('Get_filename', a:000), '[/. ]', '_', 'g')
 endfunction
