@@ -84,6 +84,8 @@ endfunction
 " - generate gold file with output if VIMAGIT_CRAFT_EXPECT == 0
 function! Expect_diff(gold_file, test_diff)
 	if ( Is_crafting() == 0 )
+		Log "Expect diff: " . a:test_diff
+		Log "With golden file: " . a:gold_file
 		let diff_cmd="diff " . Git_add_quotes(a:gold_file) . " - "
 		let diff=system(diff_cmd, a:test_diff)
 		if ( v:shell_error != 0 )
