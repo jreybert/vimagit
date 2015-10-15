@@ -104,6 +104,9 @@ For each mapping, user can redefine the behavior with its own mapping. Each vari
 
 Following mappings are broadly set, and are applied in all vim buffers.
 
+**\<Leader>M**
+Open Magit buffer
+
 #### Local mappings
 
 Following mappings are set locally, for magit buffer only, in normal mode.
