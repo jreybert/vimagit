@@ -1,0 +1,58 @@
+Release 1.3
+===========
+
+Features
+--------
+
+* hide file diffs: to hide/unhide diffs for a file, move the cursor to the filename and press <CR> (Enter). It allows vimagit to be fast when there is a lot of diffs in a repository.
+* zo, zO, zc, zC mappings on a filename hide/unhide file diffs.
+* modify hunk before staging: in the Magit buffer, it is possible to modify a hunk before staging it. Only '+' lines can be modified. No lines can be deleted or added for the moment. (fixes #9).
+* handle new empty files and new symlink (fix #11).
+* handle binary files (fix #13).
+* stage/unstage/ignore/discard a file with cursor on the filename.
+* add global mapping <Leader>M to open magit buffer (it can be overwritten with g:magit_show_magit_mapping).
+* remove 'C' default mapping.
+
+Fixes
+-----
+
+* fix staging issue: sometimes, staging a hunk was failing.
+* handle filenames with spaces.
+
+Release 1.2
+===========
+
+Fixes
+-----
+
+* read COMMIT_EDITMSG only if exists (commit command failed for fresh new git directory)
+* fix issue of some rare hunk staging (because of some whitespaces)
+
+Features
+--------
+
+* stage/unstage/ignore on file header now works
+* add info section (fix #6)
+
+Release 1.1
+===========
+
+Fixes
+-----
+
+* add wrappers to system and systemlist, when vim doesn't support system with List (available since vim v7.4.248)
+* fix git diff failing when cwd is not in top dir (it ends with an empty Magit buffer)
+* ensure to not use external diff if any
+* Check commentChar from git config
+
+New mappings
+------------
+
+* default discard mapping is now DDD, to avoid mistype
+* map :w to commit
+* close Magit buffer with q
+
+Internal
+--------
+
+* put some first tests in regression, with travis
