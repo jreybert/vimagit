@@ -1,0 +1,13 @@
+diff --git books/models.py books/models.py
+--- books/models.py
++++ books/models.py
+@@ -1,5 +1,9 @@
+ from django.db import models
+ 
++import urllib2 as vimatest
++from PIL import Image
++import io
++
+ import isbn_search
+ 
+ class User(models.Model):

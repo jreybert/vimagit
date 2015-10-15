@@ -1,0 +1,8 @@
+diff --git bootstrap with spaces bootstrap with spaces
+new file mode 100755
+--- /dev/null
++++ bootstrap with spaces	
+@@ -0,0 +1,3 @@
++pip install --user python-amazon-simple-product-api django
++python manage.py migrate
++python manage.py makemigrations books

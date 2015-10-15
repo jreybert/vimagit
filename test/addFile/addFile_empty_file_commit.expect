@@ -1,0 +1,10 @@
+Add bootstrap fileAdd bootstrap file
+
+Some description text
+On multiple lines
+
+With blanks
+
+
+diff --git empty_file empty_file
+new file mode 100644

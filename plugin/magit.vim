@@ -32,22 +32,31 @@ function! s:set(var, default)
 	endif
 endfunction
 
-call s:set('g:magit_stage_file_mapping',        "F")
-call s:set('g:magit_stage_hunk_mapping',        "S")
-call s:set('g:magit_discard_hunk_mapping',      "DDD")
-call s:set('g:magit_commit_mapping_command',    "w<cr>")
-call s:set('g:magit_commit_mapping1',           "C")
-call s:set('g:magit_commit_mapping2',           "CC")
-call s:set('g:magit_commit_amend_mapping',      "CA")
-call s:set('g:magit_commit_fixup_mapping',      "CF")
-call s:set('g:magit_reload_mapping',            "R")
-call s:set('g:magit_ignore_mapping',            "I")
-call s:set('g:magit_close_mapping',             "q")
-call s:set('g:magit_toggle_help_mapping',       "h")
+" these mappings are broadly applied, for all vim buffers
+call s:set('g:magit_show_magit_mapping',        '<leader>M' )
 
+" these mapping are applied locally, for magit buffer only
+call s:set('g:magit_stage_file_mapping',        'F' )
+call s:set('g:magit_stage_hunk_mapping',        'S' )
+call s:set('g:magit_discard_hunk_mapping',      'DDD' )
+call s:set('g:magit_commit_mapping_command',    'w<cr>' )
+call s:set('g:magit_commit_mapping',            'CC' )
+call s:set('g:magit_commit_amend_mapping',      'CA' )
+call s:set('g:magit_commit_fixup_mapping',      'CF' )
+call s:set('g:magit_reload_mapping',            'R' )
+call s:set('g:magit_ignore_mapping',            'I' )
+call s:set('g:magit_close_mapping',             'q' )
+call s:set('g:magit_toggle_help_mapping',       'h' )
+
+call s:set('g:magit_folding_toggle_mapping',    [ '<CR>' ])
+call s:set('g:magit_folding_open_mapping',      [ 'zo', 'zO' ])
+call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
+
+" user options
 call s:set('g:magit_enabled',                   1)
 call s:set('g:magit_show_help',                 1)
 
+execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
 
 " {{{ Internal functions
@@ -166,6 +175,40 @@ function! s:mg_join_list(list)
 	return join(a:list, "\n") . "\n"
 endfunction
 
+" s:mg_add_quotes: helper function to protect filename with quotes
+" return quoted filename
+function! s:mg_add_quotes(filename)
+	return '"' . a:filename . '"'
+endfunction
+
+" s:mg_remove_quotes: helper function to remove quotes aroudn filename
+" return unquoted filename
+function! s:mg_remove_quotes(filename)
+	let ret=matchlist(a:filename, '"\([^"]*\)"')
+	if ( empty(ret) )
+		throw 'no quotes found: ' . a:filename
+	endif
+	return ret[1]
+endfunction
+
+" s:mg_fatten: flat a nested list. it return a one dimensional list with
+" primary elements
+" https://gist.github.com/dahu/3322468
+" param[in] list: a List, can be nested or not
+" return: one dimensional list
+function! s:mg_flatten(list)
+  let val = []
+  for elem in a:list
+    if type(elem) == type([])
+      call extend(val, <SID>mg_flatten(elem))
+    else
+      call extend(val, [elem])
+    endif
+    unlet elem
+  endfor
+  return val
+endfunction
+
 " s:mg_append_file: helper function to append to a file
 " Version working with file *possibly* containing trailing newline
 " param[in] file: filename to append
@@ -181,50 +224,23 @@ function! s:mg_append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
-" s:mg_get_diff: this function write in current buffer all file names and
-" related diffs for a given mode
-" filename are prefixed in git status ('new: ' , 'modified: ', ...)
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-" param[in] mode: can be 'staged' or 'unstaged'
-function! s:mg_get_diff(mode)
+" s:mg_get_status_list: this function returns the git status output formated
+" into a List of Dict as
+" [ {staged', 'unstaged', 'filename'}, ... ]
+function! s:mg_get_status_list()
+	let file_list = []
 
-	let staged_flag=""
-	if ( a:mode == 'staged' )
-		let status_position=0
-		let staged_flag=" --staged "
-	elseif ( a:mode == 'unstaged' )
-		let status_position=1
-	endif
-
+	" systemlist v7.4.248 problem again
+	" we can't use git status -z here, because system doesn't make the
+	" difference between NUL and NL. -status z terminate entries with NUL,
+	" instead of NF
 	let status_list=<SID>mg_systemlist("git status --porcelain")
 	for file_status_line in status_list
-		let file_status=file_status_line[status_position]
-		let file_name=substitute(file_status_line, '.. \(.*\)$', '\1', '')
-		" untracked code apperas in staged column, we skip it
-		if ( file_status == ' ' || ( ( a:mode == 'staged' ) && file_status == '?' ) )
-			continue
-		endif
-		put =g:magit_git_status_code[file_status] . ': ' . file_name
-		let dev_null=""
-		if ( file_status == '?' )
-			let dev_null="/dev/null"
-		endif
-		if ( file_name =~ " -> " )
-			" git status add quotes " for file names with spaces only for rename mode
-			let file_name=substitute(file_name, '.* -> \(.*\)$', '\1', '')
-		else
-			let file_name='"' . file_name . '"'
-		endif
-		let diff_cmd="git diff --no-ext-diff " . staged_flag . "--no-color --patch -- " . dev_null . " " .  file_name
-		let diff_list=<SID>mg_systemlist(diff_cmd)
-		if ( empty(diff_list) )
-			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-		endif
-		silent put =diff_list
-		" add missing new line
-		put =''
+		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
+		let filename = line_match[3]
+		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
 	endfor
+	return file_list
 endfunction
 
 " s:magit_inline_help: Dict containing inline help for each section
@@ -248,6 +264,7 @@ let s:magit_inline_help = {
 \'CF     amend staged changes to previous commit without modifying the previous',
 \'       commit message',
 \'R      refresh magit buffer',
+\'q      close magit buffer',
 \'h      toggle help showing in magit buffer',
 \'',
 \'To disable inline default appearance, add "let g:magit_show_help=0" to .vimrc',
@@ -294,31 +311,176 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
-" s:mg_get_staged: this function writes in current buffer all staged files
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-function! s:mg_get_staged()
-	silent put =''
-	silent put =g:magit_sections['staged']
-	call <SID>mg_section_help('staged')
-	silent put =<SID>mg_underline(g:magit_sections['staged'])
-	silent put =''
+" s:mg_diff_dict: big main global variable, containing all diffs
+" It is formatted as follow
+" { 'staged_or_unstaged': staged/unstaged
+"     [
+"         { 'filename':
+"             { 'visible': bool,
+"               'status' : g:magit_git_status_code,
+"               'exists' : bool
+"               'diff'   : [ [header], [hunk0], [hunk1], ...]
+"             }
+"          },
+"          ...
+"      ]
+" }
+let s:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
 
-	call <SID>mg_get_diff('staged')
+" s:mg_diff_dict_get_file: mg_diff_dict accessor for file
+" param[in] mode: can be staged or unstaged
+" param[in] filename: filename to access
+" param[in] create: boolean. If 1, non existing file in Dict will be created.
+" if 0, 'file_doesnt_exists' exception will be thrown
+" return: Dict of file
+function! s:mg_diff_dict_get_file(mode, filename, create)
+	let file_exists = has_key(s:mg_diff_dict[a:mode], a:filename)
+	if ( file_exists == 0 && a:create == 1 )
+		let s:mg_diff_dict[a:mode][a:filename] = {}
+		let s:mg_diff_dict[a:mode][a:filename]['visible'] = 0
+	elseif ( file_exists == 0 && a:create == 0 )
+		throw 'file_doesnt_exists'
+	endif
+	return s:mg_diff_dict[a:mode][a:filename]
 endfunction
 
-" s:mg_get_unstaged: this function writes in current buffer all unstaged
-" and untracked files
+" s:mg_diff_dict_get_header: mg_diff_dict accessor for diff header
+" param[in] mode: can be staged or unstaged
+" param[in] filename: header of filename to access
+" return: List of diff header lines
+function! s:mg_diff_dict_get_header(mode, filename)
+	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
+	return diff_dict_file['diff'][0]
+endfunction
+
+" s:mg_diff_dict_get_hunks: mg_diff_dict accessor for hunks
+" param[in] mode: can be staged or unstaged
+" param[in] filename: hunks of filename to access
+" return: List of List of hunks lines
+function! s:mg_diff_dict_get_hunks(mode, filename)
+	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
+	return diff_dict_file['diff'][1:-1]
+endfunction
+
+" s:mg_diff_dict_add_file: mg_diff_dict method to add a file with all its
+" properties (filename, exists, status, header and hunks)
+" param[in] mode: can be staged or unstaged
+" param[in] status: one character status code of the file (AMDRCU?)
+" param[in] filename: filename
+function! s:mg_diff_dict_add_file(mode, status, filename)
+	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
+	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let diff_cmd="git diff --no-ext-diff " . staged_flag .
+				\ "--no-color --patch -- " . dev_null . " "
+				\ .  <SID>mg_add_quotes(a:filename)
+	let diff_list=s:mg_systemlist(diff_cmd)
+	if ( empty(diff_list) )
+		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+	endif
+	let diff_dict_file = <SID>mg_diff_dict_get_file(a:mode, a:filename, 1)
+	let diff_dict_file['diff'] = []
+	let diff_dict_file['exists'] = 1
+	let diff_dict_file['status'] = a:status
+	let diff_dict_file['empty'] = 0
+	let diff_dict_file['binary'] = 0
+	let diff_dict_file['symlink'] = ''
+	if ( a:status == '?' && getftype(a:filename) == 'link' )
+		let diff_dict_file['symlink'] = resolve(a:filename)
+		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['New symbolic link file'])
+	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+		let diff_dict_file['empty'] = 1
+		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['New empty file'])
+	elseif ( match(system("file --mime " . <SID>mg_add_quotes(a:filename)), a:filename . ".*charset=binary") != -1 )
+		let diff_dict_file['binary'] = 1
+		call add(diff_dict_file['diff'], ['no header'])
+		call add(diff_dict_file['diff'], ['Binary file'])
+	else
+		let index = 0
+		call add(diff_dict_file['diff'], [])
+		for diff_line in diff_list
+			if ( diff_line =~ "^@.*" )
+				let index+=1
+				call add(diff_dict_file['diff'], [])
+			endif
+			call add(diff_dict_file['diff'][index], diff_line)
+		endfor
+	endif
+endfunction
+
+" s:mg_update_diff_dict: update s:mg_diff_dict
+" if a file does not exists anymore (because all its changes have been
+" committed, deleted, discarded), it is removed from s:mg_diff_dict
+" else, its diff is discarded and regenrated
+" what is resilient is its 'visible' parameter
+function! s:mg_update_diff_dict()
+	for diff_dict_mode in values(s:mg_diff_dict)
+		for file in values(diff_dict_mode)
+			let file['exists'] = 0
+			" always discard previous diff
+			unlet file['diff']
+		endfor
+	endfor
+
+	for [mode, diff_dict_mode] in items(s:mg_diff_dict)
+
+		let status_list = s:mg_get_status_list()
+		for file_status in status_list
+			let status=file_status[mode]
+
+			" untracked code apperas in staged column, we skip it
+			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
+				continue
+			endif
+			call <SID>mg_diff_dict_add_file(mode, status, file_status['filename'])
+		endfor
+	endfor
+
+	" remove files that have changed their mode or been committed/deleted/discarded...
+	for diff_dict_mode in values(s:mg_diff_dict)
+		for [key, file] in items(diff_dict_mode)
+			if ( file['exists'] == 0 )
+				unlet diff_dict_mode[key]
+			endif
+		endfor
+	endfor
+endfunction
+
+
+" s:mg_get_staged_section: this function writes in current buffer all staged
+" or unstaged files, using s:mg_diff_dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
-function! s:mg_get_unstaged()
-	silent put =''
-	silent put =g:magit_sections['unstaged']
-	call <SID>mg_section_help('unstaged')
-	silent put =<SID>mg_underline(g:magit_sections['unstaged'])
-	silent put =''
+" param[in] mode: 'staged' or 'unstaged'
+function! s:mg_get_staged_section(mode)
+	put =''
+	put =g:magit_sections[a:mode]
+	call <SID>mg_section_help(a:mode)
+	put =s:mg_underline(g:magit_sections[a:mode])
+	put =''
 
-	call <SID>mg_get_diff('unstaged')
+	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
+		if ( file_props['empty'] == 1 )
+			put =g:magit_git_status_code['E'] . ': ' . filename
+		elseif ( file_props['symlink'] != '' )
+			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
+		else
+			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
+		endif
+		if ( file_props['visible'] == 0 )
+			put =''
+			continue
+		endif
+		if ( file_props['exists'] == 0 )
+			echoerr "Error, " . filename . " should not exists"
+		endif
+		let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
+		for diff_line in hunks
+			silent put =diff_line
+		endfor
+		put =''
+	endfor
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -425,11 +587,11 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let start=search(a:start_pattern[0], "cbW")
 	if ( start == 0 )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 	if ( start < upper_limit )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 	let start+=a:start_pattern[1]
 
@@ -444,13 +606,13 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	endfor
 	if ( end == 0 )
 		call winrestview(l:winview)
-		return [1, ""]
+		throw "out_of_block"
 	endif
 
 	let lines=getline(start, end)
 
 	call winrestview(l:winview)
-	return [0, lines]
+	return lines
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
@@ -462,14 +624,14 @@ endfunction
 "       'CA': commit staged stuff with message in commit section amending last
 "       commit
 " return no
-function! s:mg_git_commit(mode)
+function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
 		silent let git_result=<SID>mg_system("git commit --amend -C HEAD")
 	else
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
 		let commit_jump_line = 3 + <SID>mg_get_inline_help_line_nb('commit')
-		let [ret, commit_msg]=<SID>mg_search_block(
+		let commit_msg = <SID>mg_search_block(
 		 \ [commit_section_pat_start, commit_jump_line],
 		 \ [ [commit_section_pat_end, -1] ], "")
 		let amend_flag=""
@@ -483,14 +645,14 @@ function! s:mg_git_commit(mode)
 	endif
 endfunction
 
-" s:mg_select_file: select the whole diff file, relative to the current
+" s:mg_select_file_block: select the whole diff file, relative to the current
 " cursor position
 " nota: if the cursor is not in a diff file when the function is called, this
 " function will fail
 " return: a List
 "         @[0]: return value
 "         @[1]: List of lines containing the patch for the whole file
-function! s:mg_select_file()
+function! s:mg_select_file_block()
 	return <SID>mg_search_block(
 				\ [g:magit_file_re, 1],
 				\ [ [g:magit_file_re, -1],
@@ -502,27 +664,13 @@ function! s:mg_select_file()
 				\ "")
 endfunction
 
-" s:mg_select_file_header: select the upper diff header, relative to the current
-" cursor position
-" nota: if the cursor is not in a diff file when the function is called, this
-" function will fail
-" return: a List
-"         @[0]: return value
-"         @[1]: List of lines containing the diff header
-function! s:mg_select_file_header()
-	return <SID>mg_search_block(
-				\ [g:magit_file_re, 1],
-				\ [ [g:magit_hunk_re, -1] ],
-				\ "")
-endfunction
-
-" s:mg_select_hunk: select a hunk, from the current cursor position
+" s:mg_select_hunk_block: select a hunk, from the current cursor position
 " nota: if the cursor is not in a hunk when the function is called, this
 " function will fail
 " return: a List
 "         @[0]: return value
 "         @[1]: List of lines containing the hunk
-function! s:mg_select_hunk()
+function! s:mg_select_hunk_block()
 	return <SID>mg_search_block(
 				\ [g:magit_hunk_re, 0],
 				\ [ [g:magit_hunk_re, -1],
@@ -540,22 +688,17 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! s:mg_git_apply(selection)
-	let selection = a:selection
-	if ( selection[-1] !~ '^\s*$' )
+function! s:mg_git_apply(header, selection)
+	let selection = <SID>mg_flatten(a:header + a:selection)
+	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	" when passing List to system as input, there are some rare and
-	" difficultly reproductable cases failing because of whitespaces
-	let tmp=tempname()
-	call writefile(selection, tmp)
-	silent let git_result=<SID>mg_system("git apply --cached - < " . tmp)
+	silent let git_result=<SID>mg_system("git apply --no-index --cached -", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to aply this"
 		echoerr string(a:selection)
 	endif
-	call delete(tmp)
 endfunction
 
 " s:mg_git_unapply: helper function to unstage a selection
@@ -564,38 +707,79 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! s:mg_git_unapply(selection, mode)
+function! s:mg_git_unapply(header, selection, mode)
 	let cached_flag=''
 	if ( a:mode == 'staged' )
 		let cached_flag=' --cached '
 	endif
-	let selection = a:selection
-	if ( selection[-1] !~ '^\s*$' )
+	let selection = <SID>mg_flatten(a:header + a:selection)
+	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	" when passing List to system as input, there are some rare and
-	" difficultly reproductable cases failing because of whitespaces
-	let tmp=tempname()
-	call writefile(selection, tmp)
-	silent let git_result=<SID>mg_system("git apply " . cached_flag . " --reverse - < " . tmp)
+	silent let git_result=<SID>mg_system("git apply --no-index " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
 		echoerr string(a:selection)
 	endif
-	call delete(tmp)
 endfunction
 
 " s:mg_get_section: helper function to get the current section, according to
 " cursor position
-" return: string of the current section, without decoration
+" return: section id, empty string if no section found
 function! s:mg_get_section()
-	let section_line=search(g:magit_section_re, "bnW")
-	return getline(section_line)
+	let section_line=getline(search(g:magit_section_re, "bnW"))
+	for [section_name, section_str] in items(g:magit_sections)
+		if ( section_line == section_str )
+			return section_name
+		endif
+	endfor
+	return ''
 endfunction
+
+" s:mg_get_filename: helper function to get the current filename, according to
+" cursor position
+" return: filename
+function! s:mg_get_filename()
+	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
+endfunction
+
 " }}}
 
 " {{{ User functions and commands
+
+" magit#open_close_folding_wrapper: wrapper function to
+" magit#open_close_folding. If line under cursor is not a cursor, execute
+" normal behavior
+" param[in] mapping: which has been set
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! magit#open_close_folding_wrapper(mapping, ...)
+	if ( getline(".") =~ g:magit_file_re )
+		return call('magit#open_close_folding', a:000)
+	else
+		silent! execute "silent! normal! " . a:mapping
+	endif
+endfunction
+
+" magit#open_close_folding()
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! magit#open_close_folding(...)
+	let list = matchlist(getline("."), g:magit_file_re)
+	if ( empty(list) )
+		throw 'non file header line: ' . getline(".")
+	endif
+	let filename = list[2]
+	let section=<SID>mg_get_section()
+	" if first param is set, force visible to this value
+	" else, toggle value
+	let s:mg_diff_dict[section][filename]['visible'] =
+				\ ( a:0 == 1 ) ? a:1 :
+				\ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
+	call magit#update_buffer()
+endfunction
+
 
 " magit#update_buffer: this function:
 " 1. checks that current buffer is the wanted one
@@ -621,8 +805,9 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()
 	endif
-	call <SID>mg_get_staged()
-	call <SID>mg_get_unstaged()
+	call <SID>mg_update_diff_dict()
+	call <SID>mg_get_staged_section('staged')
+	call <SID>mg_get_staged_section('unstaged')
 	call <SID>mg_get_stashes()
 
 	call winrestview(l:winview)
@@ -645,12 +830,24 @@ endfunction
 
 " magit#show_magit: prepare and show magit buffer
 " it also set local mappings to magit buffer
-function! magit#show_magit(orientation)
+" param[in] display:
+"     'v': vertical split
+"     'h': horizontal split
+"     'c': current buffer (should be used when opening vim in vimagit mode
+function! magit#show_magit(display)
 	if ( <SID>mg_strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
 		echoerr "Magit must be started from a git repository"
 		return
 	endif
-	vnew 
+	if ( a:display == 'v' )
+		vnew 
+	elseif ( a:display == 'h' )
+		new 
+	elseif ( a:display == 'c' )
+		"nothing, use current buffer
+	else
+		throw 'parameter_error'
+	endif
 	setlocal buftype=nofile
 	setlocal bufhidden=delete
 	setlocal noswapfile
@@ -667,74 +864,123 @@ function! magit#show_magit(orientation)
 	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#discard_hunk()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
 	execute "cnoremap <buffer> <silent> " . g:magit_commit_mapping_command." :call magit#commit_command('CC')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping1 .      " :call magit#commit_command('CC')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping2 .      " :call magit#commit_command('CC')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
+	for mapping in g:magit_folding_toggle_mapping
+		" trick to pass '<cr>' in a mapping command without being interpreted
+		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<cr>"
+	endfor
+	for mapping in g:magit_folding_open_mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<cr>"
+	endfor
+	for mapping in g:magit_folding_close_mapping
+		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<cr>"
+	endfor
 	
 	call magit#update_buffer()
 	execute "normal! gg"
 endfunction
 
-" magit#stage_hunk: this function stage a single hunk, from the current
-" cursor position
-" INFO: in unstaged section, it stages the hunk, and in staged section, it
-" unstages the hunk
-" return: no
-function! magit#stage_hunk()
-	let [ret, header] = <SID>mg_select_file_header()
-	if ( ret != 0 )
-		echoerr "Can't find diff header"
-		return
-	endif
-	let [ret, hunk] = <SID>mg_select_hunk()
-	if ( ret == 0 )
-		let selection = header + hunk
-	else
-		let [ret, selection] = <SID>mg_select_file()
-		if ( ret != 0 )
-			echoerr "Can't find diff header"
-			return
+function! s:mg_select_closed_file()
+	if ( getline(".") =~ g:magit_file_re )
+		let list = matchlist(getline("."), g:magit_file_re)
+		let filename = list[2]
+		let section=<SID>mg_get_section()
+		if ( has_key(s:mg_diff_dict[section], filename) &&
+		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) )
+			let selection = <SID>mg_diff_dict_get_hunks(section, filename)
+			return selection
 		endif
 	endif
+	throw "out_of_block"
+endfunction
+
+" maagit#stage_block: this function (un)stage a block, according to parameter
+" INFO: in unstaged section, it stages the hunk, and in staged section, it
+" unstages the hunk
+" param[in] block_type: can be 'file' or 'hunk'
+" param[in] discard: boolean, if true, discard instead of (un)stage
+" return: no
+function! magit#stage_block(block_type, discard) abort
+	try
+		let selection = <SID>mg_select_closed_file()
+	catch 'out_of_block'
+		if ( a:block_type == 'hunk')
+			try
+				let selection = <SID>mg_select_hunk_block()
+			catch 'out_of_block'
+				let selection = <SID>mg_select_file_block()
+			endtry
+		else
+			let selection = <SID>mg_select_file_block()
+		endif
+	endtry
+
 	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
-		call <SID>mg_git_apply(selection)
-	elseif ( section == g:magit_sections['staged'] )
-		call <SID>mg_git_unapply(selection, 'staged')
+	let filename=<SID>mg_get_filename()
+	let header = <SID>mg_diff_dict_get_header(section, filename)
+
+	if ( a:discard == 0 )
+		if ( section == 'unstaged' )
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+				call <SID>mg_system('git add ' . <SID>mg_add_quotes(filename))
+			else
+				call <SID>mg_git_apply(header, selection)
+			endif
+		elseif ( section == 'staged' )
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+				call <SID>mg_system('git reset ' . <SID>mg_add_quotes(filename))
+			else
+				call <SID>mg_git_unapply(header, selection, 'staged')
+			endif
+		else
+			echoerr "Must be in \"" . 
+						\ g:magit_sections['staged'] . "\" or \"" . 
+						\ g:magit_sections['unstaged'] . "\" section"
+		endif
 	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['staged'] . "\" or \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
+		if ( section == 'unstaged' )
+			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+				call delete(filename)
+			else
+				call <SID>mg_git_unapply(header, selection, 'unstaged')
+			endif
+		else
+			echoerr "Must be in \"" . 
+						\ g:magit_sections['unstaged'] . "\" section"
+		endif
 	endif
+
 	call magit#update_buffer()
 endfunction
 
-" magit#stage_file: this function stage a whole file, from the current
+" magit#stage_file: this function (un)stage a whole file, from the current
 " cursor position
 " INFO: in unstaged section, it stages the file, and in staged section, it
 " unstages the file
 " return: no
 function! magit#stage_file()
-	let [ret, selection] = <SID>mg_select_file()
-	if ( ret != 0 )
-		echoerr "Not in a file region"
-		return
-	endif
-	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
-		call <SID>mg_git_apply(selection)
-	elseif ( section == g:magit_sections['staged'] )
-		call <SID>mg_git_unapply(selection, 'staged')
-	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['staged'] . "\" or \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
-	endif
-	call magit#update_buffer()
+	return magit#stage_block('file', 0)
+endfunction
+"
+" magit#stage_hunk: this function (un)stage a hunk, from the current
+" cursor position
+" INFO: in unstaged section, it stages the hunk, and in staged section, it
+" unstages the hunk
+" return: no
+function! magit#stage_hunk()
+	return magit#stage_block('hunk', 0)
 endfunction
 
 " magit#discard_hunk: this function discard a single hunk, from the current
@@ -742,50 +988,13 @@ endfunction
 " INFO: only works in unstaged section
 " return: no
 function! magit#discard_hunk()
-	let [ret, header] = <SID>mg_select_file_header()
-	if ( ret != 0 )
-		echoerr "Can't find diff header"
-		return
-	endif
-	let [ret, hunk] = <SID>mg_select_hunk()
-	if ( ret == 0 )
-		let selection = header + hunk
-	else
-		let [ret, selection] = <SID>mg_select_file()
-		if ( ret != 0 )
-			echoerr "Can't find diff header"
-			return
-		endif
-	endif
-	let section=<SID>mg_get_section()
-	if ( section == g:magit_sections['unstaged'] )
-		call <SID>mg_git_unapply(selection, 'unstaged')
-	else
-		echoerr "Must be in \"" . 
-		 \ g:magit_sections['unstaged'] . "\" section"
-	endif
-	call magit#update_buffer()
+	return magit#stage_block('hunk', 1)
 endfunction
 
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
-function! magit#ignore_file()
-	let [ret, selection] = <SID>mg_select_file()
-	if ( ret != 0 )
-		echoerr "Not in a file region"
-		return
-	endif
-	let ignore_file=""
-	for line in selection
-		if ( match(line, "^+++ ") != -1 )
-			let ignore_file=<SID>mg_strip(substitute(line, '^+++ ./\(.*\)$', '\1', ''))
-			break
-		endif
-	endfor
-	if ( ignore_file == "" )
-		echoerr "Can not find file to ignore"
-		return
-	endif
+function! magit#ignore_file() abort
+	let ignore_file=<SID>mg_get_filename()
 	call <SID>mg_append_file(<SID>mg_top_dir() . ".gitignore", [ ignore_file ] )
 	call magit#update_buffer()
 endfunction
@@ -797,11 +1006,11 @@ endfunction
 "   'CA'/'CF': if in commit section mode, call magit#git_commit, else just set
 "   global state variable s:magit_commit_mode,
 function! magit#commit_command(mode)
-	let section=<SID>mg_get_section()
 	if ( a:mode == 'CF' )
 		call <SID>mg_git_commit(a:mode)
 	else
-		if ( section == g:magit_sections['commit_start'] )
+		let section=<SID>mg_get_section()
+		if ( section == 'commit_start' )
 			if ( s:magit_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
@@ -817,6 +1026,6 @@ function! magit#commit_command(mode)
 	call magit#update_buffer()
 endfunction
 
-command! Magit call magit#show_magit("v")
+command! Magit call magit#show_magit('v')
 
 " }}}

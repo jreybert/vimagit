@@ -1,0 +1,7 @@
+diff --git bootstrap.lnk bootstrap.lnk
+new file mode 120000
+--- /dev/null
++++ bootstrap.lnk
+@@ -0,0 +1 @@
++bootstrap
+\ No newline at end of file

@@ -1,0 +1,47 @@
+Include: setup.inc
+
+Execute (Stage deleted file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged', 0)
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename(0))
+    call Expect_diff(g:test_script_dir . 'renameFile/renameFile_' . Get_safe_filename(0) . '_staged_status.expect', diff)
+
+Execute (Stage renamed file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged', 1)
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename(1))
+    call Expect_diff(g:test_script_dir . 'renameFile/renameFile_' . Get_safe_filename(1) . '_staged_status.expect', diff)
+
+Execute (Unstage renamed file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('staged', 1)
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename(1))
+    call Expect_diff(g:test_script_dir . 'renameFile/renameFile_' . Get_safe_filename(1) . '_unstaged_status.expect', diff)
+
+Execute (Unstage deleted file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('staged', 0)
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename(0))
+    call Expect_diff(g:test_script_dir . 'renameFile/renameFile_' . Get_safe_filename(0) . '_unstaged_status.expect', diff)
+
+Include: cleanup.inc

@@ -27,18 +27,14 @@ hi def link fileEntry String
 execute 'syn region gitTitle start=/^$\n' . g:magit_section_re . '/ end=/^$/ contains=titleEntry'
 
 execute 'syn region gitStash start=/' . g:magit_stash_re . '/ end=/\%(' .
- \ g:magit_stash_re . '\)\@=/ contains=gitDiff,stashEntry fold'
+ \ g:magit_stash_re . '\)\@=/ contains=stashEntry fold'
 
 execute 'syn region gitFile start=/' . g:magit_file_re . '/ end=/\%(' .
- \ g:magit_file_re . '\|' . g:magit_section_re '\)\@=/ contains=gitDiff,fileEntry fold'
-
-execute 'syn region gitDiff start=/' . g:magit_diff_re . '/ end=/\%(' .
- \ g:magit_diff_re . '\|' . g:magit_section_re. '\|' . g:magit_stash_re . '\|' . g:magit_file_re .
- \ '\)\@=/ contains=@diff,gitHunk fold'
+ \ g:magit_file_re . '\|' . g:magit_section_re '\)\@=/ contains=gitHunk,fileEntry fold'
 
 execute 'syn region gitHunk start=/' .
  \ g:magit_hunk_re . '/ end=/\%(' .
  \ g:magit_diff_re . '\|' . g:magit_hunk_re . '\|' . g:magit_section_re. '\|' . g:magit_stash_re . '\|' . g:magit_file_re .
- \ '\)\@=/ contains=@diff fold contained'
+ \ '\)\@=/ contains=@diff fold'
 
 let b:current_syntax = "magit"
