@@ -560,8 +560,8 @@ function! s:mg_comment_char()
 	endif
 endfunction
 
-" s:mg_search_block: helper function, to get a block of text, giving a start
-" and multiple end pattern
+" s:mg_search_block: helper function, to get start and end line of a block,
+" giving a start and multiple end pattern
 " a "pattern parameter" is a List:
 "   @[0]: end pattern regex
 "   @[1]: number of line to exclude above (negative), below (positive) or none (0)
@@ -573,9 +573,7 @@ endfunction
 " (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
-" return: a list.
-"      @[0]: return status
-"      @[1]: List of selected block lines
+" return: [startline, endline]
 function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let l:winview = winsaveview()
 
@@ -609,10 +607,9 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 		throw "out_of_block"
 	endif
 
-	let lines=getline(start, end)
-
 	call winrestview(l:winview)
-	return lines
+
+	return [start,end]
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
@@ -631,9 +628,10 @@ function! s:mg_git_commit(mode) abort
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
 		let commit_jump_line = 3 + <SID>mg_get_inline_help_line_nb('commit')
-		let commit_msg = <SID>mg_search_block(
+		let [start, end] = <SID>mg_search_block(
 		 \ [commit_section_pat_start, commit_jump_line],
 		 \ [ [commit_section_pat_end, -1] ], "")
+		let commit_msg = getline(start, end)
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
@@ -906,20 +904,21 @@ endfunction
 " param[in] block_type: can be 'file' or 'hunk'
 " param[in] discard: boolean, if true, discard instead of (un)stage
 " return: no
-function! magit#stage_block(block_type, discard) abort
-	try
-		let selection = <SID>mg_select_closed_file()
-	catch 'out_of_block'
-		if ( a:block_type == 'hunk')
-			try
-				let selection = <SID>mg_select_hunk_block()
-			catch 'out_of_block'
-				let selection = <SID>mg_select_file_block()
-			endtry
-		else
-			let selection = <SID>mg_select_file_block()
-		endif
-	endtry
+function! magit#stage_block(block_type, discard, ...) abort
+		try
+			let selection = <SID>mg_select_closed_file()
+		catch 'out_of_block'
+			if ( a:block_type == 'hunk')
+				try
+					let [start,end] = <SID>mg_select_hunk_block()
+				catch 'out_of_block'
+					let [start,end] = <SID>mg_select_file_block()
+				endtry
+			else
+				let [start, end] = <SID>mg_select_file_block()
+			endif
+			let selection = getline(start, end)
+		endtry
 
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
