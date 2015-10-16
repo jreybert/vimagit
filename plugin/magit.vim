@@ -62,169 +62,6 @@ execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_m
 
 " {{{ Internal functions
 
-" s:magit_top_dir: top directory of git tree
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_top_dir=''
-" s:mg_top_dir: return the absolute path of current git worktree
-" return top directory
-function! s:mg_top_dir()
-	if ( s:magit_top_dir == '' )
-		let s:magit_top_dir=<SID>mg_strip(system("git rev-parse --show-toplevel")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_top_dir
-		endif
-	endif
-	return s:magit_top_dir
-endfunction
-
-" s:magit_git_dir: git directory
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_git_dir=''
-" s:mg_git_dir: return the absolute path of current git worktree
-" return git directory
-function! s:mg_git_dir()
-	if ( s:magit_git_dir == '' )
-		let s:magit_git_dir=<SID>mg_strip(system("git rev-parse --git-dir")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_git_dir
-		endif
-	endif
-	return s:magit_git_dir
-endfunction
-
-" s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
-" 'cd' otherwise
-let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
-
-" s:mg_system: wrapper for system, which only takes String as input in vim,
-" although it can take String or List input in neovim.
-" INFO: temporarly change pwd to git top directory, then restore to previous
-" pwd at the end of function
-" param[in] ...: command + optional args
-" return: command output as a string
-function! s:mg_system(...)
-	let dir = getcwd()
-	try
-		execute s:magit_cd_cmd . <SID>mg_top_dir()
-		" List as system() input is since v7.4.247, it is safe to check
-		" systemlist, which is sine v7.4.248
-		if exists('*systemlist')
-			return call('system', a:000)
-		else
-			if ( a:0 == 2 )
-				if ( type(a:2) == type([]) )
-					" ouch, this one is tough: input is very very sensitive, join
-					" MUST BE done with "\n", not '\n' !!
-					let arg=join(a:2, "\n")
-				else
-					let arg=a:2
-				endif
-				return system(a:1, arg)
-			else
-				return system(a:1)
-			endif
-		endif
-	finally
-		execute s:magit_cd_cmd . dir
-	endtry
-endfunction
-
-" s:mg_systemlist: wrapper for systemlist, which only exists in neovim for
-" the moment.
-" INFO: temporarly change pwd to git top directory, then restore to previous
-" pwd at the end of function
-" param[in] ...: command + optional args to execute, args can be List or String
-" return: command output as a list
-function! s:mg_systemlist(...)
-	let dir = getcwd()
-	try
-		execute s:magit_cd_cmd . <SID>mg_top_dir()
-		" systemlist since v7.4.248
-		if exists('*systemlist')
-			return call('systemlist', a:000)
-		else
-			return split(call('<SID>mg_system', a:000), '\n')
-		endif
-	finally
-		execute s:magit_cd_cmd . dir
-	endtry
-endfunction
-
-" s:mg_underline: helper function to underline a string
-" param[in] title: string to underline
-" return a string composed of strlen(title) '='
-function! s:mg_underline(title)
-	return substitute(a:title, ".", "=", "g")
-endfunction
-
-" s:mg_strip: helper function to strip a string
-" WARNING: it only works with monoline string
-" param[in] string: string to strip
-" return: stripped string
-function! s:mg_strip(string)
-	return substitute(a:string, '^\s*\(.\{-}\)\s*\n\=$', '\1', '')
-endfunction
-
-" s:mg_join_list: helper function to concatente a list of strings with newlines
-" param[in] list: List to to concat
-" return: concatenated list
-function! s:mg_join_list(list)
-	return join(a:list, "\n") . "\n"
-endfunction
-
-" s:mg_add_quotes: helper function to protect filename with quotes
-" return quoted filename
-function! s:mg_add_quotes(filename)
-	return '"' . a:filename . '"'
-endfunction
-
-" s:mg_remove_quotes: helper function to remove quotes aroudn filename
-" return unquoted filename
-function! s:mg_remove_quotes(filename)
-	let ret=matchlist(a:filename, '"\([^"]*\)"')
-	if ( empty(ret) )
-		throw 'no quotes found: ' . a:filename
-	endif
-	return ret[1]
-endfunction
-
-" s:mg_fatten: flat a nested list. it return a one dimensional list with
-" primary elements
-" https://gist.github.com/dahu/3322468
-" param[in] list: a List, can be nested or not
-" return: one dimensional list
-function! s:mg_flatten(list)
-  let val = []
-  for elem in a:list
-    if type(elem) == type([])
-      call extend(val, <SID>mg_flatten(elem))
-    else
-      call extend(val, [elem])
-    endif
-    unlet elem
-  endfor
-  return val
-endfunction
-
-" s:mg_append_file: helper function to append to a file
-" Version working with file *possibly* containing trailing newline
-" param[in] file: filename to append
-" param[in] lines: List of lines to append
-function! s:mg_append_file(file, lines)
-	let fcontents=[]
-	if ( filereadable(a:file) )
-		let fcontents=readfile(a:file, 'b')
-	endif
-	if !empty(fcontents) && empty(fcontents[-1])
-		call remove(fcontents, -1)
-	endif
-	call writefile(fcontents+a:lines, a:file, 'b')
-endfunction
-
 " s:mg_get_status_list: this function returns the git status output formated
 " into a List of Dict as
 " [ {staged', 'unstaged', 'filename'}, ... ]
@@ -235,7 +72,7 @@ function! s:mg_get_status_list()
 	" we can't use git status -z here, because system doesn't make the
 	" difference between NUL and NL. -status z terminate entries with NUL,
 	" instead of NF
-	let status_list=<SID>mg_systemlist("git status --porcelain")
+	let status_list=magit#utils#systemlist("git status --porcelain")
 	for file_status_line in status_list
 		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
@@ -303,10 +140,10 @@ endfunction
 function! s:mg_get_info()
 	silent put =''
 	silent put =g:magit_sections['info']
-	silent put =<SID>mg_underline(g:magit_sections['info'])
+	silent put =magit#utils#underline(g:magit_sections['info'])
 	silent put =''
-	let branch=<SID>mg_system("git rev-parse --abbrev-ref HEAD")
-	let commit=<SID>mg_system("git show -s --oneline")
+	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
+	let commit=magit#utils#system("git show -s --oneline")
 	silent put ='Current branch: ' . branch
 	silent put ='Last commit:    ' . commit
 	silent put =''
@@ -373,8 +210,8 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let diff_cmd="git diff --no-ext-diff " . staged_flag .
 				\ "--no-color --patch -- " . dev_null . " "
-				\ .  <SID>mg_add_quotes(a:filename)
-	let diff_list=s:mg_systemlist(diff_cmd)
+				\ .  magit#utils#add_quotes(a:filename)
+	let diff_list=magit#utils#systemlist(diff_cmd)
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
@@ -393,7 +230,9 @@ function! s:mg_diff_dict_add_file(mode, status, filename)
 		let diff_dict_file['empty'] = 1
 		call add(diff_dict_file['diff'], ['no header'])
 		call add(diff_dict_file['diff'], ['New empty file'])
-	elseif ( match(system("file --mime " . <SID>mg_add_quotes(a:filename)), a:filename . ".*charset=binary") != -1 )
+	elseif ( match(system("file --mime " .
+				\ magit#utils#add_quotes(a:filename)),
+				\ a:filename . ".*charset=binary") != -1 )
 		let diff_dict_file['binary'] = 1
 		call add(diff_dict_file['diff'], ['no header'])
 		call add(diff_dict_file['diff'], ['Binary file'])
@@ -458,7 +297,7 @@ function! s:mg_get_staged_section(mode)
 	put =''
 	put =g:magit_sections[a:mode]
 	call <SID>mg_section_help(a:mode)
-	put =s:mg_underline(g:magit_sections[a:mode])
+	put =magit#utils#underline(g:magit_sections[a:mode])
 	put =''
 
 	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
@@ -488,7 +327,7 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_stashes()
-	silent! let stash_list=<SID>mg_systemlist("git stash list")
+	silent! let stash_list=magit#utils#systemlist("git stash list")
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . stash_list
 	endif
@@ -496,7 +335,7 @@ function! s:mg_get_stashes()
 	if (!empty(stash_list))
 		silent put =''
 		silent put =g:magit_sections['stash']
-		silent put =<SID>mg_underline(g:magit_sections['stash'])
+		silent put =magit#utils#underline(g:magit_sections['stash'])
 		silent put =''
 
 		for stash in stash_list
@@ -533,19 +372,19 @@ function! s:mg_get_commit_section()
 	silent put =g:magit_sections['commit_start']
 	silent put ='Commit mode: '.commit_mode_str
 	call <SID>mg_section_help('commit')
-	silent put =<SID>mg_underline(g:magit_sections['commit_start'])
+	silent put =magit#utils#underline(g:magit_sections['commit_start'])
 	silent put =''
 
-	let git_dir=<SID>mg_git_dir()
+	let git_dir=magit#utils#git_dir()
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
-		silent! call <SID>mg_system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
 	elseif ( s:magit_commit_mode == 'CA' )
-		silent! call <SID>mg_system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 	endif
 	if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 		let comment_char=<SID>mg_comment_char()
-		let commit_msg=<SID>mg_join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+		let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 		put =commit_msg
 	endif
 	put =g:magit_sections['commit_end']
@@ -553,7 +392,8 @@ endfunction
 
 " s:mg_comment_char: this function gets the commentChar from git config
 function! s:mg_comment_char()
-	silent! let git_result=<SID>mg_strip(<SID>mg_system("git config --get core.commentChar"))
+	silent! let git_result=magit#utils#strip(
+				\ magit#utils#system("git config --get core.commentChar"))
 	if ( v:shell_error != 0 )
 		return '#'
 	else
@@ -624,7 +464,7 @@ endfunction
 " return no
 function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
-		silent let git_result=<SID>mg_system("git commit --amend -C HEAD")
+		silent let git_result=magit#utils#system("git commit --amend -C HEAD")
 	else
 		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
 		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
@@ -637,7 +477,8 @@ function! s:mg_git_commit(mode) abort
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
 		endif
-		silent! let git_result=<SID>mg_system("git commit " . amend_flag . " --file - ", commit_msg)
+		silent! let git_result=magit#utils#system(
+					\ "git commit " . amend_flag . " --file - ", commit_msg)
 	endif
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
@@ -688,12 +529,12 @@ endfunction
 " header plus one or more hunks
 " return: no
 function! s:mg_git_apply(header, selection)
-	let selection = <SID>mg_flatten(a:header + a:selection)
+	let selection = magit#utils#flatten(a:header + a:selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
 	let git_cmd="git apply --recount --no-index --cached -"
-	silent let git_result=<SID>mg_system(git_cmd, selection)
+	silent let git_result=magit#utils#system(git_cmd, selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Git cmd: " . git_cmd
@@ -713,11 +554,13 @@ function! s:mg_git_unapply(header, selection, mode)
 	if ( a:mode == 'staged' )
 		let cached_flag=' --cached '
 	endif
-	let selection = <SID>mg_flatten(a:header + a:selection)
+	let selection = magit#utils#flatten(a:header + a:selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply --recount --no-index " . cached_flag . " --reverse - ", selection)
+	silent let git_result=magit#utils#system(
+		\ "git apply --recount --no-index " . cached_flag . " --reverse - ",
+		\ selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
@@ -876,7 +719,7 @@ endfunction
 "     'h': horizontal split
 "     'c': current buffer (should be used when opening vim in vimagit mode
 function! magit#show_magit(display)
-	if ( <SID>mg_strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
+	if ( magit#utils#strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
 		echoerr "Magit must be started from a git repository"
 		return
 	endif
@@ -961,7 +804,8 @@ function! magit#stage_block(selection, discard) abort
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
 			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
 			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
-				call <SID>mg_system('git add ' . <SID>mg_add_quotes(filename))
+				call magit#utils#system('git add ' .
+					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
@@ -969,7 +813,8 @@ function! magit#stage_block(selection, discard) abort
 			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
 			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
 			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
-				call <SID>mg_system('git reset ' . <SID>mg_add_quotes(filename))
+				call magit#utils#system('git reset ' .
+					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'staged')
 			endif
@@ -1049,7 +894,8 @@ endfunction
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
 	let ignore_file=<SID>mg_get_filename()
-	call <SID>mg_append_file(<SID>mg_top_dir() . ".gitignore", [ ignore_file ] )
+	call magit#utils#append_file(magit#utils#top_dir() . ".gitignore",
+			\ [ ignore_file ] )
 	call magit#update_buffer()
 endfunction
 
