@@ -62,25 +62,6 @@ execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_m
 
 " {{{ Internal functions
 
-" s:mg_get_status_list: this function returns the git status output formated
-" into a List of Dict as
-" [ {staged', 'unstaged', 'filename'}, ... ]
-function! s:mg_get_status_list()
-	let file_list = []
-
-	" systemlist v7.4.248 problem again
-	" we can't use git status -z here, because system doesn't make the
-	" difference between NUL and NL. -status z terminate entries with NUL,
-	" instead of NF
-	let status_list=magit#utils#systemlist("git status --porcelain")
-	for file_status_line in status_list
-		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
-		let filename = line_match[3]
-		call add(file_list, { 'staged': line_match[1], 'unstaged': line_match[2], 'filename': filename })
-	endfor
-	return file_list
-endfunction
-
 " s:magit_inline_help: Dict containing inline help for each section
 let s:magit_inline_help = {
 			\ 'staged': [
@@ -149,147 +130,9 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
-" s:mg_diff_dict: big main global variable, containing all diffs
-" It is formatted as follow
-" { 'staged_or_unstaged': staged/unstaged
-"     [
-"         { 'filename':
-"             { 'visible': bool,
-"               'status' : g:magit_git_status_code,
-"               'exists' : bool
-"               'diff'   : [ [header], [hunk0], [hunk1], ...]
-"             }
-"          },
-"          ...
-"      ]
-" }
-let s:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
-
-" s:mg_diff_dict_get_file: mg_diff_dict accessor for file
-" param[in] mode: can be staged or unstaged
-" param[in] filename: filename to access
-" param[in] create: boolean. If 1, non existing file in Dict will be created.
-" if 0, 'file_doesnt_exists' exception will be thrown
-" return: Dict of file
-function! s:mg_diff_dict_get_file(mode, filename, create)
-	let file_exists = has_key(s:mg_diff_dict[a:mode], a:filename)
-	if ( file_exists == 0 && a:create == 1 )
-		let s:mg_diff_dict[a:mode][a:filename] = {}
-		let s:mg_diff_dict[a:mode][a:filename]['visible'] = 0
-	elseif ( file_exists == 0 && a:create == 0 )
-		throw 'file_doesnt_exists'
-	endif
-	return s:mg_diff_dict[a:mode][a:filename]
-endfunction
-
-" s:mg_diff_dict_get_header: mg_diff_dict accessor for diff header
-" param[in] mode: can be staged or unstaged
-" param[in] filename: header of filename to access
-" return: List of diff header lines
-function! s:mg_diff_dict_get_header(mode, filename)
-	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
-	return diff_dict_file['diff'][0]
-endfunction
-
-" s:mg_diff_dict_get_hunks: mg_diff_dict accessor for hunks
-" param[in] mode: can be staged or unstaged
-" param[in] filename: hunks of filename to access
-" return: List of List of hunks lines
-function! s:mg_diff_dict_get_hunks(mode, filename)
-	let diff_dict_file = s:mg_diff_dict_get_file(a:mode, a:filename, 0)
-	return diff_dict_file['diff'][1:-1]
-endfunction
-
-" s:mg_diff_dict_add_file: mg_diff_dict method to add a file with all its
-" properties (filename, exists, status, header and hunks)
-" param[in] mode: can be staged or unstaged
-" param[in] status: one character status code of the file (AMDRCU?)
-" param[in] filename: filename
-function! s:mg_diff_dict_add_file(mode, status, filename)
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-	let diff_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color --patch -- " . dev_null . " "
-				\ .  magit#utils#add_quotes(a:filename)
-	let diff_list=magit#utils#systemlist(diff_cmd)
-	if ( empty(diff_list) )
-		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-	endif
-	let diff_dict_file = <SID>mg_diff_dict_get_file(a:mode, a:filename, 1)
-	let diff_dict_file['diff'] = []
-	let diff_dict_file['exists'] = 1
-	let diff_dict_file['status'] = a:status
-	let diff_dict_file['empty'] = 0
-	let diff_dict_file['binary'] = 0
-	let diff_dict_file['symlink'] = ''
-	if ( a:status == '?' && getftype(a:filename) == 'link' )
-		let diff_dict_file['symlink'] = resolve(a:filename)
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['New symbolic link file'])
-	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
-		let diff_dict_file['empty'] = 1
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['New empty file'])
-	elseif ( match(system("file --mime " .
-				\ magit#utils#add_quotes(a:filename)),
-				\ a:filename . ".*charset=binary") != -1 )
-		let diff_dict_file['binary'] = 1
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['Binary file'])
-	else
-		let index = 0
-		call add(diff_dict_file['diff'], [])
-		for diff_line in diff_list
-			if ( diff_line =~ "^@.*" )
-				let index+=1
-				call add(diff_dict_file['diff'], [])
-			endif
-			call add(diff_dict_file['diff'][index], diff_line)
-		endfor
-	endif
-endfunction
-
-" s:mg_update_diff_dict: update s:mg_diff_dict
-" if a file does not exists anymore (because all its changes have been
-" committed, deleted, discarded), it is removed from s:mg_diff_dict
-" else, its diff is discarded and regenrated
-" what is resilient is its 'visible' parameter
-function! s:mg_update_diff_dict()
-	for diff_dict_mode in values(s:mg_diff_dict)
-		for file in values(diff_dict_mode)
-			let file['exists'] = 0
-			" always discard previous diff
-			unlet file['diff']
-		endfor
-	endfor
-
-	for [mode, diff_dict_mode] in items(s:mg_diff_dict)
-
-		let status_list = s:mg_get_status_list()
-		for file_status in status_list
-			let status=file_status[mode]
-
-			" untracked code apperas in staged column, we skip it
-			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
-				continue
-			endif
-			call <SID>mg_diff_dict_add_file(mode, status, file_status['filename'])
-		endfor
-	endfor
-
-	" remove files that have changed their mode or been committed/deleted/discarded...
-	for diff_dict_mode in values(s:mg_diff_dict)
-		for [key, file] in items(diff_dict_mode)
-			if ( file['exists'] == 0 )
-				unlet diff_dict_mode[key]
-			endif
-		endfor
-	endfor
-endfunction
-
 
 " s:mg_get_staged_section: this function writes in current buffer all staged
-" or unstaged files, using s:mg_diff_dict information
+" or unstaged files, using g:mg_diff_dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
@@ -300,7 +143,7 @@ function! s:mg_get_staged_section(mode)
 	put =magit#utils#underline(g:magit_sections[a:mode])
 	put =''
 
-	for [ filename, file_props ] in items(s:mg_diff_dict[a:mode])
+	for [ filename, file_props ] in items(g:mg_diff_dict[a:mode])
 		if ( file_props['empty'] == 1 )
 			put =g:magit_git_status_code['E'] . ': ' . filename
 		elseif ( file_props['symlink'] != '' )
@@ -315,7 +158,7 @@ function! s:mg_get_staged_section(mode)
 		if ( file_props['exists'] == 0 )
 			echoerr "Error, " . filename . " should not exists"
 		endif
-		let hunks=<SID>mg_diff_dict_get_hunks(a:mode, filename)
+		let hunks=magit#state#get_hunks(a:mode, filename)
 		for diff_line in hunks
 			silent put =diff_line
 		endfor
@@ -579,7 +422,7 @@ function! s:mg_create_diff_from_select(start_chunk_line, end_chunk_line)
 	let [starthunk,endhunk] = <SID>mg_select_hunk_block()
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let hunks = <SID>mg_diff_dict_get_hunks(section, filename)
+	let hunks = magit#state#get_hunks(section, filename)
 	for hunk in hunks
 		if ( hunk[0] == getline(starthunk) )
 			let current_hunk = hunk
@@ -658,9 +501,9 @@ function! magit#open_close_folding(...)
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
-	let s:mg_diff_dict[section][filename]['visible'] =
+	let g:mg_diff_dict[section][filename]['visible'] =
 				\ ( a:0 == 1 ) ? a:1 :
-				\ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
+				\ ( g:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
 	call magit#update_buffer()
 endfunction
 
@@ -689,7 +532,7 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()
 	endif
-	call <SID>mg_update_diff_dict()
+	call magit#state#update()
 	call <SID>mg_get_staged_section('staged')
 	call <SID>mg_get_staged_section('unstaged')
 	call <SID>mg_get_stashes()
@@ -779,9 +622,9 @@ function! s:mg_select_closed_file()
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		if ( has_key(s:mg_diff_dict[section], filename) &&
-		 \ ( s:mg_diff_dict[section][filename]['visible'] == 0 ) )
-			let selection = <SID>mg_diff_dict_get_hunks(section, filename)
+		if ( has_key(g:mg_diff_dict[section], filename) &&
+		 \ ( g:mg_diff_dict[section][filename]['visible'] == 0 ) )
+			let selection = magit#state#get_hunks(section, filename)
 			return selection
 		endif
 	endif
@@ -797,22 +640,22 @@ endfunction
 function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let header = <SID>mg_diff_dict_get_header(section, filename)
+	let header = magit#state#get_header(section, filename)
 
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
-			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
@@ -825,9 +668,9 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( s:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    s:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    s:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
+			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
+			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
