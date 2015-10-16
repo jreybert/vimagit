@@ -38,6 +38,7 @@ call s:set('g:magit_show_magit_mapping',        '<leader>M' )
 " these mapping are applied locally, for magit buffer only
 call s:set('g:magit_stage_file_mapping',        'F' )
 call s:set('g:magit_stage_hunk_mapping',        'S' )
+call s:set('g:magit_stage_line_mapping',        'L' )
 call s:set('g:magit_discard_hunk_mapping',      'DDD' )
 call s:set('g:magit_commit_mapping_command',    'w<cr>' )
 call s:set('g:magit_commit_mapping',            'CC' )
@@ -691,11 +692,13 @@ function! s:mg_git_apply(header, selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply --no-index --cached -", selection)
+	let git_cmd="git apply --recount --index --cached -"
+	silent let git_result=<SID>mg_system(git_cmd, selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
+		echoerr "Git cmd: " . git_cmd
 		echoerr "Tried to aply this"
-		echoerr string(a:selection)
+		echoerr string(selection)
 	endif
 endfunction
 
@@ -714,12 +717,52 @@ function! s:mg_git_unapply(header, selection, mode)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply --no-index " . cached_flag . " --reverse - ", selection)
+	silent let git_result=<SID>mg_system("git apply --recount --index " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
-		echoerr string(a:selection)
+		echoerr string(selection)
 	endif
+endfunction
+
+" s:mg_create_diff_from_select: craft the diff to apply from a selection
+" in a chunk
+" remarks: it works with full lines, and can not span over multiple chunks
+" param[in] start_chunk_line,end_chunk_line: limits of the selection
+" return: List containing the diff to apply, including the chunk header (must
+" be applied with git apply --recount)
+function! s:mg_create_diff_from_select(start_chunk_line, end_chunk_line)
+	let lines=getline(a:start_chunk_line, a:end_chunk_line)
+	let [starthunk,endhunk] = <SID>mg_select_hunk_block()
+	let section=<SID>mg_get_section()
+	let filename=<SID>mg_get_filename()
+	let hunks = <SID>mg_diff_dict_get_hunks(section, filename)
+	for hunk in hunks
+		if ( hunk[0] == getline(starthunk) )
+			let current_hunk = hunk
+			break
+		endif
+	endfor
+	let selection = []
+	let visual_selection = getline(a:start_chunk_line, a:end_chunk_line)
+	call add(selection, current_hunk[0])
+
+	let current_line = starthunk + 1
+	for hunk_line in current_hunk[1:]
+		if ( current_line >= a:start_chunk_line && current_line <= a:end_chunk_line )
+			call add(selection, visual_selection[current_line-a:start_chunk_line])
+		elseif ( hunk_line =~ '^+.*' )
+			" just ignore these lines
+		elseif ( hunk_line =~ '^-.*' )
+			call add(selection, substitute(hunk_line, '^-\(.*\)$', ' \1', ''))
+		elseif ( hunk_line =~ '^ .*' )
+			call add(selection, hunk_line)
+		else
+			throw 'visual selection error: ' . hunk_line
+		endif
+		let current_line += 1
+	endfor
+	return selection
 endfunction
 
 " s:mg_get_section: helper function to get the current section, according to
@@ -868,6 +911,10 @@ function! magit#show_magit(display)
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
+
+	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
+	execute "xnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
+	
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
@@ -984,6 +1031,18 @@ function! magit#stage_hunk(discard)
 		let selection = getline(start, end)
 	endtry
 	return magit#stage_block(selection, a:discard)
+endfunction
+
+" magit#stage_vselect: this function (un)stage text being sectected in Visual
+" mode
+" remarks: it works with full lines, and can not span over multiple chunks
+" INFO: in unstaged section, it stages the file, and in staged section, it
+" unstages the file
+" return: no
+function! magit#stage_vselect() range
+	" func-range a:firstline a:lastline seems to work at least from vim 7.2
+	let selection = <SID>mg_create_diff_from_select(a:firstline, a:lastline)
+	return magit#stage_block(selection, 0)
 endfunction
 
 " magit#ignore_file: this function add the file under cursor to .gitignore
