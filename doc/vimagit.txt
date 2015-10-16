@@ -151,7 +151,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                       *vimagit-g:magit_folding_close_mapping*
   zc,zC     Typing zc on a file will hide its diffs.
 
-                                      *vimagit-S*             *magit#stage_hunk()*
+                                      *vimagit-S*            *magit#stage_hunk(0)*
                                       *vimagit-g:magit_stage_hunk_mapping*
   S         If cursor is in a hunk, stage/unstage hunk at cursor position.
             If cursor is in diff header, stage/unstage whole file at cursor
@@ -170,7 +170,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             will unstage file.
 
 
-                                    *vimagit-DDD*           *magit#discard_hunk()*
+                                    *vimagit-DDD*            *magit#stage_hunk(1)*
                                     *vimagit-g:magit_discard_hunk_mapping*
   DDD       If cursor is in a hunk, discard hunk at cursor position.
             If cursor is in diff header, discard whole file at cursor

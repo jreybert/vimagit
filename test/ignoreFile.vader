@@ -15,7 +15,7 @@ Execute (Ignore untracked file at closed file header):
     call search('^modified: .gitignore$')
     call magit#open_close_folding(0)
     call Cursor_position()
-    call magit#discard_hunk()
+    call magit#stage_hunk(1)
     call magit#update_buffer()
     Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
 
@@ -34,7 +34,7 @@ Execute (Ignore untracked file at opened file header):
     call search('^modified: .gitignore$')
     call magit#open_close_folding(1)
     call Cursor_position()
-    call magit#discard_hunk()
+    call magit#stage_hunk(1)
     call magit#update_buffer()
     Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
 
@@ -55,7 +55,7 @@ Execute (Ignore untracked file at hunk position):
     call magit#open_close_folding(1)
     call Move_relative(+1)
     call Cursor_position()
-    call magit#discard_hunk()
+    call magit#stage_hunk(1)
     call magit#update_buffer()
     Assert (Search_file('unstaged') != 0), $VIMAGIT_TEST_FILENAME . 'should not be ignored anymore'
 
