@@ -692,7 +692,7 @@ function! s:mg_git_apply(header, selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	let git_cmd="git apply --recount --index --cached -"
+	let git_cmd="git apply --recount --no-index --cached -"
 	silent let git_result=<SID>mg_system(git_cmd, selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
@@ -717,7 +717,7 @@ function! s:mg_git_unapply(header, selection, mode)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=<SID>mg_system("git apply --recount --index " . cached_flag . " --reverse - ", selection)
+	silent let git_result=<SID>mg_system("git apply --recount --no-index " . cached_flag . " --reverse - ", selection)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
 		echoerr "Tried to unaply this"
