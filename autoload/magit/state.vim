@@ -1,4 +1,11 @@
+function! s:is_file_visible(section, filename) dict
+	return ( has_key(self.dict[a:section], a:filename) &&
+		 \ ( self.dict[a:section][a:filename]['visible'] == 1 ) )
+endfunction
 
+function! s:get_files(mode) dict
+	return self.dict[a:mode]
+endfunction
 
 " s:get_file: function accessor for file
 " param[in] mode: can be staged or unstaged
@@ -138,9 +145,11 @@ endfunction
 " }
 let magit#state#state = {
 			\ 'get_file': function("s:get_file"),
+			\ 'get_files': function("s:get_files"),
 			\ 'get_header': function("s:get_header"),
 			\ 'get_hunks': function("s:get_hunks"),
 			\ 'add_file': function("s:add_file"),
+			\ 'is_file_visible': function("s:is_file_visible"),
 			\ 'update': function("s:update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }

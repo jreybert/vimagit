@@ -145,7 +145,7 @@ function! s:mg_get_staged_section(mode)
 	put =magit#utils#underline(g:magit_sections[a:mode])
 	put =''
 
-	for [ filename, file_props ] in items(s:state.dict[a:mode])
+	for [ filename, file_props ] in items(s:state.get_files(a:mode))
 		if ( file_props['empty'] == 1 )
 			put =g:magit_git_status_code['E'] . ': ' . filename
 		elseif ( file_props['symlink'] != '' )
@@ -503,9 +503,10 @@ function! magit#open_close_folding(...)
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
-	let s:state.dict[section][filename]['visible'] =
+	let file = s:state.get_file(section, filename, 0)
+	let file['visible'] =
 				\ ( a:0 == 1 ) ? a:1 :
-				\ ( s:state.dict[section][filename]['visible'] == 0 ) ? 1 : 0
+				\ ( file['visible'] == 0 ) ? 1 : 0
 	call magit#update_buffer()
 endfunction
 
@@ -624,8 +625,7 @@ function! s:mg_select_closed_file()
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		if ( has_key(s:state.dict[section], filename) &&
-		 \ ( s:state.dict[section][filename]['visible'] == 0 ) )
+		if ( s:state.is_file_visible(section, filename) == 0 )
 			let selection = s:state.get_hunks(section, filename)
 			return selection
 		endif
@@ -643,21 +643,22 @@ function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
 	let header = s:state.get_header(section, filename)
-
+	
+	let file = s:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			if ( s:state.dict[section][filename]['empty'] == 1 ||
-			\    s:state.dict[section][filename]['symlink'] != '' ||
-			\    s:state.dict[section][filename]['binary'] == 1 )
+			if ( file['empty'] == 1 ||
+			\    file['symlink'] != '' ||
+			\    file['binary'] == 1 )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
-			if ( s:state.dict[section][filename]['empty'] == 1 ||
-			\    s:state.dict[section][filename]['symlink'] != '' ||
-			\    s:state.dict[section][filename]['binary'] == 1 )
+			if ( file['empty'] == 1 ||
+			\    file['symlink'] != '' ||
+			\    file['binary'] == 1 )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
@@ -670,9 +671,9 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( s:state.dict[section][filename]['empty'] == 1 ||
-			\    s:state.dict[section][filename]['symlink'] != '' ||
-			\    s:state.dict[section][filename]['binary'] == 1 )
+			if ( file['empty'] == 1 ||
+			\    file['symlink'] != '' ||
+			\    file['binary'] == 1 )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
