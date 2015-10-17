@@ -30,7 +30,7 @@ endfunction
 " return: List of diff header lines
 function! magit#state#get_header(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
-	return diff_dict_file['diff'][0]
+	return diff_dict_file['diff']['header']
 endfunction
 
 " magit#state#get_hunks: function accessor for hunks
@@ -39,7 +39,7 @@ endfunction
 " return: List of List of hunks lines
 function! magit#state#get_hunks(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
-	return diff_dict_file['diff'][1:-1]
+	return diff_dict_file['diff']['hunks']
 endfunction
 
 " magit#state#add_file: method to add a file with all its
@@ -58,7 +58,10 @@ function! magit#state#add_file(mode, status, filename) dict
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
 	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
-	let diff_dict_file['diff'] = []
+	let diff_dict_file['diff'] = {
+				\ 'header': [],
+				\ 'hunks': [],
+				\}
 	let diff_dict_file['exists'] = 1
 	let diff_dict_file['status'] = a:status
 	let diff_dict_file['empty'] = 0
@@ -66,27 +69,31 @@ function! magit#state#add_file(mode, status, filename) dict
 	let diff_dict_file['symlink'] = ''
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let diff_dict_file['symlink'] = resolve(a:filename)
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['New symbolic link file'])
+		call add(diff_dict_file['diff']['header'], 'no header')
+		call add(diff_dict_file['diff']['hunks'], ['New symbolic link file'])
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
 		let diff_dict_file['empty'] = 1
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['New empty file'])
+		call add(diff_dict_file['diff']['header'], 'no header')
+		call add(diff_dict_file['diff']['hunks'], ['New empty file'])
 	elseif ( match(system("file --mime " .
 				\ magit#utils#add_quotes(a:filename)),
 				\ a:filename . ".*charset=binary") != -1 )
 		let diff_dict_file['binary'] = 1
-		call add(diff_dict_file['diff'], ['no header'])
-		call add(diff_dict_file['diff'], ['Binary file'])
+		call add(diff_dict_file['diff']['header'], 'no header')
+		call add(diff_dict_file['diff']['hunks'], ['Binary file'])
 	else
-		let index = 0
-		call add(diff_dict_file['diff'], [])
-		for diff_line in diff_list
+		let line = 0
+		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
+			call add(diff_dict_file['diff']['header'], diff_list[line])
+			let line += 1
+		endwhile
+		let hunk_index = 0
+		for diff_line in diff_list[line : -1]
 			if ( diff_line =~ "^@.*" )
-				let index+=1
-				call add(diff_dict_file['diff'], [])
+				call add(diff_dict_file['diff']['hunks'], [])
+				let hunk_index = len(diff_dict_file['diff']['hunks']) - 1
 			endif
-			call add(diff_dict_file['diff'][index], diff_line)
+			call add(diff_dict_file['diff']['hunks'][hunk_index], diff_line)
 		endfor
 	endif
 endfunction
