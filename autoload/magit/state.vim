@@ -1,19 +1,19 @@
-function! s:is_file_visible(section, filename) dict
+function! magit#state#is_file_visible(section, filename) dict
 	return ( has_key(self.dict[a:section], a:filename) &&
 		 \ ( self.dict[a:section][a:filename]['visible'] == 1 ) )
 endfunction
 
-function! s:get_files(mode) dict
+function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
 
-" s:get_file: function accessor for file
+" magit#state#get_file: function accessor for file
 " param[in] mode: can be staged or unstaged
 " param[in] filename: filename to access
 " param[in] create: boolean. If 1, non existing file in Dict will be created.
 " if 0, 'file_doesnt_exists' exception will be thrown
 " return: Dict of file
-function! s:get_file(mode, filename, create) dict
+function! magit#state#get_file(mode, filename, create) dict
 	let file_exists = has_key(self.dict[a:mode], a:filename)
 	if ( file_exists == 0 && a:create == 1 )
 		let self.dict[a:mode][a:filename] = {}
@@ -24,30 +24,30 @@ function! s:get_file(mode, filename, create) dict
 	return self.dict[a:mode][a:filename]
 endfunction
 
-" s:get_header: function accessor for diff header
+" magit#state#get_header: function accessor for diff header
 " param[in] mode: can be staged or unstaged
 " param[in] filename: header of filename to access
 " return: List of diff header lines
-function! s:get_header(mode, filename) dict
+function! magit#state#get_header(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file['diff'][0]
 endfunction
 
-" s:get_hunks: function accessor for hunks
+" magit#state#get_hunks: function accessor for hunks
 " param[in] mode: can be staged or unstaged
 " param[in] filename: hunks of filename to access
 " return: List of List of hunks lines
-function! s:get_hunks(mode, filename) dict
+function! magit#state#get_hunks(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file['diff'][1:-1]
 endfunction
 
-" s:add_file: method to add a file with all its
+" magit#state#add_file: method to add a file with all its
 " properties (filename, exists, status, header and hunks)
 " param[in] mode: can be staged or unstaged
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
-function! s:add_file(mode, status, filename) dict
+function! magit#state#add_file(mode, status, filename) dict
 	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let diff_cmd="git diff --no-ext-diff " . staged_flag .
@@ -91,12 +91,12 @@ function! s:add_file(mode, status, filename) dict
 	endif
 endfunction
 
-" s:update: update self.dict
+" magit#state#update: update self.dict
 " if a file does not exists anymore (because all its changes have been
 " committed, deleted, discarded), it is removed from g:mg_diff_dict
 " else, its diff is discarded and regenrated
 " what is resilient is its 'visible' parameter
-function! s:update() dict
+function! magit#state#update() dict
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			let file['exists'] = 0
@@ -144,13 +144,13 @@ endfunction
 "      ]
 " }
 let magit#state#state = {
-			\ 'get_file': function("s:get_file"),
-			\ 'get_files': function("s:get_files"),
-			\ 'get_header': function("s:get_header"),
-			\ 'get_hunks': function("s:get_hunks"),
-			\ 'add_file': function("s:add_file"),
-			\ 'is_file_visible': function("s:is_file_visible"),
-			\ 'update': function("s:update"),
+			\ 'get_file': function("magit#state#get_file"),
+			\ 'get_files': function("magit#state#get_files"),
+			\ 'get_header': function("magit#state#get_header"),
+			\ 'get_hunks': function("magit#state#get_hunks"),
+			\ 'add_file': function("magit#state#add_file"),
+			\ 'is_file_visible': function("magit#state#is_file_visible"),
+			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }
 
