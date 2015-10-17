@@ -18,7 +18,7 @@ execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vi
 " g:magit_unstaged_buffer_name: vim buffer name for vimagit
 let g:magit_unstaged_buffer_name = "magit-playground"
 
-let s:state = copy(magit#state#state)
+let s:state = deepcopy(magit#state#state)
 
 " s:set: helper function to set user definable variable
 " param[in] var: variable to set
@@ -161,8 +161,9 @@ function! s:mg_get_staged_section(mode)
 			echoerr "Error, " . filename . " should not exists"
 		endif
 		let hunks=s:state.get_hunks(a:mode, filename)
-		for diff_line in hunks
-			silent put =diff_line
+		for hunk in hunks
+			silent put =hunk.header
+			silent put =hunk.lines
 		endfor
 		put =''
 	endfor
@@ -426,17 +427,17 @@ function! s:mg_create_diff_from_select(start_chunk_line, end_chunk_line)
 	let filename=<SID>mg_get_filename()
 	let hunks = s:state.get_hunks(section, filename)
 	for hunk in hunks
-		if ( hunk[0] == getline(starthunk) )
+		if ( hunk.header == getline(starthunk) )
 			let current_hunk = hunk
 			break
 		endif
 	endfor
 	let selection = []
 	let visual_selection = getline(a:start_chunk_line, a:end_chunk_line)
-	call add(selection, current_hunk[0])
+	call add(selection, current_hunk.header)
 
 	let current_line = starthunk + 1
-	for hunk_line in current_hunk[1:]
+	for hunk_line in current_hunk.lines
 		if ( current_line >= a:start_chunk_line && current_line <= a:end_chunk_line )
 			call add(selection, visual_selection[current_line-a:start_chunk_line])
 		elseif ( hunk_line =~ '^+.*' )
@@ -626,7 +627,7 @@ function! s:mg_select_closed_file()
 		let filename = list[2]
 		let section=<SID>mg_get_section()
 		if ( s:state.is_file_visible(section, filename) == 0 )
-			let selection = s:state.get_hunks(section, filename)
+			let selection = s:state.get_flat_hunks(section, filename)
 			return selection
 		endif
 	endif

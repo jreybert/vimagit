@@ -7,6 +7,32 @@ function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
 
+" s:hunk_template: template for hunk object (nested in s:diff_template)
+" WARNING: this variable must be deepcopy()'ied
+let s:hunk_template = {
+\	'header': '',
+\	'lines': [],
+\	'marks': [],
+\}
+
+" s:diff_template: template for diff object (nested in s:file_template)
+" WARNING: this variable must be deepcopy()'ied
+let s:diff_template = {
+\	'header': [],
+\	'hunks': [s:hunk_template],
+\}
+
+" s:file_template: template for file object
+" WARNING: this variable must be deepcopy()'ied
+let s:file_template = {
+\	'exists': 0,
+\	'status': '',
+\	'empty': 0,
+\	'binary': 0,
+\	'symlink': '',
+\	'diff': s:diff_template,
+\}
+
 " magit#state#get_file: function accessor for file
 " param[in] mode: can be staged or unstaged
 " param[in] filename: filename to access
@@ -16,7 +42,7 @@ endfunction
 function! magit#state#get_file(mode, filename, create) dict
 	let file_exists = has_key(self.dict[a:mode], a:filename)
 	if ( file_exists == 0 && a:create == 1 )
-		let self.dict[a:mode][a:filename] = {}
+		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
 		let self.dict[a:mode][a:filename]['visible'] = 0
 	elseif ( file_exists == 0 && a:create == 0 )
 		throw 'file_doesnt_exists'
@@ -33,13 +59,27 @@ function! magit#state#get_header(mode, filename) dict
 	return diff_dict_file['diff']['header']
 endfunction
 
-" magit#state#get_hunks: function accessor for hunks
+" magit#state#get_hunks: function accessor for hunks objects
 " param[in] mode: can be staged or unstaged
 " param[in] filename: hunks of filename to access
 " return: List of List of hunks lines
 function! magit#state#get_hunks(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file['diff']['hunks']
+endfunction
+
+" magit#state#get_hunks: function accessor for hunks lines
+" param[in] mode: can be staged or unstaged
+" param[in] filename: hunks of filename to access
+" return: all hunks lines of a file, including hunk headers
+function! magit#state#get_flat_hunks(mode, filename) dict
+	let hunks = self.get_hunks(a:mode, a:filename)
+	let lines = []
+	for hunk in hunks
+		call add(lines, hunk.header)
+		call add(lines, hunk.lines)
+	endfor
+	return lines
 endfunction
 
 " magit#state#add_file: method to add a file with all its
@@ -58,42 +98,41 @@ function! magit#state#add_file(mode, status, filename) dict
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
 	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
-	let diff_dict_file['diff'] = {
-				\ 'header': [],
-				\ 'hunks': [],
-				\}
 	let diff_dict_file['exists'] = 1
 	let diff_dict_file['status'] = a:status
-	let diff_dict_file['empty'] = 0
-	let diff_dict_file['binary'] = 0
-	let diff_dict_file['symlink'] = ''
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let diff_dict_file['symlink'] = resolve(a:filename)
 		call add(diff_dict_file['diff']['header'], 'no header')
-		call add(diff_dict_file['diff']['hunks'], ['New symbolic link file'])
+		let diff_dict_file['diff']['hunks'][0]['header'] = 'New symbolic link file'
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
 		let diff_dict_file['empty'] = 1
 		call add(diff_dict_file['diff']['header'], 'no header')
-		call add(diff_dict_file['diff']['hunks'], ['New empty file'])
+		let diff_dict_file['diff']['hunks'][0]['header'] = 'New empty file'
 	elseif ( match(system("file --mime " .
 				\ magit#utils#add_quotes(a:filename)),
 				\ a:filename . ".*charset=binary") != -1 )
 		let diff_dict_file['binary'] = 1
 		call add(diff_dict_file['diff']['header'], 'no header')
-		call add(diff_dict_file['diff']['hunks'], ['Binary file'])
+		let diff_dict_file['diff']['hunks'][0]['header'] = 'Binary file'
 	else
 		let line = 0
+		" match(
 		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
 			call add(diff_dict_file['diff']['header'], diff_list[line])
 			let line += 1
 		endwhile
-		let hunk_index = 0
-		for diff_line in diff_list[line : -1]
+
+		let hunk = diff_dict_file['diff']['hunks'][0]
+		let hunk['header'] = diff_list[line]
+
+		for diff_line in diff_list[line+1 : -1]
 			if ( diff_line =~ "^@.*" )
-				call add(diff_dict_file['diff']['hunks'], [])
-				let hunk_index = len(diff_dict_file['diff']['hunks']) - 1
+				let hunk = deepcopy(s:hunk_template)
+				call add(diff_dict_file['diff']['hunks'], hunk)
+				let hunk['header'] = diff_line
+				continue
 			endif
-			call add(diff_dict_file['diff']['hunks'][hunk_index], diff_line)
+			call add(hunk['lines'], diff_line)
 		endfor
 	endif
 endfunction
@@ -108,7 +147,7 @@ function! magit#state#update() dict
 		for file in values(diff_dict_mode)
 			let file['exists'] = 0
 			" always discard previous diff
-			unlet file['diff']
+			let file['diff'] = deepcopy(s:diff_template)
 		endfor
 	endfor
 
@@ -138,23 +177,24 @@ endfunction
 
 " dict: structure containing all diffs
 " It is formatted as follow
-" { 'staged_or_unstaged': staged/unstaged
-"     [
-"         { 'filename':
-"             { 'visible': bool,
-"               'status' : g:magit_git_status_code,
-"               'exists' : bool
-"               'diff'   : [ [header], [hunk0], [hunk1], ...]
-"             }
-"          },
-"          ...
-"      ]
+" {
+"   'staged': {
+"       'filename': s:file_template,
+"       'filename': s:file_template,
+"       ...
+"   },
+"   'unstaged': {
+"       'filename': s:file_template,
+"       'filename': s:file_template,
+"       ...
+"   },
 " }
 let magit#state#state = {
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
 			\ 'get_header': function("magit#state#get_header"),
 			\ 'get_hunks': function("magit#state#get_hunks"),
+			\ 'get_flat_hunks': function("magit#state#get_flat_hunks"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'is_file_visible': function("magit#state#is_file_visible"),
 			\ 'update': function("magit#state#update"),
