@@ -122,8 +122,8 @@ endfunction
 " protected functions like magit#update_buffer
 function! s:mg_get_info()
 	silent put =''
-	silent put =g:magit_sections['info']
-	silent put =magit#utils#underline(g:magit_sections['info'])
+	silent put =g:magit_sections.info
+	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
 	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system("git show -s --oneline")
@@ -146,18 +146,18 @@ function! s:mg_get_staged_section(mode)
 	put =''
 
 	for [ filename, file_props ] in items(s:state.get_files(a:mode))
-		if ( file_props['empty'] == 1 )
-			put =g:magit_git_status_code['E'] . ': ' . filename
-		elseif ( file_props['symlink'] != '' )
-			put =g:magit_git_status_code['L'] . ': ' . filename . ' -> ' . file_props['symlink']
+		if ( file_props.empty == 1 )
+			put =g:magit_git_status_code.E . ': ' . filename
+		elseif ( file_props.symlink != '' )
+			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file_props.symlink
 		else
-			put =g:magit_git_status_code[file_props['status']] . ': ' . filename
+			put =g:magit_git_status_code[file_props.status] . ': ' . filename
 		endif
-		if ( file_props['visible'] == 0 )
+		if ( file_props.visible == 0 )
 			put =''
 			continue
 		endif
-		if ( file_props['exists'] == 0 )
+		if ( file_props.exists == 0 )
 			echoerr "Error, " . filename . " should not exists"
 		endif
 		let hunks=s:state.get_hunks(a:mode, filename)
@@ -180,8 +180,8 @@ function! s:mg_get_stashes()
 
 	if (!empty(stash_list))
 		silent put =''
-		silent put =g:magit_sections['stash']
-		silent put =magit#utils#underline(g:magit_sections['stash'])
+		silent put =g:magit_sections.stash
+		silent put =magit#utils#underline(g:magit_sections.stash)
 		silent put =''
 
 		for stash in stash_list
@@ -215,10 +215,10 @@ function! s:mg_get_commit_section()
 		let commit_mode_str="amend"
 	endif
 	silent put =''
-	silent put =g:magit_sections['commit_start']
+	silent put =g:magit_sections.commit_start
 	silent put ='Commit mode: '.commit_mode_str
 	call <SID>mg_section_help('commit')
-	silent put =magit#utils#underline(g:magit_sections['commit_start'])
+	silent put =magit#utils#underline(g:magit_sections.commit_start)
 	silent put =''
 
 	let git_dir=magit#utils#git_dir()
@@ -233,7 +233,7 @@ function! s:mg_get_commit_section()
 		let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 		put =commit_msg
 	endif
-	put =g:magit_sections['commit_end']
+	put =g:magit_sections.commit_end
 endfunction
 
 " s:mg_comment_char: this function gets the commentChar from git config
@@ -312,8 +312,8 @@ function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
 		silent let git_result=magit#utils#system("git commit --amend -C HEAD")
 	else
-		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
-		let commit_section_pat_end='^'.g:magit_sections['commit_end'].'$'
+		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
+		let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
 		let commit_jump_line = 3 + <SID>mg_get_inline_help_line_nb('commit')
 		let [start, end] = <SID>mg_search_block(
 		 \ [commit_section_pat_start, commit_jump_line],
@@ -505,9 +505,9 @@ function! magit#open_close_folding(...)
 	" if first param is set, force visible to this value
 	" else, toggle value
 	let file = s:state.get_file(section, filename, 0)
-	let file['visible'] =
+	let file.visible =
 				\ ( a:0 == 1 ) ? a:1 :
-				\ ( file['visible'] == 0 ) ? 1 : 0
+				\ ( file.visible == 0 ) ? 1 : 0
 	call magit#update_buffer()
 endfunction
 
@@ -544,7 +544,7 @@ function! magit#update_buffer()
 	call winrestview(l:winview)
 
 	if ( s:magit_commit_mode != '' )
-		let commit_section_pat_start='^'.g:magit_sections['commit_start'].'$'
+		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+3+<SID>mg_get_inline_help_line_nb('commit'), 0)
 	endif
@@ -648,18 +648,18 @@ function! magit#stage_block(selection, discard) abort
 	let file = s:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			if ( file['empty'] == 1 ||
-			\    file['symlink'] != '' ||
-			\    file['binary'] == 1 )
+			if ( file.empty == 1 ||
+			\    file.symlink != '' ||
+			\    file.binary == 1 )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
-			if ( file['empty'] == 1 ||
-			\    file['symlink'] != '' ||
-			\    file['binary'] == 1 )
+			if ( file.empty == 1 ||
+			\    file.symlink != '' ||
+			\    file.binary == 1 )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
@@ -667,21 +667,21 @@ function! magit#stage_block(selection, discard) abort
 			endif
 		else
 			echoerr "Must be in \"" . 
-						\ g:magit_sections['staged'] . "\" or \"" . 
-						\ g:magit_sections['unstaged'] . "\" section"
+						\ g:magit_sections.staged . "\" or \"" . 
+						\ g:magit_sections.unstaged . "\" section"
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( file['empty'] == 1 ||
-			\    file['symlink'] != '' ||
-			\    file['binary'] == 1 )
+			if ( file.empty == 1 ||
+			\    file.symlink != '' ||
+			\    file.binary == 1 )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
 			endif
 		else
 			echoerr "Must be in \"" . 
-						\ g:magit_sections['unstaged'] . "\" section"
+						\ g:magit_sections.unstaged . "\" section"
 		endif
 	endif
 
