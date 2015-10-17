@@ -1,61 +1,46 @@
 
-" g:mg_diff_dict: big main global variable, containing all diffs
-" It is formatted as follow
-" { 'staged_or_unstaged': staged/unstaged
-"     [
-"         { 'filename':
-"             { 'visible': bool,
-"               'status' : g:magit_git_status_code,
-"               'exists' : bool
-"               'diff'   : [ [header], [hunk0], [hunk1], ...]
-"             }
-"          },
-"          ...
-"      ]
-" }
-let g:mg_diff_dict = { 'staged': {}, 'unstaged': {} }
 
-" magit#state#get_file: mg_diff_dict accessor for file
+" s:get_file: function accessor for file
 " param[in] mode: can be staged or unstaged
 " param[in] filename: filename to access
 " param[in] create: boolean. If 1, non existing file in Dict will be created.
 " if 0, 'file_doesnt_exists' exception will be thrown
 " return: Dict of file
-function! magit#state#get_file(mode, filename, create)
-	let file_exists = has_key(g:mg_diff_dict[a:mode], a:filename)
+function! s:get_file(mode, filename, create) dict
+	let file_exists = has_key(self.dict[a:mode], a:filename)
 	if ( file_exists == 0 && a:create == 1 )
-		let g:mg_diff_dict[a:mode][a:filename] = {}
-		let g:mg_diff_dict[a:mode][a:filename]['visible'] = 0
+		let self.dict[a:mode][a:filename] = {}
+		let self.dict[a:mode][a:filename]['visible'] = 0
 	elseif ( file_exists == 0 && a:create == 0 )
 		throw 'file_doesnt_exists'
 	endif
-	return g:mg_diff_dict[a:mode][a:filename]
+	return self.dict[a:mode][a:filename]
 endfunction
 
-" magit#state#get_header: mg_diff_dict accessor for diff header
+" s:get_header: function accessor for diff header
 " param[in] mode: can be staged or unstaged
 " param[in] filename: header of filename to access
 " return: List of diff header lines
-function! magit#state#get_header(mode, filename)
-	let diff_dict_file = magit#state#get_file(a:mode, a:filename, 0)
+function! s:get_header(mode, filename) dict
+	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file['diff'][0]
 endfunction
 
-" magit#state#get_hunks: mg_diff_dict accessor for hunks
+" s:get_hunks: function accessor for hunks
 " param[in] mode: can be staged or unstaged
 " param[in] filename: hunks of filename to access
 " return: List of List of hunks lines
-function! magit#state#get_hunks(mode, filename)
-	let diff_dict_file = magit#state#get_file(a:mode, a:filename, 0)
+function! s:get_hunks(mode, filename) dict
+	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file['diff'][1:-1]
 endfunction
 
-" magit#state#add_file: mg_diff_dict method to add a file with all its
+" s:add_file: method to add a file with all its
 " properties (filename, exists, status, header and hunks)
 " param[in] mode: can be staged or unstaged
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
-function! magit#state#add_file(mode, status, filename)
+function! s:add_file(mode, status, filename) dict
 	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let diff_cmd="git diff --no-ext-diff " . staged_flag .
@@ -65,7 +50,7 @@ function! magit#state#add_file(mode, status, filename)
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
-	let diff_dict_file = magit#state#get_file(a:mode, a:filename, 1)
+	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
 	let diff_dict_file['diff'] = []
 	let diff_dict_file['exists'] = 1
 	let diff_dict_file['status'] = a:status
@@ -99,13 +84,13 @@ function! magit#state#add_file(mode, status, filename)
 	endif
 endfunction
 
-" magit#state#update: update g:mg_diff_dict
+" s:update: update self.dict
 " if a file does not exists anymore (because all its changes have been
 " committed, deleted, discarded), it is removed from g:mg_diff_dict
 " else, its diff is discarded and regenrated
 " what is resilient is its 'visible' parameter
-function! magit#state#update()
-	for diff_dict_mode in values(g:mg_diff_dict)
+function! s:update() dict
+	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			let file['exists'] = 0
 			" always discard previous diff
@@ -113,7 +98,7 @@ function! magit#state#update()
 		endfor
 	endfor
 
-	for [mode, diff_dict_mode] in items(g:mg_diff_dict)
+	for [mode, diff_dict_mode] in items(self.dict)
 
 		let status_list = magit#git#get_status()
 		for file_status in status_list
@@ -123,12 +108,12 @@ function! magit#state#update()
 			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
 				continue
 			endif
-			call magit#state#add_file(mode, status, file_status['filename'])
+			call self.add_file(mode, status, file_status['filename'])
 		endfor
 	endfor
 
 	" remove files that have changed their mode or been committed/deleted/discarded...
-	for diff_dict_mode in values(g:mg_diff_dict)
+	for diff_dict_mode in values(self.dict)
 		for [key, file] in items(diff_dict_mode)
 			if ( file['exists'] == 0 )
 				unlet diff_dict_mode[key]
@@ -136,3 +121,27 @@ function! magit#state#update()
 		endfor
 	endfor
 endfunction
+
+" dict: structure containing all diffs
+" It is formatted as follow
+" { 'staged_or_unstaged': staged/unstaged
+"     [
+"         { 'filename':
+"             { 'visible': bool,
+"               'status' : g:magit_git_status_code,
+"               'exists' : bool
+"               'diff'   : [ [header], [hunk0], [hunk1], ...]
+"             }
+"          },
+"          ...
+"      ]
+" }
+let magit#state#state = {
+			\ 'get_file': function("s:get_file"),
+			\ 'get_header': function("s:get_header"),
+			\ 'get_hunks': function("s:get_hunks"),
+			\ 'add_file': function("s:add_file"),
+			\ 'update': function("s:update"),
+			\ 'dict': { 'staged': {}, 'unstaged': {}},
+			\ }
+

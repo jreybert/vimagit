@@ -18,6 +18,8 @@ execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vi
 " g:magit_unstaged_buffer_name: vim buffer name for vimagit
 let g:magit_unstaged_buffer_name = "magit-playground"
 
+let s:state = copy(magit#state#state)
+
 " s:set: helper function to set user definable variable
 " param[in] var: variable to set
 " param[in] default: default value if not already set by the user
@@ -132,7 +134,7 @@ endfunction
 
 
 " s:mg_get_staged_section: this function writes in current buffer all staged
-" or unstaged files, using g:mg_diff_dict information
+" or unstaged files, using s:state.dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
@@ -143,7 +145,7 @@ function! s:mg_get_staged_section(mode)
 	put =magit#utils#underline(g:magit_sections[a:mode])
 	put =''
 
-	for [ filename, file_props ] in items(g:mg_diff_dict[a:mode])
+	for [ filename, file_props ] in items(s:state.dict[a:mode])
 		if ( file_props['empty'] == 1 )
 			put =g:magit_git_status_code['E'] . ': ' . filename
 		elseif ( file_props['symlink'] != '' )
@@ -158,7 +160,7 @@ function! s:mg_get_staged_section(mode)
 		if ( file_props['exists'] == 0 )
 			echoerr "Error, " . filename . " should not exists"
 		endif
-		let hunks=magit#state#get_hunks(a:mode, filename)
+		let hunks=s:state.get_hunks(a:mode, filename)
 		for diff_line in hunks
 			silent put =diff_line
 		endfor
@@ -422,7 +424,7 @@ function! s:mg_create_diff_from_select(start_chunk_line, end_chunk_line)
 	let [starthunk,endhunk] = <SID>mg_select_hunk_block()
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let hunks = magit#state#get_hunks(section, filename)
+	let hunks = s:state.get_hunks(section, filename)
 	for hunk in hunks
 		if ( hunk[0] == getline(starthunk) )
 			let current_hunk = hunk
@@ -501,9 +503,9 @@ function! magit#open_close_folding(...)
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
-	let g:mg_diff_dict[section][filename]['visible'] =
+	let s:state.dict[section][filename]['visible'] =
 				\ ( a:0 == 1 ) ? a:1 :
-				\ ( g:mg_diff_dict[section][filename]['visible'] == 0 ) ? 1 : 0
+				\ ( s:state.dict[section][filename]['visible'] == 0 ) ? 1 : 0
 	call magit#update_buffer()
 endfunction
 
@@ -532,7 +534,7 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()
 	endif
-	call magit#state#update()
+	call s:state.update()
 	call <SID>mg_get_staged_section('staged')
 	call <SID>mg_get_staged_section('unstaged')
 	call <SID>mg_get_stashes()
@@ -622,9 +624,9 @@ function! s:mg_select_closed_file()
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		if ( has_key(g:mg_diff_dict[section], filename) &&
-		 \ ( g:mg_diff_dict[section][filename]['visible'] == 0 ) )
-			let selection = magit#state#get_hunks(section, filename)
+		if ( has_key(s:state.dict[section], filename) &&
+		 \ ( s:state.dict[section][filename]['visible'] == 0 ) )
+			let selection = s:state.get_hunks(section, filename)
 			return selection
 		endif
 	endif
@@ -640,22 +642,22 @@ endfunction
 function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let header = magit#state#get_header(section, filename)
+	let header = s:state.get_header(section, filename)
 
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( s:state.dict[section][filename]['empty'] == 1 ||
+			\    s:state.dict[section][filename]['symlink'] != '' ||
+			\    s:state.dict[section][filename]['binary'] == 1 )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
-			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( s:state.dict[section][filename]['empty'] == 1 ||
+			\    s:state.dict[section][filename]['symlink'] != '' ||
+			\    s:state.dict[section][filename]['binary'] == 1 )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
@@ -668,9 +670,9 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( g:mg_diff_dict[section][filename]['empty'] == 1 ||
-			\    g:mg_diff_dict[section][filename]['symlink'] != '' ||
-			\    g:mg_diff_dict[section][filename]['binary'] == 1 )
+			if ( s:state.dict[section][filename]['empty'] == 1 ||
+			\    s:state.dict[section][filename]['symlink'] != '' ||
+			\    s:state.dict[section][filename]['binary'] == 1 )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
