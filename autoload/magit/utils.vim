@@ -162,3 +162,16 @@ function! magit#utils#append_file(file, lines)
 	call writefile(fcontents+a:lines, a:file, 'b')
 endfunction
 
+" s:bufnr: local variable to store current magit buffer id
+let s:bufnr = 0
+" magit#utils#setbufnr: function to set current magit buffer id
+" param[in] bufnr: current magit buffer id
+function! magit#utils#setbufnr(bufnr)
+	let s:bufnr = a:bufnr
+endfunction
+
+" magit#utils#bufnr: function to get current magit buffer id
+" return: current magit buffer id
+function! magit#utils#bufnr()
+	return s:bufnr
+endfunction

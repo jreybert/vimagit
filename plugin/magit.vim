@@ -41,6 +41,7 @@ call s:set('g:magit_show_magit_mapping',        '<leader>M' )
 call s:set('g:magit_stage_file_mapping',        'F' )
 call s:set('g:magit_stage_hunk_mapping',        'S' )
 call s:set('g:magit_stage_line_mapping',        'L' )
+call s:set('g:magit_mark_line_mapping',         'M' )
 call s:set('g:magit_discard_hunk_mapping',      'DDD' )
 call s:set('g:magit_commit_mapping_command',    'w<cr>' )
 call s:set('g:magit_commit_mapping',            'CC' )
@@ -456,6 +457,19 @@ function! s:mg_create_diff_from_select(start_select_line, end_select_line)
 	return selection
 endfunction
 
+" s:mg_mark_lines_in_hunk: this function toggle marks for selected lines in a
+" hunk.
+" if a hunk contains marked lines, only these lines will be (un)staged on next
+" (un)stage command
+" param[in] start_select_line,end_select_line: limits of the selection
+function! s:mg_mark_lines_in_hunk(start_select_line, end_select_line)
+	let [starthunk,endhunk] = <SID>mg_select_hunk_block()
+	if ( a:start_select_line < starthunk || a:end_select_line > endhunk )
+		throw 'out of hunk selection'
+	endif
+	return magit#sign#toggle_signs(a:start_select_line, a:end_select_line)
+endfunction
+
 " s:mg_get_section: helper function to get the current section, according to
 " cursor position
 " return: section id, empty string if no section found
@@ -474,6 +488,13 @@ endfunction
 " return: filename
 function! s:mg_get_filename()
 	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
+endfunction
+
+" s:mg_get_hunkheader: helper function to get the current hunk header,
+" according to cursor position
+" return: hunk header
+function! s:mg_get_hunkheader()
+	return getline(search(g:magit_hunk_re, "cbnW"))
 endfunction
 
 " }}}
@@ -592,6 +613,9 @@ function! magit#show_magit(display)
 	silent! execute "bdelete " . g:magit_buffer_name
 	execute "file " . g:magit_buffer_name
 
+	call magit#utils#setbufnr(bufnr(g:magit_buffer_name))
+	call magit#sign#init()
+
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
@@ -606,6 +630,9 @@ function! magit#show_magit(display)
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
 	execute "xnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
+	
+	execute "nnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
+	execute "xnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
 	
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
@@ -737,6 +764,12 @@ function! magit#stage_vselect() range
 	" func-range a:firstline a:lastline seems to work at least from vim 7.2
 	let selection = <SID>mg_create_diff_from_select(a:firstline, a:lastline)
 	return magit#stage_block(selection, 0)
+endfunction
+
+" magit#mark_vselect: wrapper function to mark selected lines (see
+" mg_mark_lines_in_hunk)
+function! magit#mark_vselect() range
+	return <SID>mg_mark_lines_in_hunk(a:firstline, a:lastline)
 endfunction
 
 " magit#ignore_file: this function add the file under cursor to .gitignore
