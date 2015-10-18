@@ -418,12 +418,14 @@ endfunction
 " s:mg_create_diff_from_select: craft the diff to apply from a selection
 " in a chunk
 " remarks: it works with full lines, and can not span over multiple chunks
-" param[in] start_select_line,end_select_line: limits of the selection
+" param[in] select_lines: List containing all selected line numbers
 " return: List containing the diff to apply, including the chunk header (must
 " be applied with git apply --recount)
-function! s:mg_create_diff_from_select(start_select_line, end_select_line)
+function! s:mg_create_diff_from_select(select_lines)
+	let start_select_line = a:select_lines[0]
+	let end_select_line = a:select_lines[-1]
 	let [starthunk,endhunk] = <SID>mg_select_hunk_block()
-	if ( a:start_select_line < starthunk || a:end_select_line > endhunk )
+	if ( start_select_line < starthunk || end_select_line > endhunk )
 		throw 'out of hunk selection'
 	endif
 	let section=<SID>mg_get_section()
@@ -436,13 +438,12 @@ function! s:mg_create_diff_from_select(start_select_line, end_select_line)
 		endif
 	endfor
 	let selection = []
-	let visual_selection = getline(a:start_select_line, a:end_select_line)
 	call add(selection, current_hunk.header)
 
 	let current_line = starthunk + 1
 	for hunk_line in current_hunk.lines
-		if ( current_line >= a:start_select_line && current_line <= a:end_select_line )
-			call add(selection, visual_selection[current_line-a:start_select_line])
+		if ( index(a:select_lines, current_line) != -1 )
+			call add(selection, getline(current_line))
 		elseif ( hunk_line =~ '^+.*' )
 			" just ignore these lines
 		elseif ( hunk_line =~ '^-.*' )
@@ -749,7 +750,13 @@ function! magit#stage_hunk(discard)
 		catch 'out_of_block'
 			let [start,end] = <SID>mg_select_file_block()
 		endtry
-		let selection = getline(start, end)
+		let marked_lines = magit#sign#find_stage_signs(start, end)
+		if ( empty(marked_lines) )
+			let selection = getline(start, end)
+		else
+			let selection = <SID>mg_create_diff_from_select(
+				\map(keys(marked_lines), 'str2nr(v:val)'))
+		endif
 	endtry
 	return magit#stage_block(selection, a:discard)
 endfunction
@@ -762,7 +769,13 @@ endfunction
 " return: no
 function! magit#stage_vselect() range
 	" func-range a:firstline a:lastline seems to work at least from vim 7.2
-	let selection = <SID>mg_create_diff_from_select(a:firstline, a:lastline)
+	let lines = []
+	let curline = a:firstline
+	while ( curline <= a:lastline )
+		call add(lines, curline)
+		let curline += 1
+	endwhile
+	let selection = <SID>mg_create_diff_from_select(lines)
 	return magit#stage_block(selection, 0)
 endfunction
 

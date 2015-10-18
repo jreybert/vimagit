@@ -60,6 +60,12 @@ function! magit#sign#find_signs(pattern, startline, endline)
 	return found_signs
 endfunction
 
+" magit#sign#find_stage_signs: helper function to get marked lines for stage
+" param[in] startline,endline: range of lines
+function! magit#sign#find_stage_signs(startline, endline)
+	return magit#sign#find_signs(s:magit_mark_sign, a:startline, a:endline)
+endfunction
+
 " s:magit_mark_sign: string of the sign for lines to be staged
 let s:magit_mark_sign='MagitMark'
 
