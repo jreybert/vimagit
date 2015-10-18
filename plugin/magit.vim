@@ -15,8 +15,8 @@ let g:loaded_magit = 1
 " syntax files
 execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
 
-" g:magit_unstaged_buffer_name: vim buffer name for vimagit
-let g:magit_unstaged_buffer_name = "magit-playground"
+" g:magit_buffer_name: vim buffer name for vimagit
+let g:magit_buffer_name = "magit-playground"
 
 let s:state = deepcopy(magit#state#state)
 
@@ -519,8 +519,8 @@ endfunction
 " 4. fills with unstage stuff
 " 5. restore window state
 function! magit#update_buffer()
-	if ( @% != g:magit_unstaged_buffer_name )
-		echoerr "Not in magit buffer " . g:magit_unstaged_buffer_name . " but in " . @%
+	if ( @% != g:magit_buffer_name )
+		echoerr "Not in magit buffer " . g:magit_buffer_name . " but in " . @%
 		return
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
@@ -587,8 +587,8 @@ function! magit#show_magit(display)
 	setlocal filetype=magit
 	"setlocal readonly
 
-	silent! execute "bdelete " . g:magit_unstaged_buffer_name
-	execute "file " . g:magit_unstaged_buffer_name
+	silent! execute "bdelete " . g:magit_buffer_name
+	execute "file " . g:magit_buffer_name
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
