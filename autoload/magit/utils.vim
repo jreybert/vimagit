@@ -36,6 +36,10 @@ endfunction
 " s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
 " 'cd' otherwise
 let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
+" magit#utils#lcd: helper function to lcd. use cd if lcd doesn't exists
+function! magit#utils#lcd(dir)
+	execute s:magit_cd_cmd . a:dir
+endfunction
 
 " magit#utils#system: wrapper for system, which only takes String as input in vim,
 " although it can take String or List input in neovim.

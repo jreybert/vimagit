@@ -88,53 +88,59 @@ endfunction
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
 function! magit#state#add_file(mode, status, filename) dict
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-	let diff_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color --patch -- " . dev_null . " "
-				\ .  magit#utils#add_quotes(a:filename)
-	let diff_list=magit#utils#systemlist(diff_cmd)
-	if ( empty(diff_list) )
-		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-	endif
-	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
-	let diff_dict_file.exists = 1
-	let diff_dict_file.status = a:status
-	if ( a:status == '?' && getftype(a:filename) == 'link' )
-		let diff_dict_file.symlink = resolve(a:filename)
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'New symbolic link file'
-	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
-		let diff_dict_file.empty = 1
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'New empty file'
-	elseif ( match(system("file --mime " .
-				\ magit#utils#add_quotes(a:filename)),
-				\ a:filename . ".*charset=binary") != -1 )
-		let diff_dict_file.binary = 1
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'Binary file'
-	else
-		let line = 0
-		" match(
-		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
-			call add(diff_dict_file.diff.header, diff_list[line])
-			let line += 1
-		endwhile
+	let dir = getcwd()
+	try
+		call magit#utils#lcd(magit#utils#top_dir())
+		let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
+		let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+		let diff_cmd="git diff --no-ext-diff " . staged_flag .
+					\ "--no-color --patch -- " . dev_null . " "
+					\ .  magit#utils#add_quotes(a:filename)
+		let diff_list=magit#utils#systemlist(diff_cmd)
+		if ( empty(diff_list) )
+			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+		endif
+		let diff_dict_file = self.get_file(a:mode, a:filename, 1)
+		let diff_dict_file.exists = 1
+		let diff_dict_file.status = a:status
+		if ( a:status == '?' && getftype(a:filename) == 'link' )
+			let diff_dict_file.symlink = resolve(a:filename)
+			call add(diff_dict_file.diff.header, 'no header')
+			let diff_dict_file.diff.hunks[0].header = 'New symbolic link file'
+		elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+			let diff_dict_file.empty = 1
+			call add(diff_dict_file.diff.header, 'no header')
+			let diff_dict_file.diff.hunks[0].header = 'New empty file'
+		elseif ( match(system("file --mime " .
+					\ magit#utils#add_quotes(a:filename)),
+					\ a:filename . ".*charset=binary") != -1 )
+			let diff_dict_file.binary = 1
+			call add(diff_dict_file.diff.header, 'no header')
+			let diff_dict_file.diff.hunks[0].header = 'Binary file'
+		else
+			let line = 0
+			" match(
+			while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
+				call add(diff_dict_file.diff.header, diff_list[line])
+				let line += 1
+			endwhile
 
-		let hunk = diff_dict_file.diff.hunks[0]
-		let hunk.header = diff_list[line]
+			let hunk = diff_dict_file.diff.hunks[0]
+			let hunk.header = diff_list[line]
 
-		for diff_line in diff_list[line+1 : -1]
-			if ( diff_line =~ "^@.*" )
-				let hunk = deepcopy(s:hunk_template)
-				call add(diff_dict_file.diff.hunks, hunk)
-				let hunk.header = diff_line
-				continue
-			endif
-			call add(hunk.lines, diff_line)
-		endfor
-	endif
+			for diff_line in diff_list[line+1 : -1]
+				if ( diff_line =~ "^@.*" )
+					let hunk = deepcopy(s:hunk_template)
+					call add(diff_dict_file.diff.hunks, hunk)
+					let hunk.header = diff_line
+					continue
+				endif
+				call add(hunk.lines, diff_line)
+			endfor
+		endif
+	finally
+		call magit#utils#lcd(dir)
+	endtry
 endfunction
 
 " magit#state#update: update self.dict
