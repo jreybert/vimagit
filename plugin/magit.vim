@@ -140,24 +140,23 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
+function! s:mg_display_files(mode, curdir, depth)
 
-" s:mg_get_staged_section: this function writes in current buffer all staged
-" or unstaged files, using s:state.dict information
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-" param[in] mode: 'staged' or 'unstaged'
-function! s:mg_get_staged_section(mode)
-	put =''
-	put =g:magit_sections[a:mode]
-	call <SID>mg_section_help(a:mode)
-	put =magit#utils#underline(g:magit_sections[a:mode])
-	put =''
-
+	" FIXME: ouch, must store subdirs in more efficient way
 	for [ filename, file_props ] in items(s:state.get_files(a:mode))
+		if ( file_props.depth != a:depth || filename !~ a:curdir . '.*' )
+			continue
+		endif
 		if ( file_props.empty == 1 )
 			put =g:magit_git_status_code.E . ': ' . filename
 		elseif ( file_props.symlink != '' )
 			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file_props.symlink
+		elseif ( file_props.dir != 0 )
+			put =g:magit_git_status_code.N . ': ' . filename
+			if ( file_props.visible == 1 )
+				call s:mg_display_files(a:mode, filename, a:depth + 1)
+				continue
+			endif
 		else
 			put =g:magit_git_status_code[file_props.status] . ': ' . filename
 		endif
@@ -175,6 +174,20 @@ function! s:mg_get_staged_section(mode)
 		endfor
 		put =''
 	endfor
+endfunction
+
+" s:mg_get_staged_section: this function writes in current buffer all staged
+" or unstaged files, using s:state.dict information
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+" param[in] mode: 'staged' or 'unstaged'
+function! s:mg_get_staged_section(mode)
+	put =''
+	put =g:magit_sections[a:mode]
+	call <SID>mg_section_help(a:mode)
+	put =magit#utils#underline(g:magit_sections[a:mode])
+	put =''
+	call s:mg_display_files(a:mode, '', 0)
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -663,7 +676,8 @@ function! s:mg_select_closed_file()
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		if ( s:state.is_file_visible(section, filename) == 0 )
+		if ( s:state.is_file_visible(section, filename) == 0 ||
+			\ s:state.is_dir(section, filename) == 1 )
 			let selection = s:state.get_flat_hunks(section, filename)
 			return selection
 		endif
@@ -687,6 +701,7 @@ function! magit#stage_block(selection, discard) abort
 		if ( section == 'unstaged' )
 			if ( file.empty == 1 ||
 			\    file.symlink != '' ||
+			\    file.dir != 0 ||
 			\    file.binary == 1 )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
@@ -696,6 +711,7 @@ function! magit#stage_block(selection, discard) abort
 		elseif ( section == 'staged' )
 			if ( file.empty == 1 ||
 			\    file.symlink != '' ||
+			\    file.dir != 0 ||
 			\    file.binary == 1 )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
@@ -711,6 +727,7 @@ function! magit#stage_block(selection, discard) abort
 		if ( section == 'unstaged' )
 			if ( file.empty == 1 ||
 			\    file.symlink != '' ||
+			\    file.dir != 0 ||
 			\    file.binary == 1 )
 				call delete(filename)
 			else

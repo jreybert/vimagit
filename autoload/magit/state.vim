@@ -3,6 +3,11 @@ function! magit#state#is_file_visible(section, filename) dict
 		 \ ( self.dict[a:section][a:filename].visible == 1 ) )
 endfunction
 
+function! magit#state#is_dir(section, filename) dict
+	return ( has_key(self.dict[a:section], a:filename) &&
+		 \ ( self.dict[a:section][a:filename].dir != 0 ) )
+endfunction
+
 function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
@@ -28,6 +33,7 @@ let s:file_template = {
 \	'exists': 0,
 \	'status': '',
 \	'empty': 0,
+\	'dir': 0,
 \	'binary': 0,
 \	'symlink': '',
 \	'diff': s:diff_template,
@@ -87,60 +93,60 @@ endfunction
 " param[in] mode: can be staged or unstaged
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
-function! magit#state#add_file(mode, status, filename) dict
-	let dir = getcwd()
-	try
-		call magit#utils#lcd(magit#utils#top_dir())
-		let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-		let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-		let diff_cmd="git diff --no-ext-diff " . staged_flag .
-					\ "--no-color --patch -- " . dev_null . " "
-					\ .  magit#utils#add_quotes(a:filename)
-		let diff_list=magit#utils#systemlist(diff_cmd)
-		if ( empty(diff_list) )
-			echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-		endif
-		let diff_dict_file = self.get_file(a:mode, a:filename, 1)
-		let diff_dict_file.exists = 1
-		let diff_dict_file.status = a:status
-		if ( a:status == '?' && getftype(a:filename) == 'link' )
-			let diff_dict_file.symlink = resolve(a:filename)
-			call add(diff_dict_file.diff.header, 'no header')
-			let diff_dict_file.diff.hunks[0].header = 'New symbolic link file'
-		elseif ( a:status == '?' && getfsize(a:filename) == 0 )
-			let diff_dict_file.empty = 1
-			call add(diff_dict_file.diff.header, 'no header')
-			let diff_dict_file.diff.hunks[0].header = 'New empty file'
-		elseif ( match(system("file --mime " .
-					\ magit#utils#add_quotes(a:filename)),
-					\ a:filename . ".*charset=binary") != -1 )
-			let diff_dict_file.binary = 1
-			call add(diff_dict_file.diff.header, 'no header')
-			let diff_dict_file.diff.hunks[0].header = 'Binary file'
-		else
-			let line = 0
-			" match(
-			while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
-				call add(diff_dict_file.diff.header, diff_list[line])
-				let line += 1
-			endwhile
+function! magit#state#add_file(mode, status, filename, depth) dict
+	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
+	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let diff_cmd="git diff --no-ext-diff " . staged_flag .
+				\ "--no-color --patch -- " . dev_null . " "
+				\ .  magit#utils#add_quotes(a:filename)
+	let diff_list=magit#utils#systemlist(diff_cmd)
+	if ( empty(diff_list) )
+		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
+	endif
+	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
+	let diff_dict_file.exists = 1
+	let diff_dict_file.status = a:status
+	let diff_dict_file.depth = a:depth
+	if ( a:status == '?' && getftype(a:filename) == 'link' )
+		let diff_dict_file.symlink = resolve(a:filename)
+		call add(diff_dict_file.diff.header, 'no header')
+		let diff_dict_file.diff.hunks[0].header = 'New symbolic link file'
+	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
+		let diff_dict_file.dir = 1
+		for subfile in split(globpath(a:filename, '\(.[^.]*\|*\)'), '\n')
+			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
+		endfor
+	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+		let diff_dict_file.empty = 1
+		call add(diff_dict_file.diff.header, 'no header')
+		let diff_dict_file.diff.hunks[0].header = 'New empty file'
+	elseif ( match(system("file --mime " .
+				\ magit#utils#add_quotes(a:filename)),
+				\ a:filename . ".*charset=binary") != -1 )
+		let diff_dict_file.binary = 1
+		call add(diff_dict_file.diff.header, 'no header')
+		let diff_dict_file.diff.hunks[0].header = 'Binary file'
+	else
+		let line = 0
+		" match(
+		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
+			call add(diff_dict_file.diff.header, diff_list[line])
+			let line += 1
+		endwhile
 
-			let hunk = diff_dict_file.diff.hunks[0]
-			let hunk.header = diff_list[line]
+		let hunk = diff_dict_file.diff.hunks[0]
+		let hunk.header = diff_list[line]
 
-			for diff_line in diff_list[line+1 : -1]
-				if ( diff_line =~ "^@.*" )
-					let hunk = deepcopy(s:hunk_template)
-					call add(diff_dict_file.diff.hunks, hunk)
-					let hunk.header = diff_line
-					continue
-				endif
-				call add(hunk.lines, diff_line)
-			endfor
-		endif
-	finally
-		call magit#utils#lcd(dir)
-	endtry
+		for diff_line in diff_list[line+1 : -1]
+			if ( diff_line =~ "^@.*" )
+				let hunk = deepcopy(s:hunk_template)
+				call add(diff_dict_file.diff.hunks, hunk)
+				let hunk.header = diff_line
+				continue
+			endif
+			call add(hunk.lines, diff_line)
+		endfor
+	endif
 endfunction
 
 " magit#state#update: update self.dict
@@ -157,19 +163,24 @@ function! magit#state#update() dict
 		endfor
 	endfor
 
-	for [mode, diff_dict_mode] in items(self.dict)
+	let dir = getcwd()
+	try
+		call magit#utils#lcd(magit#utils#top_dir())
+		for [mode, diff_dict_mode] in items(self.dict)
+			let status_list = magit#git#get_status()
+			for file_status in status_list
+				let status=file_status[mode]
 
-		let status_list = magit#git#get_status()
-		for file_status in status_list
-			let status=file_status[mode]
-
-			" untracked code apperas in staged column, we skip it
-			if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
-				continue
-			endif
-			call self.add_file(mode, status, file_status.filename)
+				" untracked code apperas in staged column, we skip it
+				if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
+					continue
+				endif
+				call self.add_file(mode, status, file_status.filename, 0)
+			endfor
 		endfor
-	endfor
+	finally
+		call magit#utils#lcd(dir)
+	endtry
 
 	" remove files that have changed their mode or been committed/deleted/discarded...
 	for diff_dict_mode in values(self.dict)
@@ -202,6 +213,7 @@ let magit#state#state = {
 			\ 'get_hunks': function("magit#state#get_hunks"),
 			\ 'get_flat_hunks': function("magit#state#get_flat_hunks"),
 			\ 'add_file': function("magit#state#add_file"),
+			\ 'is_dir': function("magit#state#is_dir"),
 			\ 'is_file_visible': function("magit#state#is_file_visible"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
