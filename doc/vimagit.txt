@@ -152,10 +152,15 @@ Following mappings are set locally, for magit buffer only, in normal mode.
   zc,zC     Typing zc on a file will hide its diffs.
 
                                       *vimagit-S*            *magit#stage_hunk(0)*
+                                                           *magit#stage_vselect()*
                                       *vimagit-g:magit_stage_hunk_mapping*
   S         If cursor is in a hunk, stage/unstage hunk at cursor position.
             If cursor is in diff header, stage/unstage whole file at cursor
             position.
+            If some lines in the hunk are selected (see |visual-use|), stage
+            only selected lines (only works for staging).
+            If some lines in the hunk are marked (see |vimagit-M|), stage only
+            these lines (only works for staging).
             When cursor is in "Unstaged changes" section, it will stage the
             hunk/file.
             On the other side, when cursor is in "Staged changes" section, it
@@ -169,6 +174,16 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             On the other side, when cursor is in "Staged changes" section, it
             will unstage file.
 
+                                      *vimagit-L*          *magit#stage_vselect()*
+  L         Stage the line under the cursor (only works for staging)
+
+                                      *vimagit-M*           *magit#mark_vselect()*
+  M
+            Mark the current line to be staged.
+            If some lines in the hunk are selected (see |visual-use|), mark
+            selected lines.
+            To staged marked lines, press S (see |vimagit-S|) in the current
+            hunk.
 
                                     *vimagit-DDD*            *magit#stage_hunk(1)*
                                     *vimagit-g:magit_discard_hunk_mapping*

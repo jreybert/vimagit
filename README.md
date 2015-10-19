@@ -27,6 +27,7 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 
 * [x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.
 * [x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.
+* [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
 * [x] Visualize stashes. Apply, pop, drop are on going.
@@ -34,7 +35,6 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an issue on github :heart: !
 
 More to come:
-* Partial hunk staging (next release).
 * Vizualize and checkout branches.
 * Go through history, cherry-pick changes.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
@@ -123,6 +123,8 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 **S**
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
  * If cursor is in diff header, stage/unstage whole file at cursor position.
+ * If some lines in the hunk are selected (using **v**), stage only visual selected lines (only works for staging).
+ * If some lines in the hunk are marked (using **M**), stage only marked lines (only works for staging).
  * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
 
@@ -130,6 +132,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * Stage/unstage the whole file at cursor position.
  * When cursor is in "Unstaged changes" section, it will stage the file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage file.
+
+**L**
+ * Stage the line under the cursor.
+
+**M**
+ * Mark the line under the cursor "to be staged".
+ * If some lines in the hunk are selected (using **v**), mark selected lines "to be staged".
+ * To staged marked lines in a hunk, move cursor to this hunk and press **S**.
 
 **DDD**
  * If cursor is in a hunk, discard hunk at cursor position.

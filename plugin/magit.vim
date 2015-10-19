@@ -68,19 +68,26 @@ execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_m
 " s:magit_inline_help: Dict containing inline help for each section
 let s:magit_inline_help = {
 			\ 'staged': [
-\'S      if cursor in diff header, unstage file',
+\'S      if cursor on filename header, unstage file',
 \'       if cursor in hunk, unstage hunk',
-\'F      if cursor in diff header or hunk, unstage file',
+\'F      if cursor on filename header or hunk, unstage whole file',
 \],
 			\ 'unstaged': [
-\'S      if cursor in diff header, stage file',
+\'S      if cursor on filename header, stage file',
 \'       if cursor in hunk, stage hunk',
-\'F      if cursor in diff header or hunk, stage file',
+\'       if visual selection in hunk (with v), stage selection',
+\'       if lines marked in hunk (with M), stage marked lines',
+\'L      stage the line under the cursor',
+\'M      if cursor in hunk, mark line under cursor "to be staged"',
+\'       if visual selection in hunk (with v), mark selected lines "to be'
+\'       staged"',
+\'F      if cursor on filename header or hunk, stage whole file',
 \'DDD    discard file changes (warning, changes will be lost)',
 \'I      add file in .gitgnore',
 \],
 			\ 'global': [
-\'C CC   set commit mode to normal, and show "Commit message" section',
+\'<CR>   if cursor on filename header line, unhide diffs for this file',
+\'CC     set commit mode to normal, and show "Commit message" section',
 \'CA     set commit mode amend, and show "Commit message" section with previous',
 \'       commit message',
 \'CF     amend staged changes to previous commit without modifying the previous',
@@ -93,8 +100,8 @@ let s:magit_inline_help = {
 \'You will still be able to toggle inline help with h',
 \],
 			\ 'commit': [
-\'C CC   commit all staged changes with commit mode previously set (normal or',
-\':w<cr> amend) with message written in this section',
+\'CC,:w  commit all staged changes with commit mode previously set (normal or',
+\'       amend) with message written in this section',
 \],
 \}
 
