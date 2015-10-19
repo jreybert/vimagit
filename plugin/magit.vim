@@ -143,7 +143,8 @@ endfunction
 function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
-	for [ filename, file_props ] in items(s:state.get_files(a:mode))
+	for filename in sort(keys(s:state.get_files(a:mode)))
+		let file_props = s:state.get_file(a:mode, filename, 0)
 		if ( file_props.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
