@@ -1,0 +1,24 @@
+diff --git books/models.py books/models.py
+--- books/models.py
++++ books/models.py
+@@ -1,5 +1,9 @@
+ from django.db import models
+ 
++import urllib2 as urllib
++from PIL import Image
++import io
++
+ import isbn_search
+ 
+ class User(models.Model):
+@@ -22,6 +26,10 @@ class BookManager(models.Manager):
+ 				title   = product.title,
+ 				edition = product.edition
+ 				)
++		if product.cover_url is not '':
++			cover_img_bin = urllib.urlopen(product.cover_url)
++			cover_img_file = Image.open(io.BytesIO(cover_img_bin.read()))
++			book.cover_img.save("cover.jpg", cover_img_file)
+ 		return book
+ 
+ class Book(models.Model):

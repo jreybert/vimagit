@@ -1,0 +1,38 @@
+diff --git books/models.py books/models.py
+--- books/models.py
++++ books/models.py
+@@ -1,5 +1,9 @@
+ from django.db import models
+ 
++import urllib2 as urllib
++from PIL import Image
++import io
++
+ import isbn_search
+ 
+ class User(models.Model):
+@@ -22,15 +26,22 @@ class BookManager(models.Manager):
+ 				title   = product.title,
+ 				edition = product.edition
+ 				)
++		if product.cover_url is not '':
++			cover_img_bin = urllib.urlopen(product.cover_url)
++			cover_img_file = Image.open(io.BytesIO(cover_img_bin.read()))
++			book.cover_img.save("cover.jpg", cover_img_file)
+ 		return book
+ 
++def upload_path(book, filename):
++	return 'covers/%s/%s' % (book.isbn, filename)
++
+ class Book(models.Model):
+ 	isbn = models.CharField(max_length=10, unique=True)
+-	eisbn = models.CharField(max_length=13, blank=True)
++	eisbn = models.CharField(max_length=13, blank=True, null=True)
+ 	title = models.CharField(max_length=200)
+ 	author = models.CharField(max_length=200)
+-	edition = models.CharField(max_length=200, blank=True)
+ 	cover = models.ImageField(upload_to='covers', blank=True)
++	edition = models.CharField(max_length=200, blank=True, null=True)
+ 	def __unicode__(self):
+ 		return u'[%s] "%s" by %s' % (self.isbn, self.title, self.author,)
+ 

@@ -150,8 +150,13 @@ function! Search_file(mode, ...)
 	call Git_verbose_log('Search mode: "' . a:mode . '" => ' . getline('.'))
 	let pattern='^.*: ' . call('Get_filename', a:000) . '\%( -> .*\)\?$'
 	let ret = search(pattern)
-	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.'))
+	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.') . ' @line' . line('.'))
 	return ret
+endfunction
+
+function! Search_pattern(pattern)
+	let ret = search(a:pattern)
+	call Git_verbose_log('Search: "' . a:pattern . '" => ' . getline('.') . ' @line' . line('.'))
 endfunction
 
 " get a safe to use string of filename we curently test (for golden files)
