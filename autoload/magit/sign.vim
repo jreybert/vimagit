@@ -15,11 +15,12 @@ let s:supports_star = v:version > 703 || (v:version == 703 && has("patch596"))
 let s:bufnr = bufnr(g:magit_buffer_name)
 
 " magit#sign#remove_signs: unplace a list of signs
-" param[in] sign_ids: list of signs ids
+" param[in] sign_ids: list of signs dict
 function! magit#sign#remove_signs(sign_ids)
     let bufnr = magit#utils#bufnr()
-    for id in a:sign_ids
-        execute "sign unplace" id
+    for sign in values(a:sign_ids)
+        echom "sign unplace" sign.id
+        execute "sign unplace" sign.id
     endfor
 endfunction
 
@@ -62,6 +63,7 @@ endfunction
 
 " magit#sign#find_stage_signs: helper function to get marked lines for stage
 " param[in] startline,endline: range of lines
+" return Dict of marked lines
 function! magit#sign#find_stage_signs(startline, endline)
 	return magit#sign#find_signs(s:magit_mark_sign, a:startline, a:endline)
 endfunction

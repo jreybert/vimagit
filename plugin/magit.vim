@@ -780,7 +780,8 @@ function! magit#stage_hunk(discard)
 			let selection = getline(start, end)
 		else
 			let selection = <SID>mg_create_diff_from_select(
-				\map(keys(marked_lines), 'str2nr(v:val)'))
+						\ map(keys(marked_lines), 'str2nr(v:val)'))
+			call magit#sign#remove_signs(marked_lines)
 		endif
 	endtry
 	return magit#stage_block(selection, a:discard)
