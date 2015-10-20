@@ -25,6 +25,23 @@ function! magit#state#must_be_added() dict
 		\ self.binary == 1 )
 endfunction
 
+" magit#state#file_get_hunks: function accessor for hunks objects
+" return: List of List of hunks lines
+function! magit#state#file_get_hunks() dict
+	return self.diff.hunks
+endfunction
+
+" magit#state#file_get_flat_hunks: function accessor for hunks lines
+" return: all hunks lines of a file, including hunk headers
+function! magit#state#file_get_flat_hunks() dict
+	let hunks = self.diff.hunks
+	let lines = []
+	for hunk in hunks
+		call add(lines, hunk.header)
+		call add(lines, hunk.lines)
+	endfor
+	return lines
+endfunction
 
 " s:hunk_template: template for hunk object (nested in s:diff_template)
 " WARNING: this variable must be deepcopy()'ied
@@ -56,6 +73,8 @@ let s:file_template = {
 \	'set_visible': function("magit#state#set_file_visible"),
 \	'toggle_visible': function("magit#state#toggle_file_visible"),
 \	'must_be_added': function("magit#state#must_be_added"),
+\	'get_hunks'      : function("magit#state#file_get_hunks"),
+\	'get_flat_hunks' : function("magit#state#file_get_flat_hunks"),
 \}
 
 " magit#state#get_file: function accessor for file
@@ -83,29 +102,6 @@ endfunction
 function! magit#state#get_header(mode, filename) dict
 	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
 	return diff_dict_file.diff.header
-endfunction
-
-" magit#state#get_hunks: function accessor for hunks objects
-" param[in] mode: can be staged or unstaged
-" param[in] filename: hunks of filename to access
-" return: List of List of hunks lines
-function! magit#state#get_hunks(mode, filename) dict
-	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
-	return diff_dict_file.diff.hunks
-endfunction
-
-" magit#state#get_hunks: function accessor for hunks lines
-" param[in] mode: can be staged or unstaged
-" param[in] filename: hunks of filename to access
-" return: all hunks lines of a file, including hunk headers
-function! magit#state#get_flat_hunks(mode, filename) dict
-	let hunks = self.get_hunks(a:mode, a:filename)
-	let lines = []
-	for hunk in hunks
-		call add(lines, hunk.header)
-		call add(lines, hunk.lines)
-	endfor
-	return lines
 endfunction
 
 " magit#state#add_file: method to add a file with all its
@@ -230,8 +226,6 @@ let magit#state#state = {
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
 			\ 'get_header': function("magit#state#get_header"),
-			\ 'get_hunks': function("magit#state#get_hunks"),
-			\ 'get_flat_hunks': function("magit#state#get_flat_hunks"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},

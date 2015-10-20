@@ -144,31 +144,31 @@ function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
 	for filename in sort(keys(s:state.get_files(a:mode)))
-		let file_props = s:state.get_file(a:mode, filename, 0)
-		if ( file_props.depth != a:depth || filename !~ a:curdir . '.*' )
+		let file = s:state.get_file(a:mode, filename, 0)
+		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
-		if ( file_props.empty == 1 )
+		if ( file.empty == 1 )
 			put =g:magit_git_status_code.E . ': ' . filename
-		elseif ( file_props.symlink != '' )
-			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file_props.symlink
-		elseif ( file_props.dir != 0 )
+		elseif ( file.symlink != '' )
+			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file.symlink
+		elseif ( file.dir != 0 )
 			put =g:magit_git_status_code.N . ': ' . filename
-			if ( file_props.visible == 1 )
+			if ( file.visible == 1 )
 				call s:mg_display_files(a:mode, filename, a:depth + 1)
 				continue
 			endif
 		else
-			put =g:magit_git_status_code[file_props.status] . ': ' . filename
+			put =g:magit_git_status_code[file.status] . ': ' . filename
 		endif
-		if ( file_props.visible == 0 )
+		if ( file.visible == 0 )
 			put =''
 			continue
 		endif
-		if ( file_props.exists == 0 )
+		if ( file.exists == 0 )
 			echoerr "Error, " . filename . " should not exists"
 		endif
-		let hunks=s:state.get_hunks(a:mode, filename)
+		let hunks = file.get_hunks()
 		for hunk in hunks
 			silent put =hunk.header
 			silent put =hunk.lines
@@ -451,7 +451,7 @@ function! s:mg_create_diff_from_select(select_lines)
 	endif
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let hunks = s:state.get_hunks(section, filename)
+	let hunks = s:state.get_file(section, filename).get_hunks()
 	for hunk in hunks
 		if ( hunk.header == getline(starthunk) )
 			let current_hunk = hunk
@@ -683,7 +683,7 @@ function! s:mg_select_closed_file()
 		let file = s:state.get_file(section, filename)
 		if ( file.is_visible() == 0 ||
 			\ file.is_dir() == 1 )
-			let selection = s:state.get_flat_hunks(section, filename)
+			let selection = s:state.get_file(section, filename).get_flat_hunks()
 			return selection
 		endif
 	endif
