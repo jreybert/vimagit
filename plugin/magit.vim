@@ -141,35 +141,13 @@ function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
 	for filename in sort(keys(s:state.get_files(a:mode)))
-		let file = s:state.get_file(a:mode, filename, 0)
+		let file = s:state.get_file(a:mode, filename)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
-		put =file.get_filename_header()
-
-		if ( file.dir != 0 )
-			if ( file.visible == 1 )
-				call s:mg_display_files(a:mode, filename, a:depth + 1)
-				continue
-			endif
+		if ( file.put() != 0 )
+			call s:mg_display_files(a:mode, filename, a:depth + 1)
 		endif
-
-		if ( file.visible == 0 )
-			put =''
-			continue
-		endif
-		if ( file.exists == 0 )
-			echoerr "Error, " . filename . " should not exists"
-		endif
-		let hunks = file.get_hunks()
-		for hunk in hunks
-			if ( hunk.header != '' )
-				silent put =hunk.header
-			endif
-			if ( !empty(hunk.lines) )
-				silent put =hunk.lines
-			endif
-		endfor
 		put =''
 	endfor
 endfunction

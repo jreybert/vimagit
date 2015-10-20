@@ -96,6 +96,31 @@ function! magit#state#file_set_diff(val) dict
 	endif
 endfunction
 
+function! magit#state#file_put() dict
+	"if ( self.dirty != 0 )
+	if (1)
+		let bufnr = magit#utils#bufnr()
+		let self.sign_start = magit#sign#add_sign(line('.'), 'S', bufnr)
+		put =file.get_filename_header()
+		if ( self.dir != 0 )
+			if ( self.visible == 1 )
+				let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
+				return 1
+			endif
+		endif
+		if ( self.visible == 0 )
+			let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
+			return 0
+		endif
+		if ( self.exists == 0 )
+			echoerr "Error, " . self.filename . " should not exists"
+		endif
+		let hunk_lines=self.get_flat_hunks()
+		silent put =hunk_lines
+		let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
+	endif
+endfunction
+
 " s:hunk_template: template for hunk object (nested in s:diff_template)
 " WARNING: this variable must be deepcopy()'ied
 let s:hunk_template = {
@@ -144,6 +169,7 @@ let s:file_template = {
 \	'get_flat_hunks' : function("magit#state#file_get_flat_hunks"),
 \	'toggle_visible' : function("magit#state#toggle_file_visible"),
 \	'must_be_added'  : function("magit#state#must_be_added"),
+\	'put'            : function("magit#state#file_put"),
 \}
 
 " magit#state#get_file: function accessor for file
