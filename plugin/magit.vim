@@ -550,9 +550,11 @@ function! magit#open_close_folding(...)
 	" if first param is set, force visible to this value
 	" else, toggle value
 	let file = s:state.get_file(section, filename, 0)
-	let file.visible =
-				\ ( a:0 == 1 ) ? a:1 :
-				\ ( file.visible == 0 ) ? 1 : 0
+	if ( a:0 == 1 )
+		call file.set_visible(a:1)
+	else
+		call file.toggle_visible()
+	endif
 	call magit#update_buffer()
 endfunction
 
@@ -677,8 +679,10 @@ function! s:mg_select_closed_file()
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
-		if ( s:state.is_file_visible(section, filename) == 0 ||
-			\ s:state.is_dir(section, filename) == 1 )
+		
+		let file = s:state.get_file(section, filename)
+		if ( file.is_visible() == 0 ||
+			\ file.is_dir() == 1 )
 			let selection = s:state.get_flat_hunks(section, filename)
 			return selection
 		endif
@@ -700,20 +704,14 @@ function! magit#stage_block(selection, discard) abort
 	let file = s:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
-			if ( file.empty == 1 ||
-			\    file.symlink != '' ||
-			\    file.dir != 0 ||
-			\    file.binary == 1 )
+			if ( file.must_be_added() )
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
 				call <SID>mg_git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
-			if ( file.empty == 1 ||
-			\    file.symlink != '' ||
-			\    file.dir != 0 ||
-			\    file.binary == 1 )
+			if ( file.must_be_added() )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
@@ -726,10 +724,7 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( file.empty == 1 ||
-			\    file.symlink != '' ||
-			\    file.dir != 0 ||
-			\    file.binary == 1 )
+			if ( file.must_be_added() )
 				call delete(filename)
 			else
 				call <SID>mg_git_unapply(header, a:selection, 'unstaged')

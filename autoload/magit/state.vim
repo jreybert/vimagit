@@ -1,16 +1,30 @@
-function! magit#state#is_file_visible(section, filename) dict
-	return ( has_key(self.dict[a:section], a:filename) &&
-		 \ ( self.dict[a:section][a:filename].visible == 1 ) )
+function! magit#state#is_file_visible() dict
+	return self.visible
 endfunction
 
-function! magit#state#is_dir(section, filename) dict
-	return ( has_key(self.dict[a:section], a:filename) &&
-		 \ ( self.dict[a:section][a:filename].dir != 0 ) )
+function! magit#state#set_file_visible(val) dict
+	let self.visible = a:val
+endfunction
+
+function! magit#state#toggle_file_visible() dict
+	let self.visible = ( self.visible == 0 ) ? 1 : 0
+endfunction
+
+function! magit#state#is_file_dir() dict
+	return self.dir != 0
 endfunction
 
 function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
+
+function! magit#state#must_be_added() dict
+	return ( self.empty == 1 ||
+		\ self.symlink != '' ||
+		\ self.dir != 0 ||
+		\ self.binary == 1 )
+endfunction
+
 
 " s:hunk_template: template for hunk object (nested in s:diff_template)
 " WARNING: this variable must be deepcopy()'ied
@@ -37,6 +51,11 @@ let s:file_template = {
 \	'binary': 0,
 \	'symlink': '',
 \	'diff': s:diff_template,
+\	'is_dir': function("magit#state#is_file_dir"),
+\	'is_visible': function("magit#state#is_file_visible"),
+\	'set_visible': function("magit#state#set_file_visible"),
+\	'toggle_visible': function("magit#state#toggle_file_visible"),
+\	'must_be_added': function("magit#state#must_be_added"),
 \}
 
 " magit#state#get_file: function accessor for file
@@ -45,12 +64,13 @@ let s:file_template = {
 " param[in] create: boolean. If 1, non existing file in Dict will be created.
 " if 0, 'file_doesnt_exists' exception will be thrown
 " return: Dict of file
-function! magit#state#get_file(mode, filename, create) dict
+function! magit#state#get_file(mode, filename, ...) dict
 	let file_exists = has_key(self.dict[a:mode], a:filename)
-	if ( file_exists == 0 && a:create == 1 )
+	let create = ( a:0 == 1 ) ? a:1 : 0
+	if ( file_exists == 0 && create == 1 )
 		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
 		let self.dict[a:mode][a:filename].visible = 0
-	elseif ( file_exists == 0 && a:create == 0 )
+	elseif ( file_exists == 0 && create == 0 )
 		throw 'file_doesnt_exists'
 	endif
 	return self.dict[a:mode][a:filename]
@@ -213,8 +233,6 @@ let magit#state#state = {
 			\ 'get_hunks': function("magit#state#get_hunks"),
 			\ 'get_flat_hunks': function("magit#state#get_flat_hunks"),
 			\ 'add_file': function("magit#state#add_file"),
-			\ 'is_dir': function("magit#state#is_dir"),
-			\ 'is_file_visible': function("magit#state#is_file_visible"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }
