@@ -96,29 +96,48 @@ function! magit#state#file_set_diff(val) dict
 	endif
 endfunction
 
-function! magit#state#file_put() dict
-	"if ( self.dirty != 0 )
-	if (1)
-		let bufnr = magit#utils#bufnr()
-		let self.sign_start = magit#sign#add_sign(line('.'), 'S', bufnr)
-		put =file.get_filename_header()
-		if ( self.dir != 0 )
-			if ( self.visible == 1 )
-				let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
-				return 1
+function! magit#state#file_put(curline) dict
+	try
+		let recursive = 0
+		if ( self.sign_start != 0 && self.sign_end != 0 )
+			let [line_start, line_end] = magit#sign#get_lines(
+						\ self.sign_start, self.sign_end)
+			let curline = line_start
+		else
+			let curline = a:curline
+		endif
+		if ( self.dirty != 0 )
+			silent! execute 'silent! ' . line_start . ',' . line_end . 'delete _'
+			let curline = min( [ curline, line('$') ] )
+			let bufnr = magit#utils#bufnr()
+			let self.sign_start = magit#sign#add_sign(curline, 'S', bufnr)
+			call magit#utils#debug_log(self.filename . '  start ' . curline)
+			call append(file.get_filename_header())
+			if ( self.dir != 0 && self.visible == 1 )
+				let line_end = curline
+				let self.sign_end = magit#sign#add_sign(line_end, 'E', bufnr)
+				let recursive = 1
+				throw 'goto'
 			endif
+
+			if ( self.visible == 0 )
+				let line_end = curline
+				throw 'goto'
+			endif
+			if ( self.exists == 0 )
+				echoerr "Error, " . self.filename . " should not exists"
+			endif
+			let hunk_lines=self.get_flat_hunks()
+			let line_end = curline + len(hunk_lines)
+			call append(curline, hunk_lines)
 		endif
-		if ( self.visible == 0 )
-			let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
-			return 0
-		endif
-		if ( self.exists == 0 )
-			echoerr "Error, " . self.filename . " should not exists"
-		endif
-		let hunk_lines=self.get_flat_hunks()
-		silent put =hunk_lines
-		let self.sign_end = magit#sign#add_sign(line('.'), 'E', bufnr)
-	endif
+	catch /^goto$/
+		"do nothing
+	finally
+		let self.sign_end = magit#sign#add_sign(line_end, 'E', bufnr)
+		call magit#utils#debug_log(self.filename . '  end ' . line_end)
+		return [0, line_end+1]
+	endtry
 endfunction
 
 " s:hunk_template: template for hunk object (nested in s:diff_template)
@@ -126,7 +145,6 @@ endfunction
 let s:hunk_template = {
 \	'header': '',
 \	'lines': [],
-\	'marks': [],
 \}
 
 " s:diff_template: template for diff object (nested in s:file_template)
@@ -290,6 +308,17 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	call file.set_diff(diff)
 endfunction
 
+function! magit#state#get_files_lines() dict
+	let lines = {}
+	for diff_dict_mode in values(self.dict)
+		for file in values(diff_dict_mode)
+			let lines[file.filename] = magit#sign#get_lines(
+				\ file.sign_start, file.sign_end)
+		endfor
+	endfor
+	return lines
+endfunction
+
 " magit#state#update: update self.dict
 " if a file does not exists anymore (because all its changes have been
 " committed, deleted, discarded), it is removed from g:mg_diff_dict
@@ -373,6 +402,7 @@ let magit#state#state = {
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
 			\ 'update': function("magit#state#update"),
+			\ 'get_files_lines': function("magit#state#get_files_lines"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }
 

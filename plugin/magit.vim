@@ -50,6 +50,10 @@ let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        
 
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
+
+let g:magit_debug                  = get(g:, 'magit_debug',                     1)
+let g:magit_log_file               = get(g:, 'magit_log_file',                  '/tmp/vimagit.log')
+
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
 
@@ -95,6 +99,8 @@ let s:magit_inline_help = {
 \],
 \}
 
+let s:current_line = 1
+
 " s:mg_get_inline_help_line_nb: this function returns the number of lines of
 " a given section, or 0 if help is disabled.
 " param[in] section: section identifier
@@ -115,19 +121,33 @@ function! s:mg_section_help(section)
 	endif
 endfunction
 
+let s:info_sign_start = 0
+let s:info_sign_end = 0
 " s:mg_get_info: this function writes in current buffer current git state
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
-function! s:mg_get_info()
-	silent put =''
-	silent put =g:magit_sections.info
-	silent put =magit#utils#underline(g:magit_sections.info)
-	silent put =''
-	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
-	let commit=magit#utils#system("git show -s --oneline")
-	silent put ='Current branch: ' . branch
-	silent put ='Last commit:    ' . commit
-	silent put =''
+function! s:mg_get_info(curline)
+	if ( s:info_sign_start == 0 )
+		let bufnr = magit#utils#bufnr()
+		let s:info_sign_start = magit#sign#add_sign(a:curline, 'S', bufnr)
+		let branch = magit#utils#system("git rev-parse --abbrev-ref HEAD")
+		let commit = magit#utils#system("git show -s --oneline")
+		let info_msg = [
+		\'',
+		\g:magit_sections.info,
+		\magit#utils#underline(g:magit_sections.info),
+		\'',
+		\'Current branch: ' . branch,
+		\'Last commit:    ' . commit,
+		\'',
+		\]
+		call append(a:curline, info_msg)
+		let endline = a:curline + len(info_msg)
+		let s:info_sign_end = magit#sign#add_sign(endline, 'E', bufnr)
+	else
+		let endline = magit#sign#get_lines(s:info_sign_end)
+	endif
+	return endline
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
@@ -137,33 +157,54 @@ endfunction
 " directory)
 " param[in] depth: current directory depth (only needed for untracked
 " directory)
-function! s:mg_display_files(mode, curdir, depth)
+function! s:mg_display_files(mode, curdir, depth, curline)
 
+	let nextline = a:curline + 1
+	call magit#utils#debug_log(">> display nextline " . nextline)
 	" FIXME: ouch, must store subdirs in more efficient way
 	for filename in sort(keys(s:state.get_files(a:mode)))
 		let file = s:state.get_file(a:mode, filename)
+		call magit#utils#debug_log("filename " . filename)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
+			call magit#utils#debug_log("!! skip")
 			continue
 		endif
-		if ( file.put() != 0 )
-			call s:mg_display_files(a:mode, filename, a:depth + 1)
+		call magit#utils#debug_log('before put nextline ' . nextline)
+		let [recursive, nextline] = file.put(nextline)
+		call magit#utils#debug_log('after put nextline ' . nextline)
+		if ( recursive != 0 )
+			call magit#utils#debug_log('before recursive nextline ' . nextline)
+			let nextline = s:mg_display_files(a:mode, filename, a:depth + 1, nextline)
+			call magit#utils#debug_log('before recursive nextline ' . nextline)
 		endif
-		put =''
 	endfor
+	call magit#utils#debug_log('return nextline ' . nextline)
+	return nextline
 endfunction
 
+let s:stage_sign_start = { 'stage': 0, 'unstaged': 0}
+let s:stage_sign_end =   { 'stage': 0, 'unstaged': 0}
 " s:mg_get_staged_section: this function writes in current buffer all staged
 " or unstaged files, using s:state.dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
-function! s:mg_get_staged_section(mode)
-	put =''
-	put =g:magit_sections[a:mode]
-	call <SID>mg_section_help(a:mode)
-	put =magit#utils#underline(g:magit_sections[a:mode])
-	put =''
-	call s:mg_display_files(a:mode, '', 0)
+function! s:mg_get_staged_section(mode, curline)
+
+	if ( s:stage_sign_start[a:mode] == 0 )
+		let bufnr = magit#utils#bufnr()
+		let s:stage_sign_start[a:mode] = magit#sign#add_sign(a:curline, 'S', bufnr)
+		let stage_msg = [
+		\ g:magit_sections[a:mode],
+		\ magit#utils#underline(g:magit_sections[a:mode]),
+		\]
+		call append(a:curline, stage_msg)
+		let endline = a:curline + len(stage_msg)
+		let s:stage_sign_end[a:mode] = magit#sign#add_sign(endline, 'E', bufnr)
+	else
+		let endline = magit#sign#get_lines(s:stage_sign_end[a:mode])
+	endif
+	return s:mg_display_files(a:mode, '', 0, endline)
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -505,7 +546,8 @@ function! magit#update_buffer()
 	" delete buffer
 	silent! execute "silent :%delete _"
 	
-	call <SID>mg_get_info()
+	let current_line = 1
+	let current_line = <SID>mg_get_info(current_line)
 	call <SID>mg_section_help('global')
 	if ( s:magit_commit_mode != '' )
 		call <SID>mg_get_commit_section()
@@ -522,8 +564,9 @@ function! magit#update_buffer()
 		endif
 	endif
 
-	call <SID>mg_get_staged_section('staged')
-	call <SID>mg_get_staged_section('unstaged')
+	let current_line = <SID>mg_get_staged_section('staged', current_line)
+	let current_line = <SID>mg_get_staged_section('unstaged', current_line)
+
 	call <SID>mg_get_stashes()
 
 	call winrestview(l:winview)
@@ -811,5 +854,9 @@ function! magit#commit_command(mode)
 endfunction
 
 command! Magit call magit#show_magit('v')
+
+command! MagitDebugFilesLines call magit#utils#append_file(g:magit_log_file, magit#utils#flatten(items(s:state.get_files_lines())))
+
+command! MagitDebug call magit#utils#set_debug()
 
 " }}}

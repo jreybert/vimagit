@@ -134,7 +134,12 @@ endfunction
 " return: one dimensional list
 function! magit#utils#flatten(list)
 	let val = []
-	for elem in a:list
+	if ( type(a:list) == type([]) )
+		let list = a:list
+	elseif ( type(a:list) == type({}) )
+		let list = items(a:list)
+	endif
+	for elem in list
 		if type(elem) == type([])
 			call extend(val, magit#utils#flatten(elem))
 		else
@@ -172,4 +177,31 @@ endfunction
 " return: current magit buffer id
 function! magit#utils#bufnr()
 	return s:bufnr
+endfunction
+
+function! magit#utils#set_debug()
+	echom "Log into " . g:magit_log_file
+	execute "edit " . g:magit_log_file
+	execute '%delete _'
+	write!
+	let g:magit_debug = 1
+endfunction
+
+function! magit#utils#debug_cmd(cmd)
+	if ( g:magit_debug != 0 )
+		execute "a:cmd"
+	endif
+endfunc
+
+function! magit#utils#debug_log(message)
+	if ( g:magit_debug != 0 )
+		if ( type(a:message) == type("") )
+			let msg = split(a:message, '\n')
+		elseif ( type(a:message) == type({}) )
+			let msg = split(string(a:message), '\n')
+		else
+			let msg = a:message
+		endif
+		call magit#utils#append_file(g:magit_log_file, msg)
+	endif
 endfunction

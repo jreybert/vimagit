@@ -82,6 +82,27 @@ function! magit#sign#find_signs(pattern, startline, endline)
 	return found_signs
 endfunction
 
+function! magit#sign#get_lines(...)
+	let bufnr = magit#utils#bufnr()
+	let lines = []
+
+	redir => signs
+	silent execute "sign place buffer=" . bufnr
+	redir END
+
+	for sign_line in filter(split(signs, '\n'), 'v:val =~# "="')
+		" Typical sign line:  line=88 id=1234 name=GitGutterLineAdded
+		" We assume splitting is faster than a regexp.
+		let components  = split(sign_line)
+		let id = str2nr(split(components[1], '=')[1])
+		if ( index(a:000, id) != -1 )
+			let line_number = str2nr(split(components[0], '=')[1])
+			call add(lines, line_number)
+		endif
+	endfor
+	return lines
+endfunction
+
 " magit#sign#find_stage_signs: helper function to get marked lines for stage
 " param[in] startline,endline: range of lines
 " return Dict of marked lines
@@ -95,8 +116,8 @@ let s:magit_mark_signs = {'M': 'MagitTBS', 'S': 'MagitBS', 'E': 'MagitBE'}
 " magit#sign#init: initializer function for signs
 function! magit#sign#init()
 	execute "sign define " . s:magit_mark_signs.M . " text=S> linehl=Visual"
-	execute "sign define " . s:magit_mark_signs.S
-	execute "sign define " . s:magit_mark_signs.E
+	execute "sign define " . s:magit_mark_signs.S . " text=S\<Char-0xa0>"
+	execute "sign define " . s:magit_mark_signs.E . " text=\<Char-0xa0>E"
 endfunction
 
 " magit#sign#toggle_signs: toggle marks for range of lines
