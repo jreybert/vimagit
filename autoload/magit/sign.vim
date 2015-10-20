@@ -19,9 +19,20 @@ let s:bufnr = bufnr(g:magit_buffer_name)
 function! magit#sign#remove_signs(sign_ids)
     let bufnr = magit#utils#bufnr()
     for sign in values(a:sign_ids)
-        echom "sign unplace" sign.id
         execute "sign unplace" sign.id
     endfor
+endfunction
+
+function! magit#sign#add_sign(line, type, bufnr)
+	let id = <SID>get_next_sign_id()
+	execute ":sign place " . id .
+		\ " line=" . a:line . " name=" . s:magit_mark_signs[a:type] .
+		\ " buffer=" . a:bufnr
+	return id
+endfunction
+
+function! magit#sign#remove_sign(id)
+	execute ":sign unplace " . a:id
 endfunction
 
 " s:get_next_sign_id: helper function to increment sign ids
@@ -65,31 +76,32 @@ endfunction
 " param[in] startline,endline: range of lines
 " return Dict of marked lines
 function! magit#sign#find_stage_signs(startline, endline)
-	return magit#sign#find_signs(s:magit_mark_sign, a:startline, a:endline)
+	return magit#sign#find_signs(s:magit_mark_signs.M, a:startline, a:endline)
 endfunction
 
 " s:magit_mark_sign: string of the sign for lines to be staged
-let s:magit_mark_sign='MagitMark'
+let s:magit_mark_signs = {'M': 'MagitTBS', 'S': 'MagitBS', 'E': 'MagitBE'}
 
 " magit#sign#init: initializer function for signs
 function! magit#sign#init()
-	execute "sign define " . s:magit_mark_sign . " text=S> linehl=Visual"
+	execute "sign define " . s:magit_mark_signs.M . " text=S> linehl=Visual"
+	execute "sign define " . s:magit_mark_signs.S
+	execute "sign define " . s:magit_mark_signs.E
 endfunction
 
 " magit#sign#toggle_signs: toggle marks for range of lines
 " marked lines are unmarked, non marked are marked
+" param[in] type; type of sign to toggle (see s:magit_mark_signs)
 " param[in] startline,endline: range of lines
-function! magit#sign#toggle_signs(startline, endline)
+function! magit#sign#toggle_signs(type, startline, endline)
 	let bufnr = magit#utils#bufnr()
-	let current_signs = magit#sign#find_signs(s:magit_mark_sign, a:startline, a:endline)
+	let current_signs = magit#sign#find_signs(s:magit_mark_signs[a:type], a:startline, a:endline)
 	let line = a:startline
 	while ( line <= a:endline )
 		if ( has_key(current_signs, line) == 0 )
-			execute ":sign place " . <SID>get_next_sign_id() .
-				\ " line=" . line . " name=" . s:magit_mark_sign .
-				\ " buffer=" . bufnr
+			call magit#sign#add_sign(line, a:type, bufnr)
 		else
-			execute ":sign unplace " . current_signs[line].id
+			call magit#sign#remove_sign(current_signs[line].id)
 		endif
 		let line += 1
 	endwhile

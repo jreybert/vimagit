@@ -489,7 +489,7 @@ function! s:mg_mark_lines_in_hunk(start_select_line, end_select_line)
 	if ( a:start_select_line < starthunk || a:end_select_line > endhunk )
 		throw 'out of hunk selection'
 	endif
-	return magit#sign#toggle_signs(a:start_select_line, a:end_select_line)
+	return magit#sign#toggle_signs('M', a:start_select_line, a:end_select_line)
 endfunction
 
 " s:mg_get_section: helper function to get the current section, according to
