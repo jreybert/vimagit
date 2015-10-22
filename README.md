@@ -219,6 +219,16 @@ When set to 2, filenames and hunks are unfolded.
 Default value is 1.
 > let g:magit_default_fold_level=[012]
 
+#### g:magit_warning_max_lines
+
+This variable is the maximum number of diff lines that vimagit will display
+without warning the user. If the number of diff lines to display is greater than
+this variable, vimagit will ask a confirmation to the user before refreshing the
+buffer. If user answer is 'yes', vimagit will display diff lines as expected.
+If user answer is 'no', vimagit will close all file diffs before refreshing.
+Default value is 10000.
+> let g:magit_warning_max_lines=val
+
 ## Installation
 
 The plugin hierarchy tree respects the vim plugin standard. It is compatible

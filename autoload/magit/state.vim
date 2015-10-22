@@ -162,6 +162,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 			endif
 			call add(hunk.lines, diff_line)
 		endfor
+		if ( file.is_visible() )
+			let self.nb_diff_lines += len(diff_list)
+		endif
 	endif
 endfunction
 
@@ -171,6 +174,7 @@ endfunction
 " else, its diff is discarded and regenrated
 " what is resilient is its 'visible' parameter
 function! magit#state#update() dict
+	let self.nb_diff_lines = 0
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			let file.exists = 0
@@ -208,6 +212,14 @@ function! magit#state#update() dict
 	endfor
 endfunction
 
+function! magit#state#set_files_visible(is_visible) dict
+	for diff_dict_mode in values(self.dict)
+		for file in values(diff_dict_mode)
+			call file.set_visible(a:is_visible)
+		endfor
+	endfor
+endfunction
+
 " dict: structure containing all diffs
 " It is formatted as follow
 " {
@@ -223,9 +235,11 @@ endfunction
 "   },
 " }
 let magit#state#state = {
+			\ 'nb_diff_lines': 0,
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
 			\ 'add_file': function("magit#state#add_file"),
+			\ 'set_files_visible': function("magit#state#set_files_visible"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }

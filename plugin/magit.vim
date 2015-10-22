@@ -62,6 +62,8 @@ call s:set('g:magit_show_help',                 1)
 call s:set('g:magit_default_show_all_files',    0)
 call s:set('g:magit_default_fold_level',        1)
 
+call s:set('g:magit_warning_max_lines',         10000)
+
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
 
@@ -591,6 +593,17 @@ function! magit#update_buffer()
 		call <SID>mg_get_commit_section()
 	endif
 	call s:state.update()
+
+	if ( s:state.nb_diff_lines > g:magit_warning_max_lines && b:magit_warning_answered_yes == 0 )
+		let ret = input("There are " . s:state.nb_diff_lines . " diff lines to display. Do you want to display all diffs? y(es) / N(o) : ", "")
+		if ( ret !~? '^y\%(e\%(s\)\?\)\?$' )
+			let b:magit_default_show_all_files = 0
+			call s:state.set_files_visible(0)
+		else
+			let b:magit_warning_answered_yes = 1
+		endif
+	endif
+
 	call <SID>mg_get_staged_section('staged')
 	call <SID>mg_get_staged_section('unstaged')
 	call <SID>mg_get_stashes()
@@ -636,6 +649,7 @@ function! magit#show_magit(display, ...)
 
 	let b:magit_default_show_all_files = g:magit_default_show_all_files
 	let b:magit_default_fold_level = g:magit_default_fold_level
+	let b:magit_warning_answered_yes = 0
 
 	if ( a:0 > 0 )
 		let b:magit_default_show_all_files = a:1
