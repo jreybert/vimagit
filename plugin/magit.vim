@@ -59,6 +59,8 @@ call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
 " user options
 call s:set('g:magit_enabled',                   1)
 call s:set('g:magit_show_help',                 1)
+call s:set('g:magit_default_show_all_files',    0)
+call s:set('g:magit_default_fold_level',        1)
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
@@ -617,7 +619,7 @@ endfunction
 "     'v': vertical split
 "     'h': horizontal split
 "     'c': current buffer (should be used when opening vim in vimagit mode
-function! magit#show_magit(display)
+function! magit#show_magit(display, ...)
 	if ( magit#utils#strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
 		echoerr "Magit must be started from a git repository"
 		return
@@ -631,16 +633,27 @@ function! magit#show_magit(display)
 	else
 		throw 'parameter_error'
 	endif
+
+	let b:magit_default_show_all_files = g:magit_default_show_all_files
+	let b:magit_default_fold_level = g:magit_default_fold_level
+
+	if ( a:0 > 0 )
+		let b:magit_default_show_all_files = a:1
+	endif
+	if ( a:0 > 1 )
+		let b:magit_default_fold_level = a:2
+	endif
+
+	silent! execute "bdelete " . g:magit_buffer_name
+	execute "file " . g:magit_buffer_name
+
 	setlocal buftype=nofile
 	setlocal bufhidden=delete
 	setlocal noswapfile
 	setlocal foldmethod=syntax
-	setlocal foldlevel=1
+	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 	"setlocal readonly
-
-	silent! execute "bdelete " . g:magit_buffer_name
-	execute "file " . g:magit_buffer_name
 
 	call magit#utils#setbufnr(bufnr(g:magit_buffer_name))
 	call magit#sign#init()

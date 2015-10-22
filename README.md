@@ -93,7 +93,22 @@ There are 5 sections:
 
 ### Commands
 
-**:Magit**
+#### magit#show_magit()
+
+Function to open magit buffer.
+It takes 3 parameters:
+  * orientation (mandatory): it can be
+      - 'v', curent window is split vertically, and magit is displayed in new
+        buffer
+      - 'h', curent window is split horizontally, and magit is displayed in
+        new buffer
+      - 'c', magit is displayed in current buffer
+  * show_all_files: define is file diffs are shown by default for this session
+    (see [g:magit_default_show_all_files](#g_magit_default_show_all_files))
+  * foldlevel: set default magit buffer foldlevel for this session
+    (see [g:magit_default_fold_level](#g_magit_default_fold_level))
+
+#### :Magit
  * open magit buffer.
 
 ### Mappings
@@ -176,11 +191,33 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
 User can define in its prefered |vimrc| some options.
 
-To disable vimagit plugin
-> let g:magit_enabled=0
+#### g:magit_enabled
 
-To disable chatty inline help in magit buffer
-> let g:magit_show_help=0
+To enable or disable vimagit plugin.
+Default value is 1.
+> let g:magit_enabled=[01]
+
+#### g:magit_show_help
+
+To disable chatty inline help in magit buffer (default 1)
+> let g:magit_show_help=[01]
+
+#### g:magit_default_show_all_files
+
+When this variable is set to 0, all diff files are hidden by default.
+When this variable is set to 1, all diff files are shown by default.
+Default value is 0.
+NB: for repository with large number of differences, display may be slow.
+> let g:magit_default_show_all_files=[01]
+
+#### g:magit_default_fold_level
+
+Default foldlevel for magit buffer.
+When set to 0, both filenames and hunks are folded.
+When set to 1, filenames are unfolded and hunks are folded.
+When set to 2, filenames and hunks are unfolded.
+Default value is 1.
+> let g:magit_default_fold_level=[012]
 
 ## Installation
 

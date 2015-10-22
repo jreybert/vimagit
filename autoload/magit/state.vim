@@ -88,7 +88,7 @@ function! magit#state#get_file(mode, filename, ...) dict
 	let create = ( a:0 == 1 ) ? a:1 : 0
 	if ( file_exists == 0 && create == 1 )
 		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
-		let self.dict[a:mode][a:filename].visible = 0
+		let self.dict[a:mode][a:filename].visible = b:magit_default_show_all_files
 	elseif ( file_exists == 0 && create == 0 )
 		throw 'file_doesnt_exists'
 	endif
