@@ -139,16 +139,16 @@ endfunction
 " param[in] list: a List, can be nested or not
 " return: one dimensional list
 function! magit#utils#flatten(list)
-  let val = []
-  for elem in a:list
-    if type(elem) == type([])
-      call extend(val, magit#utils#flatten(elem))
-    else
-      call extend(val, [elem])
-    endif
-    unlet elem
-  endfor
-  return val
+	let val = []
+	for elem in a:list
+		if type(elem) == type([])
+			call extend(val, magit#utils#flatten(elem))
+		else
+			call extend(val, [elem])
+		endif
+		unlet elem
+	endfor
+	return val
 endfunction
 
 " magit#utils#append_file: helper function to append to a file
