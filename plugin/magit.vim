@@ -717,7 +717,7 @@ endfunction
 function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let header = s:state.get_header(section, filename)
+	let header = s:state.get_file(section, filename).get_header()
 	
 	let file = s:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )

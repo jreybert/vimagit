@@ -73,6 +73,7 @@ let s:file_template = {
 \	'set_visible': function("magit#state#set_file_visible"),
 \	'toggle_visible': function("magit#state#toggle_file_visible"),
 \	'must_be_added': function("magit#state#must_be_added"),
+\	'get_header': function("magit#state#file_get_header"),
 \	'get_hunks'      : function("magit#state#file_get_hunks"),
 \	'get_flat_hunks' : function("magit#state#file_get_flat_hunks"),
 \}
@@ -95,13 +96,12 @@ function! magit#state#get_file(mode, filename, ...) dict
 	return self.dict[a:mode][a:filename]
 endfunction
 
-" magit#state#get_header: function accessor for diff header
+" magit#state#file_get_header: function accessor for diff header
 " param[in] mode: can be staged or unstaged
 " param[in] filename: header of filename to access
 " return: List of diff header lines
-function! magit#state#get_header(mode, filename) dict
-	let diff_dict_file = self.get_file(a:mode, a:filename, 0)
-	return diff_dict_file.diff.header
+function! magit#state#file_get_header() dict
+	return self.diff.header
 endfunction
 
 " magit#state#add_file: method to add a file with all its
@@ -225,7 +225,6 @@ endfunction
 let magit#state#state = {
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
-			\ 'get_header': function("magit#state#get_header"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
