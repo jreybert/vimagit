@@ -119,44 +119,44 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	if ( empty(diff_list) )
 		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
 	endif
-	let diff_dict_file = self.get_file(a:mode, a:filename, 1)
-	let diff_dict_file.exists = 1
-	let diff_dict_file.status = a:status
-	let diff_dict_file.depth = a:depth
+	let file = self.get_file(a:mode, a:filename, 1)
+	let file.exists = 1
+	let file.status = a:status
+	let file.depth = a:depth
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
-		let diff_dict_file.symlink = resolve(a:filename)
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'New symbolic link file'
+		let file.symlink = resolve(a:filename)
+		call add(file.diff.header, 'no header')
+		let file.diff.hunks[0].header = 'New symbolic link file'
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
-		let diff_dict_file.dir = 1
+		let file.dir = 1
 		for subfile in split(globpath(a:filename, '\(.[^.]*\|*\)'), '\n')
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
-		let diff_dict_file.empty = 1
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'New empty file'
+		let file.empty = 1
+		call add(file.diff.header, 'no header')
+		let file.diff.hunks[0].header = 'New empty file'
 	elseif ( match(system("file --mime " .
 				\ magit#utils#add_quotes(a:filename)),
 				\ a:filename . ".*charset=binary") != -1 )
-		let diff_dict_file.binary = 1
-		call add(diff_dict_file.diff.header, 'no header')
-		let diff_dict_file.diff.hunks[0].header = 'Binary file'
+		let file.binary = 1
+		call add(file.diff.header, 'no header')
+		let file.diff.hunks[0].header = 'Binary file'
 	else
 		let line = 0
 		" match(
 		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
-			call add(diff_dict_file.diff.header, diff_list[line])
+			call add(file.diff.header, diff_list[line])
 			let line += 1
 		endwhile
 
-		let hunk = diff_dict_file.diff.hunks[0]
+		let hunk = file.diff.hunks[0]
 		let hunk.header = diff_list[line]
 
 		for diff_line in diff_list[line+1 : -1]
 			if ( diff_line =~ "^@.*" )
 				let hunk = deepcopy(s:hunk_template)
-				call add(diff_dict_file.diff.hunks, hunk)
+				call add(file.diff.hunks, hunk)
 				let hunk.header = diff_line
 				continue
 			endif
