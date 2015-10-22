@@ -576,7 +576,12 @@ function! magit#update_buffer()
 	" Playing with foldenable around does not help.
 	" mkview does not help either.
 	let l:winview = winsaveview()
-	silent! %d
+
+	" remove all signs (needed as long as we wipe buffer)
+	call magit#sign#remove_all()
+	
+	" delete buffer
+	silent! execute "silent :%delete _"
 	
 	call <SID>mg_get_info()
 	call <SID>mg_section_help('global')

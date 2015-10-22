@@ -14,6 +14,16 @@ let s:supports_star = v:version > 703 || (v:version == 703 && has("patch596"))
 
 let s:bufnr = bufnr(g:magit_buffer_name)
 
+function! magit#sign#remove_all(...)
+	if ( a:0 == 1 )
+		let pattern = a:1
+	else
+		let pattern = '^Magit.*'
+	endif
+	let signs = magit#sign#find_signs(pattern, 1, line('$'))
+	call magit#sign#remove_signs(signs)
+endfunction
+
 " magit#sign#remove_signs: unplace a list of signs
 " param[in] sign_ids: list of signs dict
 function! magit#sign#remove_signs(sign_ids)
