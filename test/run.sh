@@ -26,7 +26,8 @@ fi
 pushd $TEST_PATH
 git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
-export TEST_HEAD_SHA1='8e589e4'
+export TEST_HEAD_SHA1='dcacf08'
+git submodule update
 git show $TEST_HEAD_SHA1 --stat
 git reset $TEST_HEAD_SHA1~1 && git status --porcelain && git reset --hard $TEST_HEAD_SHA1
 popd
