@@ -1,0 +1,9 @@
+Submodule subdjooks a63bc77..6efcd49:
+  > books/models.py: first cover image support
+  > books/models.py: create Book entry with an isbn_search
+  > books/: add isbn_search module
+  > books/models.py: add BookManager
+  > migrations
+  > urls: add books urls in site urls
+  > views.py: fix typo
+  > urls: comment unsupported url
