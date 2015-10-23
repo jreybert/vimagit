@@ -40,6 +40,20 @@ function! magit#utils#is_binary(filename)
 				\ a:filename . ".*charset=binary") != -1 )
 endfunction
 
+let s:submodule_list = []
+" magit#utils#refresh_submodule_list: this function refresh the List s:submodule_list
+" magit#utils#is_submodule() is using s:submodule_list
+function! magit#utils#refresh_submodule_list()
+	let s:submodule_list = map(split(system("git submodule status"), "\n"), 'split(v:val)[1]')
+endfunction
+
+" magit#utils#is_submodule search if dirname is in s:submodule_list 
+" param[in] dirname: must end with /
+" INFO: must be called from top work tree
+function! magit#utils#is_submodule(dirname)
+	return ( index(s:submodule_list, a:dirname) != -1 )
+endfunction
+
 " s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
 " 'cd' otherwise
 let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '

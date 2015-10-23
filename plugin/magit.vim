@@ -156,6 +156,8 @@ function! s:mg_display_files(mode, curdir, depth)
 			put =g:magit_git_status_code.E . ': ' . filename
 		elseif ( file.symlink != '' )
 			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file.symlink
+		elseif ( file.submodule == 1 )
+			put =g:magit_git_status_code.S . ': ' . filename
 		elseif ( file.dir != 0 )
 			put =g:magit_git_status_code.N . ': ' . filename
 			if ( file.visible == 1 )
@@ -174,7 +176,9 @@ function! s:mg_display_files(mode, curdir, depth)
 		endif
 		let hunks = file.get_hunks()
 		for hunk in hunks
-			silent put =hunk.header
+			if ( hunk.header != '' )
+				silent put =hunk.header
+			endif
 			silent put =hunk.lines
 		endfor
 		put =''

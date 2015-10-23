@@ -22,6 +22,7 @@ let g:magit_git_status_code = {
  \ 'E': 'empty',
  \ 'L': 'symlink',
  \ 'N': 'new dir',
+ \ 'S': 'submodule',
  \ }
 
 " Regular expressions used to select blocks

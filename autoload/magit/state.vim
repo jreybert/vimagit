@@ -22,7 +22,8 @@ function! magit#state#must_be_added() dict
 	return ( self.empty == 1 ||
 		\ self.symlink != '' ||
 		\ self.dir != 0 ||
-		\ self.binary == 1 )
+		\ self.binary == 1 ||
+		\ self.submodule == 1 )
 endfunction
 
 " magit#state#file_get_hunks: function accessor for hunks objects
@@ -66,6 +67,7 @@ let s:file_template = {
 \	'empty': 0,
 \	'dir': 0,
 \	'binary': 0,
+\	'submodule': 0,
 \	'symlink': '',
 \	'diff': s:diff_template,
 \	'is_dir': function("magit#state#is_file_dir"),
@@ -125,8 +127,14 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	let file.depth = a:depth
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let file.symlink = resolve(a:filename)
-		call add(file.diff.header, 'no header')
 		let file.diff.hunks[0].header = 'New symbolic link file'
+	elseif ( magit#utils#is_submodule(a:filename))
+		let file.submodule = 1
+		let file.diff.hunks[0].header = ''
+		let file.diff.hunks[0].lines = diff_list
+		if ( file.is_visible() )
+			let self.nb_diff_lines += len(diff_list)
+		endif
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
 		let file.dir = 1
 		for subfile in split(globpath(a:filename, '\(.[^.]*\|*\)'), '\n')
@@ -134,11 +142,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		endfor
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
 		let file.empty = 1
-		call add(file.diff.header, 'no header')
 		let file.diff.hunks[0].header = 'New empty file'
 	elseif ( magit#utils#is_binary(magit#utils#add_quotes(a:filename)))
 		let file.binary = 1
-		call add(file.diff.header, 'no header')
 		let file.diff.hunks[0].header = 'Binary file'
 	else
 		let line = 0
@@ -184,6 +190,7 @@ function! magit#state#update() dict
 	let dir = getcwd()
 	try
 		call magit#utils#lcd(magit#utils#top_dir())
+		call magit#utils#refresh_submodule_list()
 		for [mode, diff_dict_mode] in items(self.dict)
 			let status_list = magit#git#get_status()
 			for file_status in status_list
