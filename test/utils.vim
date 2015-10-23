@@ -80,7 +80,7 @@ endfunction
 function! Git_diff(state, ...)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
 	if ( a:0 == 1 )
-		let file = " -- " . Git_add_quotes(a:file)
+		let file = " -- " . Git_add_quotes(a:1)
 	else
 		let file = ""
 	endif
