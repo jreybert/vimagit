@@ -153,7 +153,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
 		let file.status = 'N'
 		let file.dir = 1
-		for subfile in split(globpath(a:filename, '\(.[^.]*\|*\)'), '\n')
+		for subfile in magit#utils#ls_all(a:filename)
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )

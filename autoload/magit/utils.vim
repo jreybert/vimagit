@@ -40,6 +40,13 @@ function! magit#utils#is_binary(filename)
 				\ a:filename . ".*charset=binary") != -1 )
 endfunction
 
+" magit#utils#ls_all: list all files (including hidden ones) in a given path
+" return : list of filenames
+function! magit#utils#ls_all(path)
+	return split(globpath(a:path, '.[^.]*', 1) . "\n" .
+				\ globpath(a:path, '*', 1), '\n')
+endfunction
+
 let s:submodule_list = []
 " magit#utils#refresh_submodule_list: this function refresh the List s:submodule_list
 " magit#utils#is_submodule() is using s:submodule_list
