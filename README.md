@@ -104,9 +104,9 @@ It takes 3 parameters:
         new buffer
       - 'c', magit is displayed in current buffer
   * show_all_files: define is file diffs are shown by default for this session
-    (see [g:magit_default_show_all_files](#g_magit_default_show_all_files))
+    (see [g:magit_default_show_all_files](#gmagit_default_show_all_files))
   * foldlevel: set default magit buffer foldlevel for this session
-    (see [g:magit_default_fold_level](#g_magit_default_fold_level))
+    (see [g:magit_default_fold_level](#gmagit_default_fold_level))
 
 #### :Magit
  * open magit buffer.
