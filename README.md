@@ -32,12 +32,14 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [x] Modify in line the content just before staging it.
 * [x] Visualize stashes. Apply, pop, drop are on going.
 * [x] Add file to .gitignore file.
-* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an issue on github :heart: !
+* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
 More to come:
 * Vizualize and checkout branches.
 * Go through history, cherry-pick changes.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
+
+The plugin is fully tested for various versions of vim on linux: vim 7.3.249, vim 7.4.273, neovim. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue](https://github.com/jreybert/vimagit/issues/new).
 
 For the most enthusiastic, you can try the branch [next](https://github.com/jreybert/vimagit/tree/next). It is quite stable, just check its travis status before fetching it.
 
