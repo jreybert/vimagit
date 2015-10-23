@@ -75,6 +75,7 @@ for script in ${!test_scripts[@]}; do
 				set rtp+=$VADER_PATH
 				filetype plugin indent on
 				syntax enable
+				let g:vader_show_version=0
 EOF) -c "Vader! $VIMAGIT_PATH/test/$script"
 
 			done
