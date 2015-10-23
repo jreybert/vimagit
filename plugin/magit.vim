@@ -152,21 +152,15 @@ function! s:mg_display_files(mode, curdir, depth)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
-		if ( file.empty == 1 )
-			put =g:magit_git_status_code.E . ': ' . filename
-		elseif ( file.symlink != '' )
-			put =g:magit_git_status_code.L . ': ' . filename . ' -> ' . file.symlink
-		elseif ( file.submodule == 1 )
-			put =g:magit_git_status_code.S . ': ' . filename
-		elseif ( file.dir != 0 )
-			put =g:magit_git_status_code.N . ': ' . filename
+		put =file.get_filename_header()
+
+		if ( file.dir != 0 )
 			if ( file.visible == 1 )
 				call s:mg_display_files(a:mode, filename, a:depth + 1)
 				continue
 			endif
-		else
-			put =g:magit_git_status_code[file.status] . ': ' . filename
 		endif
+
 		if ( file.visible == 0 )
 			put =''
 			continue
@@ -179,7 +173,9 @@ function! s:mg_display_files(mode, curdir, depth)
 			if ( hunk.header != '' )
 				silent put =hunk.header
 			endif
-			silent put =hunk.lines
+			if ( !empty(hunk.lines) )
+				silent put =hunk.lines
+			endif
 		endfor
 		put =''
 	endfor

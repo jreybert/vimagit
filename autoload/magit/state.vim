@@ -63,6 +63,7 @@ let s:diff_template = {
 " WARNING: this variable must be deepcopy()'ied
 let s:file_template = {
 \	'exists': 0,
+\	'filename': '',
 \	'status': '',
 \	'empty': 0,
 \	'dir': 0,
@@ -78,6 +79,7 @@ let s:file_template = {
 \	'get_header': function("magit#state#file_get_header"),
 \	'get_hunks'      : function("magit#state#file_get_hunks"),
 \	'get_flat_hunks' : function("magit#state#file_get_flat_hunks"),
+\	'get_filename_header' : function("magit#state#file_get_filename_header"),
 \}
 
 " magit#state#get_file: function accessor for file
@@ -92,6 +94,7 @@ function! magit#state#get_file(mode, filename, ...) dict
 	if ( file_exists == 0 && create == 1 )
 		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
 		let self.dict[a:mode][a:filename].visible = b:magit_default_show_all_files
+		let self.dict[a:mode][a:filename].filename = a:filename
 	elseif ( file_exists == 0 && create == 0 )
 		throw 'file_doesnt_exists'
 	endif
@@ -104,6 +107,14 @@ endfunction
 " return: List of diff header lines
 function! magit#state#file_get_header() dict
 	return self.diff.header
+endfunction
+
+function! magit#state#file_get_filename_header() dict
+	if ( self.status == 'L' )
+		return g:magit_git_status_code.L . ': ' . self.filename . ' -> ' . self.symlink
+	else
+		return g:magit_git_status_code[self.status] . ': ' . self.filename
+	endif
 endfunction
 
 " magit#state#add_file: method to add a file with all its
@@ -123,12 +134,16 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	endif
 	let file = self.get_file(a:mode, a:filename, 1)
 	let file.exists = 1
+
 	let file.status = a:status
 	let file.depth = a:depth
+
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
+		let file.status = 'L'
 		let file.symlink = resolve(a:filename)
 		let file.diff.hunks[0].header = 'New symbolic link file'
 	elseif ( magit#utils#is_submodule(a:filename))
+		let file.status = 'S'
 		let file.submodule = 1
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
@@ -136,11 +151,13 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 			let self.nb_diff_lines += len(diff_list)
 		endif
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
+		let file.status = 'N'
 		let file.dir = 1
 		for subfile in split(globpath(a:filename, '\(.[^.]*\|*\)'), '\n')
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
 	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+		let file.status = 'E'
 		let file.empty = 1
 		let file.diff.hunks[0].header = 'New empty file'
 	elseif ( magit#utils#is_binary(magit#utils#add_quotes(a:filename)))
@@ -154,18 +171,20 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 			let line += 1
 		endwhile
 
-		let hunk = file.diff.hunks[0]
-		let hunk.header = diff_list[line]
+		if ( line < len(diff_list) )
+			let hunk = file.diff.hunks[0]
+			let hunk.header = diff_list[line]
 
-		for diff_line in diff_list[line+1 : -1]
-			if ( diff_line =~ "^@.*" )
-				let hunk = deepcopy(s:hunk_template)
-				call add(file.diff.hunks, hunk)
-				let hunk.header = diff_line
-				continue
-			endif
-			call add(hunk.lines, diff_line)
-		endfor
+			for diff_line in diff_list[line+1 : -1]
+				if ( diff_line =~ "^@.*" )
+					let hunk = deepcopy(s:hunk_template)
+					call add(file.diff.hunks, hunk)
+					let hunk.header = diff_line
+					continue
+				endif
+				call add(hunk.lines, diff_line)
+			endfor
+		endif
 		if ( file.is_visible() )
 			let self.nb_diff_lines += len(diff_list)
 		endif
