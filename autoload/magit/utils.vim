@@ -33,6 +33,13 @@ function! magit#utils#git_dir()
 	return s:magit_git_dir
 endfunction
 
+" s:magit#utils#is_binary: check if file is a binary file
+" param[in] filename: the file path. it must quoted if it contains spaces
+function! magit#utils#is_binary(filename)
+	return ( match(system("file --mime " . a:filename ),
+				\ a:filename . ".*charset=binary") != -1 )
+endfunction
+
 " s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
 " 'cd' otherwise
 let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '

@@ -136,9 +136,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		let file.empty = 1
 		call add(file.diff.header, 'no header')
 		let file.diff.hunks[0].header = 'New empty file'
-	elseif ( match(system("file --mime " .
-				\ magit#utils#add_quotes(a:filename)),
-				\ a:filename . ".*charset=binary") != -1 )
+	elseif ( magit#utils#is_binary(magit#utils#add_quotes(a:filename)))
 		let file.binary = 1
 		call add(file.diff.header, 'no header')
 		let file.diff.hunks[0].header = 'Binary file'
