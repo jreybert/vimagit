@@ -77,10 +77,16 @@ function! Git_add_quotes(filename)
 endfunction
 
 " helper function to get the diff of a file, in staged or unstaged mode
-function! Git_diff(state, file)
+function! Git_diff(state, ...)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
+	if ( a:0 == 1 )
+		let file = " -- " . Git_add_quotes(a:file)
+	else
+		let file = ""
+	endif
+
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
-				\ staged_flag . " -- " . Git_add_quotes(a:file) .
+				\ staged_flag . file .
 				\ " | \\grep -v " . g:index_regex
 	return Git_cmd(diff_cmd)
 endfunction

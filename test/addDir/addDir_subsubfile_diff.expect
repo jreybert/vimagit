@@ -1,0 +1,6 @@
+diff --git newdir/newsubdir/e newdir/newsubdir/e
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/e
+@@ -0,0 +1 @@
++e

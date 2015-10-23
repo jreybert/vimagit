@@ -1,0 +1,6 @@
+diff --git newdir/.hidden newdir/.hidden
+new file mode 100644
+--- /dev/null
++++ newdir/.hidden
+@@ -0,0 +1 @@
++this is an hidden file

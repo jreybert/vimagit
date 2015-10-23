@@ -1,0 +1,42 @@
+diff --git newdir/.hidden newdir/.hidden
+new file mode 100644
+--- /dev/null
++++ newdir/.hidden
+@@ -0,0 +1 @@
++this is an hidden file
+diff --git newdir/a newdir/a
+new file mode 100644
+--- /dev/null
++++ newdir/a
+@@ -0,0 +1 @@
++a
+diff --git newdir/b newdir/b
+new file mode 100644
+--- /dev/null
++++ newdir/b
+@@ -0,0 +1 @@
++b
+diff --git newdir/c newdir/c
+new file mode 100644
+--- /dev/null
++++ newdir/c
+@@ -0,0 +1 @@
++c
+diff --git newdir/newsubdir/d newdir/newsubdir/d
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/d
+@@ -0,0 +1 @@
++d
+diff --git newdir/newsubdir/e newdir/newsubdir/e
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/e
+@@ -0,0 +1 @@
++e
+diff --git newdir/newsubdir/f newdir/newsubdir/f
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/f
+@@ -0,0 +1 @@
++f
