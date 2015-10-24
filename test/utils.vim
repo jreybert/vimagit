@@ -77,10 +77,16 @@ function! Git_add_quotes(filename)
 endfunction
 
 " helper function to get the diff of a file, in staged or unstaged mode
-function! Git_diff(state, file)
+function! Git_diff(state, ...)
 	let staged_flag = ( a:state == 'staged' ) ? ' --staged ' : ''
+	if ( a:0 == 1 )
+		let file = " -- " . Git_add_quotes(a:1)
+	else
+		let file = ""
+	endif
+
 	let diff_cmd="git diff --no-color --no-ext-diff --src-prefix='' --dst-prefix='' " .
-				\ staged_flag . " -- " . Git_add_quotes(a:file) .
+				\ staged_flag . file .
 				\ " | \\grep -v " . g:index_regex
 	return Git_cmd(diff_cmd)
 endfunction
@@ -150,8 +156,13 @@ function! Search_file(mode, ...)
 	call Git_verbose_log('Search mode: "' . a:mode . '" => ' . getline('.'))
 	let pattern='^.*: ' . call('Get_filename', a:000) . '\%( -> .*\)\?$'
 	let ret = search(pattern)
-	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.'))
+	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.') . ' @line' . line('.'))
 	return ret
+endfunction
+
+function! Search_pattern(pattern)
+	let ret = search(a:pattern)
+	call Git_verbose_log('Search: "' . a:pattern . '" => ' . getline('.') . ' @line' . line('.'))
 endfunction
 
 " get a safe to use string of filename we curently test (for golden files)

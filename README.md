@@ -27,17 +27,19 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 
 * [x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.
 * [x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.
+* [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
 * [x] Visualize stashes. Apply, pop, drop are on going.
 * [x] Add file to .gitignore file.
-* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an issue on github :heart: !
+* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
 More to come:
-* Partial hunk staging (next release).
 * Vizualize and checkout branches.
 * Go through history, cherry-pick changes.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
+
+The plugin is fully tested for various versions of vim on linux: vim 7.3.249, vim 7.4.273, neovim. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue](https://github.com/jreybert/vimagit/issues/new).
 
 For the most enthusiastic, you can try the branch [next](https://github.com/jreybert/vimagit/tree/next). It is quite stable, just check its travis status before fetching it.
 
@@ -93,7 +95,22 @@ There are 5 sections:
 
 ### Commands
 
-**:Magit**
+#### magit#show_magit()
+
+Function to open magit buffer.
+It takes 3 parameters:
+  * orientation (mandatory): it can be
+      - 'v', curent window is split vertically, and magit is displayed in new
+        buffer
+      - 'h', curent window is split horizontally, and magit is displayed in
+        new buffer
+      - 'c', magit is displayed in current buffer
+  * show_all_files: define is file diffs are shown by default for this session
+    (see [g:magit_default_show_all_files](#gmagit_default_show_all_files))
+  * foldlevel: set default magit buffer foldlevel for this session
+    (see [g:magit_default_fold_level](#gmagit_default_fold_level))
+
+#### :Magit
  * open magit buffer.
 
 ### Mappings
@@ -123,6 +140,8 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 **S**
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
  * If cursor is in diff header, stage/unstage whole file at cursor position.
+ * If some lines in the hunk are selected (using **v**), stage only visual selected lines (only works for staging).
+ * If some lines in the hunk are marked (using **M**), stage only marked lines (only works for staging).
  * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
 
@@ -130,6 +149,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * Stage/unstage the whole file at cursor position.
  * When cursor is in "Unstaged changes" section, it will stage the file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage file.
+
+**L**
+ * Stage the line under the cursor.
+
+**M**
+ * Mark the line under the cursor "to be staged".
+ * If some lines in the hunk are selected (using **v**), mark selected lines "to be staged".
+ * To staged marked lines in a hunk, move cursor to this hunk and press **S**.
 
 **DDD**
  * If cursor is in a hunk, discard hunk at cursor position.
@@ -166,11 +193,43 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
 User can define in its prefered |vimrc| some options.
 
-To disable vimagit plugin
-> let g:magit_enabled=0
+#### g:magit_enabled
 
-To disable chatty inline help in magit buffer
-> let g:magit_show_help=0
+To enable or disable vimagit plugin.
+Default value is 1.
+> let g:magit_enabled=[01]
+
+#### g:magit_show_help
+
+To disable chatty inline help in magit buffer (default 1)
+> let g:magit_show_help=[01]
+
+#### g:magit_default_show_all_files
+
+When this variable is set to 0, all diff files are hidden by default.
+When this variable is set to 1, all diff files are shown by default.
+Default value is 0.
+NB: for repository with large number of differences, display may be slow.
+> let g:magit_default_show_all_files=[01]
+
+#### g:magit_default_fold_level
+
+Default foldlevel for magit buffer.
+When set to 0, both filenames and hunks are folded.
+When set to 1, filenames are unfolded and hunks are folded.
+When set to 2, filenames and hunks are unfolded.
+Default value is 1.
+> let g:magit_default_fold_level=[012]
+
+#### g:magit_warning_max_lines
+
+This variable is the maximum number of diff lines that vimagit will display
+without warning the user. If the number of diff lines to display is greater than
+this variable, vimagit will ask a confirmation to the user before refreshing the
+buffer. If user answer is 'yes', vimagit will display diff lines as expected.
+If user answer is 'no', vimagit will close all file diffs before refreshing.
+Default value is 10000.
+> let g:magit_warning_max_lines=val
 
 ## Installation
 

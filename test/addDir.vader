@@ -1,0 +1,69 @@
+Include: setup.inc
+
+Execute (Stage untracked directory closed):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged')
+    call Expect_diff(g:test_script_dir . 'addDir/addDir_all_diff.expect', diff)
+    call Git_cmd("git reset")
+
+Execute (Stage untracked directory opened):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged')
+    call Expect_diff(g:test_script_dir . 'addDir/addDir_all_diff.expect', diff)
+    call Git_cmd("git reset")
+
+Execute (Stage untracked hidden file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Search_pattern(Get_filename() . '.hidden')
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged')
+    call Expect_diff(g:test_script_dir . 'addDir/addDir_hidden_diff.expect', diff)
+    call Git_cmd("git reset")
+
+Execute (Stage untracked subdir file):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Search_pattern(Get_filename() . 'newsubdir')
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged')
+    call Expect_diff(g:test_script_dir . 'addDir/addDir_subdir_diff.expect', diff)
+    call Git_cmd("git reset")
+
+Execute (Stage untracked subsubfile):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Search_pattern(Get_filename() . 'newsubdir')
+    call magit#open_close_folding(1)
+    call Search_pattern(Get_filename() . 'newsubdir/e')
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_diff('staged')
+    call Expect_diff(g:test_script_dir . 'addDir/addDir_subsubfile_diff.expect', diff)
+    call Git_cmd("git reset")
+
+Include: cleanup.inc
+

@@ -1,0 +1,18 @@
+diff --git newdir/newsubdir/d newdir/newsubdir/d
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/d
+@@ -0,0 +1 @@
++d
+diff --git newdir/newsubdir/e newdir/newsubdir/e
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/e
+@@ -0,0 +1 @@
++e
+diff --git newdir/newsubdir/f newdir/newsubdir/f
+new file mode 100644
+--- /dev/null
++++ newdir/newsubdir/f
+@@ -0,0 +1 @@
++f

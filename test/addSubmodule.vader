@@ -1,0 +1,28 @@
+Include: setup.inc
+
+Execute (Stage untracked directory closed):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(0)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_status.expect', diff)
+    call Git_cmd("git reset")
+
+Execute (Stage untracked directory opened):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Move_relative(+4)
+    call Cursor_position()
+    call magit#stage_file()
+    call Cd_test()
+    let diff=Git_status(Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_status.expect', diff)
+    call Git_cmd("git reset")
+
+Include: cleanup.inc

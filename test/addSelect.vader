@@ -1,0 +1,59 @@
+Include: setup.inc
+
+Execute (Stage untracked file with magit#stage_hunk on start hunk (this hunk will stay staged all test)):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    call Search_pattern("^@@ ")
+    call Cursor_position()
+    call magit#stage_hunk(0)
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_1_hunk_diff.expect', diff)
+
+Execute (Stage selection):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    %foldopen!
+    call Search_pattern("^+\t\tif product.cover_url is not '':$")
+    execute "normal! v4j:call magit#stage_vselect()\<cr>"
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_2_vselect_diff.expect', diff)
+
+Execute (Stage lines):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    %foldopen!
+    call Search_pattern("^-\teisbn = models.CharField(max_length=13, blank=True)$")
+    call magit#stage_vselect()
+    %foldopen!
+    call Search_pattern("^+\teisbn = models.CharField(max_length=13, blank=True, null=True)$")
+    call magit#stage_vselect()
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_3_lines_diff.expect', diff)
+
+Execute (Stage marks):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged')
+    call magit#open_close_folding(1)
+    %foldopen!
+    call Search_pattern("^+def upload_path(book, filename):$")
+    execute "normal! v3j:call magit#mark_vselect()\<cr>"
+    call Search_pattern("^-\tedition = models.CharField(max_length=200, blank=True)$")
+    call magit#mark_vselect()
+    call Search_pattern("+\tedition = models.CharField(max_length=200, blank=True, null=True)$")
+    call magit#mark_vselect()
+    call magit#stage_hunk(0)
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_4_marks_diff.expect', diff)
+
+Include: cleanup.inc
