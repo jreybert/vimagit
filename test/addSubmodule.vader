@@ -8,8 +8,8 @@ Execute (Stage untracked directory closed):
     call Cursor_position()
     call magit#stage_file()
     call Cd_test()
-    let diff=Git_diff('staged')
-    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_diff.expect', diff)
+    let diff=Git_status(Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_status.expect', diff)
     call Git_cmd("git reset")
 
 Execute (Stage untracked directory opened):
@@ -21,8 +21,8 @@ Execute (Stage untracked directory opened):
     call Cursor_position()
     call magit#stage_file()
     call Cd_test()
-    let diff=Git_diff('staged')
-    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_diff.expect', diff)
+    let diff=Git_status(Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSubmodule/addSubmodule_status.expect', diff)
     call Git_cmd("git reset")
 
 Include: cleanup.inc
