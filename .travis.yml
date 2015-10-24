@@ -62,7 +62,7 @@ install:
 
 before_script:
   - git clone https://github.com/jreybert/djooks
-  - git clone https://github.com/jreybert/vader.vim
+  - git clone https://github.com/junegunn/vader.vim
 
 script:
   - ./test/run.sh . vader.vim djooks $VIM_VERSION

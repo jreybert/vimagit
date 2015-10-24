@@ -26,7 +26,7 @@ fi
 pushd $TEST_PATH
 git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
-export TEST_HEAD_SHA1='bb86d5f'
+export TEST_HEAD_SHA1='origin/vimagit_test-1.4'
 git submodule update
 git show $TEST_HEAD_SHA1 --stat
 git reset $TEST_HEAD_SHA1~1 && git status --porcelain && git reset --hard $TEST_HEAD_SHA1
@@ -39,6 +39,9 @@ elif [ "$VIM_VERSION" = 'macvim' ]; then
 else
 	VIM=vim
 fi
+
+echo 'Git version'
+git --version
 
 echo 'Vim version'
 $VIM --version
@@ -75,8 +78,7 @@ for script in ${!test_scripts[@]}; do
 				set rtp+=$VADER_PATH
 				filetype plugin indent on
 				syntax enable
-				let g:vader_show_version=0
-EOF) -c "Vader! $VIMAGIT_PATH/test/$script"
+EOF) -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
 
 			done
 		done
