@@ -1,25 +1,13 @@
 # vimagit
 
-<table style="width:100%" border=0>
-  <tr>
-    <td align="left">
-      vimagit is an attempt to reproduce the magnificent emacs Magit plugin to vim. The main idea is to manage all git operations in one single buffer, as efficiently as possible.
-    </td>
-      <td align="right">
-      <b>master</b>
-      <br>
-      <a href="https://travis-ci.org/jreybert/vimagit/branches">
-      <img src="https://travis-ci.org/jreybert/vimagit.svg?branch=master" alt="master status" align="top">
-      </a>
-      <br>
-      <b>next</b>
-      <br>
-      <a href="https://travis-ci.org/jreybert/vimagit/branches">
-      <img src="https://travis-ci.org/jreybert/vimagit.svg?branch=next" alt="next status" align="top">
-      </a>
-    </td>
-  </tr>
-</table>
+This is a new (and hopefully very efficient) way to use git from vim.
+
+From a very single vim buffer, you can perform all basic git operations. To name a few:
+* Visualize all diffs in your git repository.
+* Stage files/hunks/parts of hunks with single key S.
+* Write or amend your commit message and commit.
+
+This workflow is 100% inspired from magnificent emacs [Magit](https://github.com/magit/magit) plugin.
 
 Take a look at [TL;DR](#tldr) to start using it immediatly.
 
@@ -39,14 +27,22 @@ More to come:
 * Go through history, cherry-pick changes.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
-The plugin is fully tested for various versions of vim on linux: vim 7.3.249, vim 7.4.273, neovim. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue](https://github.com/jreybert/vimagit/issues/new).
-
-For the most enthusiastic, you can try the branch [next](https://github.com/jreybert/vimagit/tree/next). It is quite stable, just check its travis status before fetching it.
-
 > Why should I use vimagit, there are already plethora git plugins for vim?
 
 * fugitive is a very complete plugin, with a lot of functions. I use it for years, and it is a fundamental tool in my workflow. But visualize your changes and staged them in broad number of files is really a pain.
 * vim-gitgutter is very well integrated into vim, but without the ability to commit stages, it stays an informational plugin.
+
+## Integration
+
+Branches [master](https://github.com/jreybert/vimagit/) and [next](https://github.com/jreybert/vimagit/tree/next) are continuously tested on [travis](https://travis-ci.org/jreybert/vimagit) when published on github.
+
+vimagit is tested with various versions of vim on linux: vim 7.3.249, vim 7.4.273, and latest neovim version. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue](https://github.com/jreybert/vimagit/issues/new).
+
+For the most enthusiastic, you can try the branch [next](https://github.com/jreybert/vimagit/tree/next). It is quite stable, just check its travis status before fetching it.
+
+Travis status:
+* **[master status](https://travis-ci.org/jreybert/vimagit/branches)**: [![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit/branches)
+* **[next status](https://travis-ci.org/jreybert/vimagit/branches)**: [![next build status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)](https://travis-ci.org/jreybert/vimagit/branches)
 
 ## TL;DR
 
@@ -244,6 +240,8 @@ To install:
 ## Requirements
 
 This part must be refined, I don't see any minimal version for git and vim, but for sure there should be one.
+
+At least, it is tested with vim 7.3.249 and git 1.8.5.6 (see [Integration](#integration)).
 
 ## License
 
