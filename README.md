@@ -7,6 +7,9 @@ From a very single vim buffer, you can perform all basic git operations. To name
 * Stage files/hunks/parts of hunks with single key S.
 * Write or amend your commit message and commit.
 
+See a usage example:
+[![asciicast](https://asciinema.org/a/28761.png)](https://asciinema.org/a/28761)
+
 This workflow is 100% inspired from magnificent emacs [Magit](https://github.com/magit/magit) plugin.
 
 Take a look at [TL;DR](#tldr) to start using it immediatly.
