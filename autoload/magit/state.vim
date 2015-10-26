@@ -1,23 +1,31 @@
+" magit#state#is_file_visible: file getter function
+" return if file is visible
 function! magit#state#is_file_visible() dict
 	return self.visible
 endfunction
 
+" magit#state#set_file_visible: file setter function
+" param[in] val: visible state to set to file
 function! magit#state#set_file_visible(val) dict
 	let self.visible = a:val
 endfunction
 
+" magit#state#toggle_file_visible: file setter function, toggle file visible
+" state
 function! magit#state#toggle_file_visible() dict
 	let self.visible = ( self.visible == 0 ) ? 1 : 0
 endfunction
 
+" magit#state#is_file_dir: file getter function
+" return 1 if current file is a directory, 0 otherwise
 function! magit#state#is_file_dir() dict
 	return self.dir != 0
 endfunction
 
-function! magit#state#get_files(mode) dict
-	return self.dict[a:mode]
-endfunction
-
+" magit#state#must_be_added: file helper function
+" there are some conditions where files must be widely added (git add), not
+" 'diff applied' (git apply)
+" return 1 if file must 
 function! magit#state#must_be_added() dict
 	return ( self.empty == 1 ||
 		\ self.symlink != '' ||
@@ -236,6 +244,9 @@ function! magit#state#update() dict
 	endfor
 endfunction
 
+" magit#state#set_files_visible: global dict setter function
+" update all files visible state
+" param[in] is_visible: boolean value to set to files
 function! magit#state#set_files_visible(is_visible) dict
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
@@ -243,6 +254,14 @@ function! magit#state#set_files_visible(is_visible) dict
 		endfor
 	endfor
 endfunction
+
+" magit#state#get_files: global dict getter function
+" param[in] mode: mode to select, can be 'staged' or 'unstaged'
+" return all files belonging to mode
+function! magit#state#get_files(mode) dict
+	return self.dict[a:mode]
+endfunction
+
 
 " dict: structure containing all diffs
 " It is formatted as follow

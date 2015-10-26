@@ -130,6 +130,13 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
+" s:mg_display_files: display in current buffer files, filtered by some
+" parameters
+" param[in] mode: files mode, can be 'staged' or 'unstaged'
+" param[in] curdir: directory containing files (only needed for untracked
+" directory)
+" param[in] depth: current directory depth (only needed for untracked
+" directory)
 function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
