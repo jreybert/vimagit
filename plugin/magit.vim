@@ -20,49 +20,35 @@ let g:magit_buffer_name = "magit-playground"
 
 let s:state = deepcopy(magit#state#state)
 
-" s:set: helper function to set user definable variable
-" param[in] var: variable to set
-" param[in] default: default value if not already set by the user
-" return: no
-function! s:set(var, default)
-	if !exists(a:var)
-		if type(a:default)
-			execute 'let' a:var '=' string(a:default)
-		else
-			execute 'let' a:var '=' a:default
-		endif
-	endif
-endfunction
-
 " these mappings are broadly applied, for all vim buffers
-call s:set('g:magit_show_magit_mapping',        '<leader>M' )
+let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
 
 " these mapping are applied locally, for magit buffer only
-call s:set('g:magit_stage_file_mapping',        'F' )
-call s:set('g:magit_stage_hunk_mapping',        'S' )
-call s:set('g:magit_stage_line_mapping',        'L' )
-call s:set('g:magit_mark_line_mapping',         'M' )
-call s:set('g:magit_discard_hunk_mapping',      'DDD' )
-call s:set('g:magit_commit_mapping_command',    'w<cr>' )
-call s:set('g:magit_commit_mapping',            'CC' )
-call s:set('g:magit_commit_amend_mapping',      'CA' )
-call s:set('g:magit_commit_fixup_mapping',      'CF' )
-call s:set('g:magit_reload_mapping',            'R' )
-call s:set('g:magit_ignore_mapping',            'I' )
-call s:set('g:magit_close_mapping',             'q' )
-call s:set('g:magit_toggle_help_mapping',       'h' )
+let g:magit_stage_file_mapping     = get(g:, 'magit_stage_file_mapping',        'F' )
+let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        'S' )
+let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
+let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
+let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      'DDD' )
+let g:magit_commit_mapping_command = get(g:, 'magit_commit_mapping_command',    'w<cr>' )
+let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
+let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
+let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
+let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
+let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
+let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
+let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       'h' )
 
-call s:set('g:magit_folding_toggle_mapping',    [ '<CR>' ])
-call s:set('g:magit_folding_open_mapping',      [ 'zo', 'zO' ])
-call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
+let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
+let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
+let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
 
 " user options
-call s:set('g:magit_enabled',                   1)
-call s:set('g:magit_show_help',                 1)
-call s:set('g:magit_default_show_all_files',    0)
-call s:set('g:magit_default_fold_level',        1)
+let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
+let g:magit_show_help              = get(g:, 'magit_show_help',                 1)
+let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    0)
+let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 
-call s:set('g:magit_warning_max_lines',         10000)
+let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
