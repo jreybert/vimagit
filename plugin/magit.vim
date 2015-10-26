@@ -274,20 +274,17 @@ endfunction
 " inferior to upper_limit line, block is discarded
 " return: [startline, endline]
 function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
-	let l:winview = winsaveview()
 
 	let upper_limit=0
 	if ( a:upper_limit_pattern != "" )
 		let upper_limit=search(a:upper_limit_pattern, "cbnW")
 	endif
 
-	let start=search(a:start_pattern[0], "cbW")
+	let start=search(a:start_pattern[0], "cbnW")
 	if ( start == 0 )
-		call winrestview(l:winview)
 		throw "out_of_block"
 	endif
 	if ( start < upper_limit )
-		call winrestview(l:winview)
 		throw "out_of_block"
 	endif
 	let start+=a:start_pattern[1]
@@ -302,11 +299,8 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 		endif
 	endfor
 	if ( end == 0 )
-		call winrestview(l:winview)
 		throw "out_of_block"
 	endif
-
-	call winrestview(l:winview)
 
 	return [start,end]
 endfunction
