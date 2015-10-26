@@ -281,10 +281,7 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	endif
 
 	let start=search(a:start_pattern[0], "cbnW")
-	if ( start == 0 )
-		throw "out_of_block"
-	endif
-	if ( start < upper_limit )
+	if ( start == 0 || start < upper_limit )
 		throw "out_of_block"
 	endif
 	let start+=a:start_pattern[1]
