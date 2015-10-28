@@ -39,6 +39,7 @@ endfor
 let g:magit_section_re .= 'unknown section\)$'
 
 let g:magit_diff_re  = '^diff --git'
+let g:magit_end_diff_re  = '^$'
 let g:magit_stash_re = '^stash@{\d\+}:'
 let g:magit_hunk_re  = '^@@ -\(\d\+\),\?\(\d*\) +\(\d\+\),\?\(\d*\) @@'
 let g:magit_bin_re   = '^Binary files '
