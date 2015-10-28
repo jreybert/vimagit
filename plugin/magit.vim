@@ -367,7 +367,8 @@ endfunction
 function! s:mg_select_file_block()
 	return <SID>mg_search_block(
 				\ [g:magit_file_re, 1],
-				\ [ [g:magit_file_re, -1],
+				\ [ [g:magit_end_diff_re, 0],
+				\   [g:magit_file_re, -1],
 				\   [g:magit_stash_re, -1],
 				\   [g:magit_section_re, -2],
 				\   [g:magit_bin_re, 0],
@@ -386,6 +387,7 @@ function! s:mg_select_hunk_block()
 	return <SID>mg_search_block(
 				\ [g:magit_hunk_re, 0],
 				\ [ [g:magit_hunk_re, -1],
+				\   [g:magit_end_diff_re, 0],
 				\   [g:magit_file_re, -1],
 				\   [g:magit_stash_re, -1],
 				\   [g:magit_section_re, -2],
