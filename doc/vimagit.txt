@@ -143,7 +143,7 @@ Global mappings
 ---------------
 Following mappings are broadly set, and are applied in all vim buffers.
 
-                                      *vimagit-<leader>M*  *magit#show_magit('v')*
+                                      *vimagit-<leader>M*
                                       *vimagit-g:magit_show_magit_mapping*
  <leader>M  Open Magit buffer
 
@@ -161,7 +161,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                       *vimagit-g:magit_folding_open_mapping*
   zo,zO     Typing zo on a file will unhide its diffs.
 
-                                      *vimagit-zo*   *magit#open_close_folding(0)*
+                                      *vimagit-zc*   *magit#open_close_folding(0)*
                                       *vimagit-g:magit_folding_close_mapping*
   zc,zC     Typing zc on a file will hide its diffs.
 
@@ -188,10 +188,10 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             On the other side, when cursor is in "Staged changes" section, it
             will unstage file.
 
-                                      *vimagit-L*          *magit#stage_vselect()*
+                                      *vimagit-L*
   L         Stage the line under the cursor (only works for staging)
 
-                                      *vimagit-M*           *magit#mark_vselect()*
+                                      *vimagit-M*
   M
             Mark the current line to be staged.
             If some lines in the hunk are selected (see |visual-use|), mark
@@ -213,7 +213,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
-                                    *vimagit-:w<CR>*  *magit#commit_command('CC')*
+                                    *vimagit-:w<CR>*
                                     *vimagit-g:magit_commit_mapping_command*
   :w<CR>    If in commit section, commit the all staged changes in commit mode
             previously set.
