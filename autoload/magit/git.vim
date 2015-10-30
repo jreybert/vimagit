@@ -59,7 +59,20 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_add(filename)
-	let git_cmd=s:git_cmd . " add -- " . a:filename
+	let git_cmd=s:git_cmd . " add --no-ignore-removal -- " . a:filename
+	silent let git_result=magit#utils#system(git_cmd)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+		echoerr "Git cmd: " . git_cmd
+	endif
+endfunction
+
+" magit#git#git_checkout: helper function to add a whole file
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] filemane: it must be quoted if it contains spaces
+function! magit#git#git_checkout(filename)
+	let git_cmd=s:git_cmd . " checkout -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
@@ -72,7 +85,7 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_reset(filename)
-	let git_cmd=s:git_cmd . " reset -- " . a:filename
+	let git_cmd=s:git_cmd . " reset HEAD -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result
