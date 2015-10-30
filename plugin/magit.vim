@@ -646,6 +646,44 @@ function! magit#show_magit(display, ...)
 	execute "normal! gg"
 endfunction
 
+function! s:mg_stage_closed_file(discard)
+	if ( getline(".") =~ g:magit_file_re )
+		let list = matchlist(getline("."), g:magit_file_re)
+		let filename = list[2]
+		let section=<SID>mg_get_section()
+		
+		let file = s:state.get_file(section, filename)
+		if ( file.is_visible() == 0 ||
+			\ file.is_dir() == 1 )
+			if ( a:discard == 0 )
+				if ( section == 'unstaged' )
+					call magit#git#git_add(magit#utils#add_quotes(filename))
+				elseif ( section == 'staged' )
+					call magit#git#git_reset(magit#utils#add_quotes(filename))
+				else
+					echoerr "Must be in \"" . 
+								\ g:magit_sections.staged . "\" or \"" . 
+								\ g:magit_sections.unstaged . "\" section"
+				endif
+			else
+				if ( section == 'unstaged' )
+					if ( file.must_be_added() )
+						call delete(filename)
+					else
+						call magit#git#git_reset(filename)
+					endif
+				else
+					echoerr "Must be in \"" . 
+								\ g:magit_sections.unstaged . "\" section"
+				endif
+			endif
+			call magit#update_buffer()
+			return
+		endif
+	endif
+	throw "out_of_block"
+endfunction
+
 function! s:mg_select_closed_file()
 	if ( getline(".") =~ g:magit_file_re )
 		let list = matchlist(getline("."), g:magit_file_re)
