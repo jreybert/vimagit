@@ -33,6 +33,54 @@ function! magit#utils#git_dir()
 	return s:magit_git_dir
 endfunction
 
+
+" magit#utils#git_apply: helper function to stage a selection
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
+" header plus one or more hunks
+" return: no
+function! magit#utils#git_apply(header, selection)
+	let selection = magit#utils#flatten(a:header + a:selection)
+	if ( selection[-1] !~ '^$' )
+		let selection += [ '' ]
+	endif
+	let git_cmd="git apply --recount --no-index --cached -"
+	silent let git_result=magit#utils#system(git_cmd, selection)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+		echoerr "Git cmd: " . git_cmd
+		echoerr "Tried to aply this"
+		echoerr string(selection)
+	endif
+endfunction
+
+" magit#utils#git_unapply: helper function to unstage a selection
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
+" header plus one or more hunks
+" return: no
+function! magit#utils#git_unapply(header, selection, mode)
+	let cached_flag=''
+	if ( a:mode == 'staged' )
+		let cached_flag=' --cached '
+	endif
+	let selection = magit#utils#flatten(a:header + a:selection)
+	if ( selection[-1] !~ '^$' )
+		let selection += [ '' ]
+	endif
+	silent let git_result=magit#utils#system(
+		\ "git apply --recount --no-index " . cached_flag . " --reverse - ",
+		\ selection)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+		echoerr "Tried to unaply this"
+		echoerr string(selection)
+	endif
+endfunction
+
+
 " s:magit#utils#is_binary: check if file is a binary file
 " param[in] filename: the file path. it must quoted if it contains spaces
 function! magit#utils#is_binary(filename)

@@ -380,52 +380,6 @@ function! s:mg_select_hunk_block()
 				\ g:magit_file_re)
 endfunction
 
-" s:mg_git_apply: helper function to stage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! s:mg_git_apply(header, selection)
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	let git_cmd="git apply --recount --no-index --cached -"
-	silent let git_result=magit#utils#system(git_cmd, selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-		echoerr "Tried to aply this"
-		echoerr string(selection)
-	endif
-endfunction
-
-" s:mg_git_unapply: helper function to unstage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! s:mg_git_unapply(header, selection, mode)
-	let cached_flag=''
-	if ( a:mode == 'staged' )
-		let cached_flag=' --cached '
-	endif
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	silent let git_result=magit#utils#system(
-		\ "git apply --recount --no-index " . cached_flag . " --reverse - ",
-		\ selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Tried to unaply this"
-		echoerr string(selection)
-	endif
-endfunction
-
 " s:mg_create_diff_from_select: craft the diff to apply from a selection
 " in a chunk
 " remarks: it works with full lines, and can not span over multiple chunks
@@ -726,14 +680,14 @@ function! magit#stage_block(selection, discard) abort
 				call magit#utils#system('git add ' .
 					\ magit#utils#add_quotes(filename))
 			else
-				call <SID>mg_git_apply(header, a:selection)
+				call magit#utils#git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( file.must_be_added() )
 				call magit#utils#system('git reset ' .
 					\ magit#utils#add_quotes(filename))
 			else
-				call <SID>mg_git_unapply(header, a:selection, 'staged')
+				call magit#utils#git_unapply(header, a:selection, 'staged')
 			endif
 		else
 			echoerr "Must be in \"" . 
@@ -745,7 +699,7 @@ function! magit#stage_block(selection, discard) abort
 			if ( file.must_be_added() )
 				call delete(filename)
 			else
-				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
+				call magit#utils#git_unapply(header, a:selection, 'unstaged')
 			endif
 		else
 			echoerr "Must be in \"" . 
