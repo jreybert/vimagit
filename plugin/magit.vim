@@ -240,7 +240,7 @@ function! s:mg_get_commit_section()
 	silent put =magit#utils#underline(g:magit_sections.commit_start)
 	silent put =''
 
-	let git_dir=magit#utils#git_dir()
+	let git_dir=magit#git#git_dir()
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
 		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
@@ -677,15 +677,15 @@ function! magit#stage_block(selection, discard) abort
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
-				call magit#utils#git_add(magit#utils#add_quotes(filename))
+				call magit#git#git_add(magit#utils#add_quotes(filename))
 			else
-				call magit#utils#git_apply(header, a:selection)
+				call magit#git#git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( file.must_be_added() )
-				call magit#utils#git_reset(magit#utils#add_quotes(filename))
+				call magit#git#git_resetmagit#utils#add_quotes(filename))
 			else
-				call magit#utils#git_unapply(header, a:selection, 'staged')
+				call magit#git#git_unapply(header, a:selection, 'staged')
 			endif
 		else
 			echoerr "Must be in \"" . 
@@ -697,7 +697,7 @@ function! magit#stage_block(selection, discard) abort
 			if ( file.must_be_added() )
 				call delete(filename)
 			else
-				call magit#utils#git_unapply(header, a:selection, 'unstaged')
+				call magit#git#git_unapply(header, a:selection, 'unstaged')
 			endif
 		else
 			echoerr "Must be in \"" . 
@@ -780,7 +780,7 @@ endfunction
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
 	let ignore_file=<SID>mg_get_filename()
-	call magit#utils#append_file(magit#utils#top_dir() . ".gitignore",
+	call magit#utils#append_file(magit#git#top_dir() . ".gitignore",
 			\ [ ignore_file ] )
 	call magit#update_buffer()
 endfunction

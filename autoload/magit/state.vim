@@ -216,7 +216,7 @@ function! magit#state#update() dict
 
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(magit#utils#top_dir())
+		call magit#utils#lcd(magit#git#top_dir())
 		call magit#utils#refresh_submodule_list()
 		for [mode, diff_dict_mode] in items(self.dict)
 			let status_list = magit#git#get_status()

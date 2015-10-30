@@ -1,110 +1,3 @@
-" s:magit_top_dir: top directory of git tree
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_top_dir=''
-" magit#utils#top_dir: return the absolute path of current git worktree
-" return top directory
-function! magit#utils#top_dir()
-	if ( s:magit_top_dir == '' )
-		let s:magit_top_dir=magit#utils#strip(
-			\ system("git rev-parse --show-toplevel")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_top_dir
-		endif
-	endif
-	return s:magit_top_dir
-endfunction
-
-" s:magit_git_dir: git directory
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_git_dir=''
-" magit#utils#git_dir: return the absolute path of current git worktree
-" return git directory
-function! magit#utils#git_dir()
-	if ( s:magit_git_dir == '' )
-		let s:magit_git_dir=magit#utils#strip(system("git rev-parse --git-dir")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_git_dir
-		endif
-	endif
-	return s:magit_git_dir
-endfunction
-
-" magit#utils#git_add: helper function to add a whole file
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] filemane: it must be quoted if it contains spaces
-function! magit#utils#git_add(filename)
-	let git_cmd="git add -- " . a:filename
-	silent let git_result=magit#utils#system(git_cmd)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-	endif
-endfunction
-
-" magit#utils#git_reset: helper function to add a whole file
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] filemane: it must be quoted if it contains spaces
-function! magit#utils#git_reset(filename)
-	let git_cmd="git reset -- " . a:filename
-	silent let git_result=magit#utils#system(git_cmd)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-	endif
-endfunction
-
-" magit#utils#git_apply: helper function to stage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! magit#utils#git_apply(header, selection)
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	let git_cmd="git apply --recount --no-index --cached -"
-	silent let git_result=magit#utils#system(git_cmd, selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-		echoerr "Tried to aply this"
-		echoerr string(selection)
-	endif
-endfunction
-
-" magit#utils#git_unapply: helper function to unstage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! magit#utils#git_unapply(header, selection, mode)
-	let cached_flag=''
-	if ( a:mode == 'staged' )
-		let cached_flag=' --cached '
-	endif
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	silent let git_result=magit#utils#system(
-		\ "git apply --recount --no-index " . cached_flag . " --reverse - ",
-		\ selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Tried to unaply this"
-		echoerr string(selection)
-	endif
-endfunction
-
 
 " s:magit#utils#is_binary: check if file is a binary file
 " param[in] filename: the file path. it must quoted if it contains spaces
@@ -124,7 +17,7 @@ let s:submodule_list = []
 " magit#utils#refresh_submodule_list: this function refresh the List s:submodule_list
 " magit#utils#is_submodule() is using s:submodule_list
 function! magit#utils#refresh_submodule_list()
-	let s:submodule_list = map(split(system("git submodule status"), "\n"), 'split(v:val)[1]')
+	let s:submodule_list = map(split(magit#git#submodule_status(), "\n"), 'split(v:val)[1]')
 endfunction
 
 " magit#utils#is_submodule search if dirname is in s:submodule_list 
@@ -151,7 +44,7 @@ endfunction
 function! magit#utils#system(...)
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#utils#top_dir()
+		execute s:magit_cd_cmd . magit#git#top_dir()
 		" List as system() input is since v7.4.247, it is safe to check
 		" systemlist, which is sine v7.4.248
 		if exists('*systemlist')
@@ -184,7 +77,7 @@ endfunction
 function! magit#utils#systemlist(...)
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#utils#top_dir()
+		execute s:magit_cd_cmd . magit#git#top_dir()
 		" systemlist since v7.4.248
 		if exists('*systemlist')
 			return call('systemlist', a:000)
