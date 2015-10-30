@@ -661,40 +661,20 @@ function! s:mg_stage_closed_file(discard)
 				elseif ( section == 'staged' )
 					call magit#git#git_reset(magit#utils#add_quotes(filename))
 				else
-					echoerr "Must be in \"" . 
-								\ g:magit_sections.staged . "\" or \"" . 
+					echoerr "Must be in \"" .
+								\ g:magit_sections.staged . "\" or \"" .
 								\ g:magit_sections.unstaged . "\" section"
 				endif
 			else
 				if ( section == 'unstaged' )
-					if ( file.must_be_added() )
-						call delete(filename)
-					else
-						call magit#git#git_reset(filename)
-					endif
+					call magit#git#git_checkout(magit#utils#add_quotes(filename))
 				else
-					echoerr "Must be in \"" . 
+					echoerr "Must be in \"" .
 								\ g:magit_sections.unstaged . "\" section"
 				endif
 			endif
 			call magit#update_buffer()
 			return
-		endif
-	endif
-	throw "out_of_block"
-endfunction
-
-function! s:mg_select_closed_file()
-	if ( getline(".") =~ g:magit_file_re )
-		let list = matchlist(getline("."), g:magit_file_re)
-		let filename = list[2]
-		let section=<SID>mg_get_section()
-		
-		let file = s:state.get_file(section, filename)
-		if ( file.is_visible() == 0 ||
-			\ file.is_dir() == 1 )
-			let selection = s:state.get_file(section, filename).get_flat_hunks()
-			return selection
 		endif
 	endif
 	throw "out_of_block"
@@ -753,7 +733,8 @@ endfunction
 " return: no
 function! magit#stage_file()
 	try
-		let selection = <SID>mg_select_closed_file()
+		call <SID>mg_stage_closed_file(0)
+		return
 	catch 'out_of_block'
 		let [start, end] = <SID>mg_select_file_block()
 		let selection = getline(start, end)
@@ -771,7 +752,8 @@ endfunction
 " return: no
 function! magit#stage_hunk(discard)
 	try
-		let selection = <SID>mg_select_closed_file()
+		call <SID>mg_stage_closed_file(a:discard)
+		return
 	catch 'out_of_block'
 		try
 			let [start,end] = <SID>mg_select_hunk_block()
