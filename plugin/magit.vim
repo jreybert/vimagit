@@ -706,19 +706,19 @@ function! magit#stage_block(selection, discard) abort
 				call magit#git#git_unapply(header, a:selection, 'staged')
 			endif
 		else
-			echoerr "Must be in \"" . 
-						\ g:magit_sections.staged . "\" or \"" . 
+			echoerr "Must be in \"" .
+						\ g:magit_sections.staged . "\" or \"" .
 						\ g:magit_sections.unstaged . "\" section"
 		endif
 	else
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
-				call delete(filename)
+				call magit#git#git_checkout(magit#utils#add_quotes(filename))
 			else
 				call magit#git#git_unapply(header, a:selection, 'unstaged')
 			endif
 		else
-			echoerr "Must be in \"" . 
+			echoerr "Must be in \"" .
 						\ g:magit_sections.unstaged . "\" section"
 		endif
 	endif
