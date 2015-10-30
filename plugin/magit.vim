@@ -683,7 +683,7 @@ function! magit#stage_block(selection, discard) abort
 			endif
 		elseif ( section == 'staged' )
 			if ( file.must_be_added() )
-				call magit#git#git_resetmagit#utils#add_quotes(filename))
+				call magit#git#git_reset(magit#utils#add_quotes(filename))
 			else
 				call magit#git#git_unapply(header, a:selection, 'staged')
 			endif
