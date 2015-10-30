@@ -33,6 +33,31 @@ function! magit#utils#git_dir()
 	return s:magit_git_dir
 endfunction
 
+" magit#utils#git_add: helper function to add a whole file
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] filemane: it must be quoted if it contains spaces
+function! magit#utils#git_add(filename)
+	let git_cmd="git add -- " . a:filename
+	silent let git_result=magit#utils#system(git_cmd)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+		echoerr "Git cmd: " . git_cmd
+	endif
+endfunction
+
+" magit#utils#git_reset: helper function to add a whole file
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] filemane: it must be quoted if it contains spaces
+function! magit#utils#git_reset(filename)
+	let git_cmd="git reset -- " . a:filename
+	silent let git_result=magit#utils#system(git_cmd)
+	if ( v:shell_error != 0 )
+		echoerr "Git error: " . git_result
+		echoerr "Git cmd: " . git_cmd
+	endif
+endfunction
 
 " magit#utils#git_apply: helper function to stage a selection
 " nota: when git fail (due to misformated patch for example), an error

@@ -677,15 +677,13 @@ function! magit#stage_block(selection, discard) abort
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
-				call magit#utils#system('git add ' .
-					\ magit#utils#add_quotes(filename))
+				call magit#utils#git_add(magit#utils#add_quotes(filename))
 			else
 				call magit#utils#git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( file.must_be_added() )
-				call magit#utils#system('git reset ' .
-					\ magit#utils#add_quotes(filename))
+				call magit#utils#git_reset(magit#utils#add_quotes(filename))
 			else
 				call magit#utils#git_unapply(header, a:selection, 'staged')
 			endif
