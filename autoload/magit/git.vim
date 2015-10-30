@@ -1,4 +1,4 @@
-let s:git_cmd="git"
+let s:git_cmd="GIT_CONFIG=/dev/null GIT_CONFIG_NOSYSTEM=1 XDG_CONFIG_HOME=/ git"
 
 " magit#git#get_status: this function returns the git status output formated
 " into a List of Dict as
