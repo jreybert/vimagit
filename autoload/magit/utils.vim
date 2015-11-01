@@ -3,7 +3,7 @@
 " param[in] filename: the file path. it must quoted if it contains spaces
 function! magit#utils#is_binary(filename)
 	return ( match(system("file --mime " . a:filename ),
-				\ a:filename . ".*charset=binary") != -1 )
+				\ ".*charset=binary") != -1 )
 endfunction
 
 " magit#utils#ls_all: list all files (including hidden ones) in a given path
