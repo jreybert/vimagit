@@ -20,49 +20,35 @@ let g:magit_buffer_name = "magit-playground"
 
 let s:state = deepcopy(magit#state#state)
 
-" s:set: helper function to set user definable variable
-" param[in] var: variable to set
-" param[in] default: default value if not already set by the user
-" return: no
-function! s:set(var, default)
-	if !exists(a:var)
-		if type(a:default)
-			execute 'let' a:var '=' string(a:default)
-		else
-			execute 'let' a:var '=' a:default
-		endif
-	endif
-endfunction
-
 " these mappings are broadly applied, for all vim buffers
-call s:set('g:magit_show_magit_mapping',        '<leader>M' )
+let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
 
 " these mapping are applied locally, for magit buffer only
-call s:set('g:magit_stage_file_mapping',        'F' )
-call s:set('g:magit_stage_hunk_mapping',        'S' )
-call s:set('g:magit_stage_line_mapping',        'L' )
-call s:set('g:magit_mark_line_mapping',         'M' )
-call s:set('g:magit_discard_hunk_mapping',      'DDD' )
-call s:set('g:magit_commit_mapping_command',    'w<cr>' )
-call s:set('g:magit_commit_mapping',            'CC' )
-call s:set('g:magit_commit_amend_mapping',      'CA' )
-call s:set('g:magit_commit_fixup_mapping',      'CF' )
-call s:set('g:magit_reload_mapping',            'R' )
-call s:set('g:magit_ignore_mapping',            'I' )
-call s:set('g:magit_close_mapping',             'q' )
-call s:set('g:magit_toggle_help_mapping',       'h' )
+let g:magit_stage_file_mapping     = get(g:, 'magit_stage_file_mapping',        'F' )
+let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        'S' )
+let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
+let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
+let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      'DDD' )
+let g:magit_commit_mapping_command = get(g:, 'magit_commit_mapping_command',    'w<cr>' )
+let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
+let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
+let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
+let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
+let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
+let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
+let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       'h' )
 
-call s:set('g:magit_folding_toggle_mapping',    [ '<CR>' ])
-call s:set('g:magit_folding_open_mapping',      [ 'zo', 'zO' ])
-call s:set('g:magit_folding_close_mapping',     [ 'zc', 'zC' ])
+let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
+let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
+let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
 
 " user options
-call s:set('g:magit_enabled',                   1)
-call s:set('g:magit_show_help',                 1)
-call s:set('g:magit_default_show_all_files',    0)
-call s:set('g:magit_default_fold_level',        1)
+let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
+let g:magit_show_help              = get(g:, 'magit_show_help',                 1)
+let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    0)
+let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 
-call s:set('g:magit_warning_max_lines',         10000)
+let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
@@ -144,6 +130,13 @@ function! s:mg_get_info()
 	silent put =''
 endfunction
 
+" s:mg_display_files: display in current buffer files, filtered by some
+" parameters
+" param[in] mode: files mode, can be 'staged' or 'unstaged'
+" param[in] curdir: directory containing files (only needed for untracked
+" directory)
+" param[in] depth: current directory depth (only needed for untracked
+" directory)
 function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
@@ -247,7 +240,7 @@ function! s:mg_get_commit_section()
 	silent put =magit#utils#underline(g:magit_sections.commit_start)
 	silent put =''
 
-	let git_dir=magit#utils#git_dir()
+	let git_dir=magit#git#git_dir()
 	" refresh the COMMIT_EDITMSG file
 	if ( s:magit_commit_mode == 'CC' )
 		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
@@ -288,20 +281,14 @@ endfunction
 " inferior to upper_limit line, block is discarded
 " return: [startline, endline]
 function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
-	let l:winview = winsaveview()
 
 	let upper_limit=0
 	if ( a:upper_limit_pattern != "" )
 		let upper_limit=search(a:upper_limit_pattern, "cbnW")
 	endif
 
-	let start=search(a:start_pattern[0], "cbW")
-	if ( start == 0 )
-		call winrestview(l:winview)
-		throw "out_of_block"
-	endif
-	if ( start < upper_limit )
-		call winrestview(l:winview)
+	let start=search(a:start_pattern[0], "cbnW")
+	if ( start == 0 || start < upper_limit )
 		throw "out_of_block"
 	endif
 	let start+=a:start_pattern[1]
@@ -316,11 +303,8 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 		endif
 	endfor
 	if ( end == 0 )
-		call winrestview(l:winview)
 		throw "out_of_block"
 	endif
-
-	call winrestview(l:winview)
 
 	return [start,end]
 endfunction
@@ -394,52 +378,6 @@ function! s:mg_select_hunk_block()
 				\   [g:magit_eof_re, 0 ]
 				\ ],
 				\ g:magit_file_re)
-endfunction
-
-" s:mg_git_apply: helper function to stage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! s:mg_git_apply(header, selection)
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	let git_cmd="git apply --recount --no-index --cached -"
-	silent let git_result=magit#utils#system(git_cmd, selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-		echoerr "Tried to aply this"
-		echoerr string(selection)
-	endif
-endfunction
-
-" s:mg_git_unapply: helper function to unstage a selection
-" nota: when git fail (due to misformated patch for example), an error
-" message is raised.
-" param[in] selection: the text to stage. It must be a patch, i.e. a diff 
-" header plus one or more hunks
-" return: no
-function! s:mg_git_unapply(header, selection, mode)
-	let cached_flag=''
-	if ( a:mode == 'staged' )
-		let cached_flag=' --cached '
-	endif
-	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
-		let selection += [ '' ]
-	endif
-	silent let git_result=magit#utils#system(
-		\ "git apply --recount --no-index " . cached_flag . " --reverse - ",
-		\ selection)
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Tried to unaply this"
-		echoerr string(selection)
-	endif
 endfunction
 
 " s:mg_create_diff_from_select: craft the diff to apply from a selection
@@ -708,7 +646,7 @@ function! magit#show_magit(display, ...)
 	execute "normal! gg"
 endfunction
 
-function! s:mg_select_closed_file()
+function! s:mg_stage_closed_file(discard)
 	if ( getline(".") =~ g:magit_file_re )
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
@@ -717,8 +655,26 @@ function! s:mg_select_closed_file()
 		let file = s:state.get_file(section, filename)
 		if ( file.is_visible() == 0 ||
 			\ file.is_dir() == 1 )
-			let selection = s:state.get_file(section, filename).get_flat_hunks()
-			return selection
+			if ( a:discard == 0 )
+				if ( section == 'unstaged' )
+					call magit#git#git_add(magit#utils#add_quotes(filename))
+				elseif ( section == 'staged' )
+					call magit#git#git_reset(magit#utils#add_quotes(filename))
+				else
+					echoerr "Must be in \"" .
+								\ g:magit_sections.staged . "\" or \"" .
+								\ g:magit_sections.unstaged . "\" section"
+				endif
+			else
+				if ( section == 'unstaged' )
+					call magit#git#git_checkout(magit#utils#add_quotes(filename))
+				else
+					echoerr "Must be in \"" .
+								\ g:magit_sections.unstaged . "\" section"
+				endif
+			endif
+			call magit#update_buffer()
+			return
 		endif
 	endif
 	throw "out_of_block"
@@ -739,32 +695,30 @@ function! magit#stage_block(selection, discard) abort
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
-				call magit#utils#system('git add ' .
-					\ magit#utils#add_quotes(filename))
+				call magit#git#git_add(magit#utils#add_quotes(filename))
 			else
-				call <SID>mg_git_apply(header, a:selection)
+				call magit#git#git_apply(header, a:selection)
 			endif
 		elseif ( section == 'staged' )
 			if ( file.must_be_added() )
-				call magit#utils#system('git reset ' .
-					\ magit#utils#add_quotes(filename))
+				call magit#git#git_reset(magit#utils#add_quotes(filename))
 			else
-				call <SID>mg_git_unapply(header, a:selection, 'staged')
+				call magit#git#git_unapply(header, a:selection, 'staged')
 			endif
 		else
-			echoerr "Must be in \"" . 
-						\ g:magit_sections.staged . "\" or \"" . 
+			echoerr "Must be in \"" .
+						\ g:magit_sections.staged . "\" or \"" .
 						\ g:magit_sections.unstaged . "\" section"
 		endif
 	else
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
-				call delete(filename)
+				call magit#git#git_checkout(magit#utils#add_quotes(filename))
 			else
-				call <SID>mg_git_unapply(header, a:selection, 'unstaged')
+				call magit#git#git_unapply(header, a:selection, 'unstaged')
 			endif
 		else
-			echoerr "Must be in \"" . 
+			echoerr "Must be in \"" .
 						\ g:magit_sections.unstaged . "\" section"
 		endif
 	endif
@@ -779,7 +733,8 @@ endfunction
 " return: no
 function! magit#stage_file()
 	try
-		let selection = <SID>mg_select_closed_file()
+		call <SID>mg_stage_closed_file(0)
+		return
 	catch 'out_of_block'
 		let [start, end] = <SID>mg_select_file_block()
 		let selection = getline(start, end)
@@ -797,7 +752,8 @@ endfunction
 " return: no
 function! magit#stage_hunk(discard)
 	try
-		let selection = <SID>mg_select_closed_file()
+		call <SID>mg_stage_closed_file(a:discard)
+		return
 	catch 'out_of_block'
 		try
 			let [start,end] = <SID>mg_select_hunk_block()
@@ -844,7 +800,7 @@ endfunction
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
 	let ignore_file=<SID>mg_get_filename()
-	call magit#utils#append_file(magit#utils#top_dir() . ".gitignore",
+	call magit#utils#append_file(magit#git#top_dir() . ".gitignore",
 			\ [ ignore_file ] )
 	call magit#update_buffer()
 endfunction
