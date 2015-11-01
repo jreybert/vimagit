@@ -76,6 +76,7 @@ for script in ${!test_scripts[@]}; do
 				set rtp-=~/.vim/after
 				set rtp+=$VIMAGIT_PATH
 				set rtp+=$VADER_PATH
+				let g:vader_show_version=0
 				filetype plugin indent on
 				syntax enable
 EOF) -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
