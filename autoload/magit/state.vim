@@ -146,6 +146,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	let file.status = a:status
 	let file.depth = a:depth
 
+	" discard previous diff
+	let file.diff = deepcopy(s:diff_template)
+
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let file.status = 'L'
 		let file.symlink = resolve(a:filename)
@@ -153,14 +156,18 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	elseif ( magit#utils#is_submodule(a:filename))
 		let file.status = 'S'
 		let file.submodule = 1
+		if ( !file.is_visible() )
+			return
+		endif
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
-		if ( file.is_visible() )
-			let self.nb_diff_lines += len(diff_list)
-		endif
+		let self.nb_diff_lines += len(diff_list)
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
 		let file.status = 'N'
 		let file.dir = 1
+		if ( !file.is_visible() )
+			return
+		endif
 		for subfile in magit#utils#ls_all(a:filename)
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
@@ -172,6 +179,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		let file.binary = 1
 		let file.diff.hunks[0].header = 'Binary file'
 	else
+		if ( !file.is_visible() )
+			return
+		endif
 		let line = 0
 		" match(
 		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
@@ -193,9 +203,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 				call add(hunk.lines, diff_line)
 			endfor
 		endif
-		if ( file.is_visible() )
-			let self.nb_diff_lines += len(diff_list)
-		endif
+		let self.nb_diff_lines += len(diff_list)
 	endif
 endfunction
 
