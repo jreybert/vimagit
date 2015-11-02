@@ -199,6 +199,17 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	endif
 endfunction
 
+function! magit#state#get_files_lines() dict
+	let lines = {}
+	for diff_dict_mode in values(self.dict)
+		for file in values(diff_dict_mode)
+			let lines[file.filename] = magit#sign#get_lines(
+				\ file.sign_start, file.sign_end)
+		endfor
+	endfor
+	return lines
+endfunction
+
 " magit#state#update: update self.dict
 " if a file does not exists anymore (because all its changes have been
 " committed, deleted, discarded), it is removed from g:mg_diff_dict
@@ -284,6 +295,7 @@ let magit#state#state = {
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
 			\ 'update': function("magit#state#update"),
+			\ 'get_files_lines': function("magit#state#get_files_lines"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }
 

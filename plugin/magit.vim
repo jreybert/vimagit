@@ -50,6 +50,10 @@ let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        
 
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
+
+let g:magit_debug                  = get(g:, 'magit_debug',                     1)
+let g:magit_log_file               = get(g:, 'magit_log_file',                  '/tmp/vimagit.log')
+
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 " }}}
 
@@ -833,5 +837,9 @@ function! magit#commit_command(mode)
 endfunction
 
 command! Magit call magit#show_magit('v')
+
+command! MagitDebugFilesLines call magit#utils#append_file(g:magit_log_file, magit#utils#flatten(items(s:state.get_files_lines())))
+
+command! MagitDebug call magit#utils#set_debug()
 
 " }}}
