@@ -556,8 +556,6 @@ function! magit#update_buffer()
 		silent! call cursor(section_line+3+<SID>mg_get_inline_help_line_nb('commit'), 0)
 	endif
 
-	set filetype=magit
-
 endfunction
 
 " magit#toggle_help: toggle inline help showing in magit buffer
@@ -608,6 +606,8 @@ function! magit#show_magit(display, ...)
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 	"setlocal readonly
+	set filetype=magit
+
 
 	call magit#utils#setbufnr(bufnr(g:magit_buffer_name))
 	call magit#sign#init()
