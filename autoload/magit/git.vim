@@ -45,13 +45,11 @@ let s:magit_git_dir=''
 " magit#git#git_dir: return the absolute path of current git worktree
 " return git directory
 function! magit#git#git_dir()
-	if ( s:magit_git_dir == '' )
-		let s:magit_git_dir=magit#utils#strip(system(s:git_cmd . " rev-parse --git-dir")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_git_dir
-		endif
-	endif
-	return s:magit_git_dir
+  let s:magit_git_dir=magit#utils#strip(system(s:git_cmd . " rev-parse --git-dir")) . "/"
+  if ( v:shell_error != 0 )
+    echoerr "Git error: " . s:magit_git_dir
+  endif
+  return s:magit_git_dir
 endfunction
 
 " magit#git#git_add: helper function to add a whole file
