@@ -736,7 +736,20 @@ function! magit#stage_file()
 		call <SID>mg_stage_closed_file(0)
 		return
 	catch 'out_of_block'
-		let [start, end] = <SID>mg_select_file_block()
+		try
+			let [start, end] = <SID>mg_select_file_block()
+		catch /^out_of_block$/
+			echohl ErrorMsg
+			echomsg "Error while staging."
+			echohl None
+			echomsg "Your cursor must be:"
+			echomsg " - on a file header line"
+			echomsg " - or on a hunk header line"
+			echomsg " - or within a hunk"
+			echomsg "If you repect one of previous points, please open a new issue:"
+			echomsg "https://github.com/jreybert/vimagit/issues/new"
+			return
+		endtry
 		let selection = getline(start, end)
 	endtry
 	return magit#stage_block(selection, 0)
@@ -758,7 +771,20 @@ function! magit#stage_hunk(discard)
 		try
 			let [start,end] = <SID>mg_select_hunk_block()
 		catch 'out_of_block'
-			let [start,end] = <SID>mg_select_file_block()
+			try
+				let [start,end] = <SID>mg_select_file_block()
+			catch /^out_of_block$/
+				echohl ErrorMsg
+				echomsg "Error while staging."
+				echohl None
+				echomsg "Your cursor must be:"
+				echomsg " - on a file header line"
+				echomsg " - or on a hunk header line"
+				echomsg " - or within a hunk"
+				echomsg "If you repect one of previous points, please open a new issue:"
+				echomsg "https://github.com/jreybert/vimagit/issues/new"
+				return
+			endtry
 		endtry
 		let marked_lines = magit#sign#find_stage_signs(start, end)
 		if ( empty(marked_lines) )
@@ -786,7 +812,19 @@ function! magit#stage_vselect() range
 		call add(lines, curline)
 		let curline += 1
 	endwhile
-	let selection = <SID>mg_create_diff_from_select(lines)
+	try
+		let selection = <SID>mg_create_diff_from_select(lines)
+	catch /^out_of_block$/
+		echohl ErrorMsg
+		echomsg "Error while staging a visual selection."
+		echohl None
+		echomsg "Visual selection staging has currently some limitations:"
+		echomsg " - selection must be limited within a single hunk"
+		echomsg " - only work for staging, not for unstaging"
+		echomsg "If you repect current limitations, please open a new issue:"
+		echomsg "https://github.com/jreybert/vimagit/issues/new"
+		return
+	endtry
 	return magit#stage_block(selection, 0)
 endfunction
 
