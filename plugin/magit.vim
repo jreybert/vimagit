@@ -598,7 +598,9 @@ function! magit#show_magit(display, ...)
 		let b:magit_default_fold_level = a:2
 	endif
 
-	silent! execute "bdelete " . g:magit_buffer_name
+	if ( bufexists(g:magit_buffer_name) )
+		silent! execute "bdelete " . g:magit_buffer_name
+	endif
 	silent! execute "file " . g:magit_buffer_name
 
 	setlocal buftype=nofile
