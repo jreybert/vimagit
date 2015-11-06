@@ -599,7 +599,7 @@ function! magit#show_magit(display, ...)
 	endif
 
 	silent! execute "bdelete " . g:magit_buffer_name
-	execute "file " . g:magit_buffer_name
+	silent! execute "file " . g:magit_buffer_name
 
 	setlocal buftype=nofile
 	setlocal bufhidden=delete
