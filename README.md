@@ -220,6 +220,13 @@ When set to 2, filenames and hunks are unfolded.
 Default value is 1.
 > let g:magit_default_fold_level=[012]
 
+#### g:magit_default_sections
+
+With this variable, the user is able to choose which sections are displayed in magit
+buffer, and in which order.
+Default value:
+> let g:magit_default_sections = ['info', 'global_help', 'commit', 'staged', 'unstaged']
+
 #### g:magit_warning_max_lines
 
 This variable is the maximum number of diff lines that vimagit will display
