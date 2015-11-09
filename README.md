@@ -120,23 +120,23 @@ For each mapping, user can redefine the behavior with its own mapping. Each vari
 
 Following mappings are broadly set, and are applied in all vim buffers.
 
-**\<Leader>M**
+##### \<Leader>M
 Open Magit buffer
 
 #### Local mappings
 
 Following mappings are set locally, for magit buffer only, in normal mode.
 
-**Enter**,**\<CR\>**
+##### Enter,\<CR\>
  * All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
 
-**zo,zO**
+##### zo,zO
  * Typing zo on a file will unhide its diffs.
 
-**zc,zC**
+##### zc,zC
  * Typing zc on a file will hide its diffs.
 
-**S**
+##### S
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
  * If cursor is in diff header, stage/unstage whole file at cursor position.
  * If some lines in the hunk are selected (using **v**), stage only visual selected lines (only works for staging).
@@ -144,48 +144,48 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
 
-**F**
+##### F
  * Stage/unstage the whole file at cursor position.
  * When cursor is in "Unstaged changes" section, it will stage the file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage file.
 
-**L**
+##### L
  * Stage the line under the cursor.
 
-**M**
+##### M
  * Mark the line under the cursor "to be staged".
  * If some lines in the hunk are selected (using **v**), mark selected lines "to be staged".
  * To staged marked lines in a hunk, move cursor to this hunk and press **S**.
 
-**DDD**
+##### DDD
  * If cursor is in a hunk, discard hunk at cursor position.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
 
-**CC**
+##### CC
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
  * If in commit section, commit the all staged changes in commit mode previously set.
 
-**:w<cr>**
+##### :w<cr>
  * If in commit section, commit the all staged changes in commit mode previously set.
 
-**CA**
+##### CA
  * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
  * If in commit section, commit the staged changes in commit mode previously set.
 
-**CF**
+##### CF
  * Amend the staged changes into the previous commit, without modifying previous commit message.
 
-**I**
+##### I
  * Add the file under the cursor in .gitgnore
 
-**R**
+##### R
  * Refresh magit buffer
 
-**q**
+##### q
  * Close the magit buffer
 
-**h**
+##### h
  * Toggle help showing in magit buffer
 
 ### Options
