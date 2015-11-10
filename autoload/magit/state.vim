@@ -164,8 +164,8 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		if ( !file.is_visible() )
 			return
 		endif
-		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
-					\ a:status, a:mode)
+		let diff_list=magit#git#git_sub_summary(magit#utils#add_quotes(a:filename),
+					\ a:mode)
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
 		let self.nb_diff_lines += len(diff_list)

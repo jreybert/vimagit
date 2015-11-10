@@ -75,6 +75,26 @@ function! magit#git#git_diff(filename, status, mode)
 	endif
 	return diff_list
 endfunction
+
+" magit#git#git_sub_summary: helper function to get diff of a submodule
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] filemane: it must be quoted if it contains spaces
+" param[in] mode: can be staged or unstaged
+function! magit#git#git_sub_summary(filename, mode)
+	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
+	let git_cmd="git submodule summary " . staged_flag . " HEAD "
+				\ .a:filename
+	silent let diff_list=magit#utils#systemlist(git_cmd)
+	if ( empty(diff_list) )
+		echohl WarningMsg
+		echom "diff command \"" . diff_cmd . "\" returned nothing"
+		echohl None
+		throw 'diff error'
+	endif
+	return diff_list
+endfunction
+
 " magit#git#git_add: helper function to add a whole file
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.
