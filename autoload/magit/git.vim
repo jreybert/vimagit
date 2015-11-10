@@ -54,6 +54,27 @@ function! magit#git#git_dir()
 	return s:magit_git_dir
 endfunction
 
+" magit#git#git_diff: helper function to get diff of a file
+" nota: when git fail (due to misformated patch for example), an error
+" message is raised.
+" param[in] filemane: it must be quoted if it contains spaces
+" param[in] status: status of the file (see g:magit_git_status_code)
+" param[in] mode: can be staged or unstaged
+function! magit#git#git_diff(filename, status, mode)
+	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
+	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let git_cmd="git diff --no-ext-diff " . staged_flag .
+				\ "--no-color --patch -- " . dev_null . " "
+				\ .a:filename
+	silent let diff_list=magit#utils#systemlist(git_cmd)
+	if ( empty(diff_list) )
+		echohl WarningMsg
+		echom "diff command \"" . diff_cmd . "\" returned nothing"
+		echohl None
+		throw 'diff error'
+	endif
+	return diff_list
+endfunction
 " magit#git#git_add: helper function to add a whole file
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.

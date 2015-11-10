@@ -16,6 +16,16 @@ function! magit#state#toggle_file_visible() dict
 	let self.visible = ( self.visible == 0 ) ? 1 : 0
 endfunction
 
+" magit#state#init_file_visible: init file visible status, among several conditions
+function! magit#state#init_file_visible() dict
+	if ( !self.new )
+		return self.is_visible()
+	else
+		call self.set_visible(b:magit_default_show_all_files)
+		return self.is_visible()
+	endif
+endfunction
+
 " magit#state#is_file_dir: file getter function
 " return 1 if current file is a directory, 0 otherwise
 function! magit#state#is_file_dir() dict
@@ -70,7 +80,9 @@ let s:diff_template = {
 " s:file_template: template for file object
 " WARNING: this variable must be deepcopy()'ied
 let s:file_template = {
+\	'new': 1,
 \	'exists': 0,
+\	'visible': 0,
 \	'filename': '',
 \	'status': '',
 \	'empty': 0,
@@ -82,6 +94,7 @@ let s:file_template = {
 \	'is_dir': function("magit#state#is_file_dir"),
 \	'is_visible': function("magit#state#is_file_visible"),
 \	'set_visible': function("magit#state#set_file_visible"),
+\	'init_visible': function("magit#state#init_file_visible"),
 \	'toggle_visible': function("magit#state#toggle_file_visible"),
 \	'must_be_added': function("magit#state#must_be_added"),
 \	'get_header': function("magit#state#file_get_header"),
@@ -101,7 +114,6 @@ function! magit#state#get_file(mode, filename, ...) dict
 	let create = ( a:0 == 1 ) ? a:1 : 0
 	if ( file_exists == 0 && create == 1 )
 		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
-		let self.dict[a:mode][a:filename].visible = b:magit_default_show_all_files
 		let self.dict[a:mode][a:filename].filename = a:filename
 	elseif ( file_exists == 0 && create == 0 )
 		throw 'file_doesnt_exists'
@@ -131,15 +143,6 @@ endfunction
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
 function! magit#state#add_file(mode, status, filename, depth) dict
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-	let diff_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color --patch -- " . dev_null . " "
-				\ .  magit#utils#add_quotes(a:filename)
-	let diff_list=magit#utils#systemlist(diff_cmd)
-	if ( empty(diff_list) )
-		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-	endif
 	let file = self.get_file(a:mode, a:filename, 1)
 	let file.exists = 1
 
@@ -159,6 +162,8 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		if ( !file.is_visible() )
 			return
 		endif
+		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
+					\ a:status, a:mode)
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
 		let self.nb_diff_lines += len(diff_list)
@@ -179,11 +184,13 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		let file.binary = 1
 		let file.diff.hunks[0].header = 'Binary file'
 	else
-		if ( !file.is_visible() )
+		if ( !file.init_visible() )
 			return
 		endif
 		let line = 0
 		" match(
+		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
+					\ a:status, a:mode)
 		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
 			call add(file.diff.header, diff_list[line])
 			let line += 1
@@ -217,6 +224,7 @@ function! magit#state#update() dict
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			let file.exists = 0
+			let file.new = 0
 			" always discard previous diff
 			let file.diff = deepcopy(s:diff_template)
 		endfor
