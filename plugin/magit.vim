@@ -610,7 +610,7 @@ function! magit#show_magit(display, ...)
 	silent! execute "file " . g:magit_buffer_name
 
 	setlocal buftype=nofile
-	setlocal bufhidden=delete
+	setlocal bufhidden=hide
 	setlocal noswapfile
 	setlocal foldmethod=syntax
 	let &l:foldlevel = b:magit_default_fold_level
