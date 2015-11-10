@@ -97,6 +97,18 @@ There are 5 sections:
   * only lines starting with a + sign can be modified
   * no line can be deleted
 
+### Visual selection
+
+It is possible to stage part of hunk, by different ways:
+* By visually selecting some lines, then staging the selection with **S**.
+* By marking some lines "to be staged" with **M**, then staging these selected lines with **S**.
+* Staging individual lines with **L**.
+
+Visual selection and marked lines have some limitations for the moment:
+* It only work for "staging", not for "unstaging".
+* Selection/marks must be within a single hunk.
+* Marks not within the hunk currently staged are lost during stage process magit buffer refresh.
+
 ### Commands
 
 #### magit#show_magit()
