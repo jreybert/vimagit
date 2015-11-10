@@ -16,6 +16,18 @@ function! magit#state#toggle_file_visible() dict
 	let self.visible = ( self.visible == 0 ) ? 1 : 0
 endfunction
 
+" magit#state#init_file_visible: init file visible status, among several conditions
+function! magit#state#init_file_visible() dict
+	if ( !self.new )
+		return self.is_visible()
+	else
+		if ( self.status == 'M' || b:magit_default_show_all_files > 1 )
+			call self.set_visible(b:magit_default_show_all_files)
+		endif
+		return self.is_visible()
+	endif
+endfunction
+
 " magit#state#is_file_dir: file getter function
 " return 1 if current file is a directory, 0 otherwise
 function! magit#state#is_file_dir() dict
@@ -63,6 +75,7 @@ let s:hunk_template = {
 " s:diff_template: template for diff object (nested in s:file_template)
 " WARNING: this variable must be deepcopy()'ied
 let s:diff_template = {
+\	'len': 0,
 \	'header': [],
 \	'hunks': [s:hunk_template],
 \}
@@ -70,7 +83,9 @@ let s:diff_template = {
 " s:file_template: template for file object
 " WARNING: this variable must be deepcopy()'ied
 let s:file_template = {
+\	'new': 1,
 \	'exists': 0,
+\	'visible': 0,
 \	'filename': '',
 \	'status': '',
 \	'empty': 0,
@@ -82,6 +97,7 @@ let s:file_template = {
 \	'is_dir': function("magit#state#is_file_dir"),
 \	'is_visible': function("magit#state#is_file_visible"),
 \	'set_visible': function("magit#state#set_file_visible"),
+\	'init_visible': function("magit#state#init_file_visible"),
 \	'toggle_visible': function("magit#state#toggle_file_visible"),
 \	'must_be_added': function("magit#state#must_be_added"),
 \	'get_header': function("magit#state#file_get_header"),
@@ -101,7 +117,6 @@ function! magit#state#get_file(mode, filename, ...) dict
 	let create = ( a:0 == 1 ) ? a:1 : 0
 	if ( file_exists == 0 && create == 1 )
 		let self.dict[a:mode][a:filename] = deepcopy(s:file_template)
-		let self.dict[a:mode][a:filename].visible = b:magit_default_show_all_files
 		let self.dict[a:mode][a:filename].filename = a:filename
 	elseif ( file_exists == 0 && create == 0 )
 		throw 'file_doesnt_exists'
@@ -125,26 +140,37 @@ function! magit#state#file_get_filename_header() dict
 	endif
 endfunction
 
+function! magit#state#check_max_lines(file) dict
+	let total_lines = self.nb_diff_lines + a:file.diff.len
+	if ( total_lines > g:magit_warning_max_lines && b:magit_warning_max_lines_answered == 0 )
+		echohl WarningMsg
+		let ret = input("There are " . total_lines . " diff lines to display. Do you want to display all diffs? y(es) / N(o) : ", "")
+		echohl None
+		let b:magit_warning_max_lines_answered = 1
+		if ( ret !~? '^y\%(e\%(s\)\?\)\?$' )
+			call a:file.set_visible(0)
+			let a:file.diff.len = 0
+			let b:magit_default_show_all_files = 0
+			return 1
+		endif
+	endif
+	return 0
+endfunction
+
 " magit#state#add_file: method to add a file with all its
 " properties (filename, exists, status, header and hunks)
 " param[in] mode: can be staged or unstaged
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
 function! magit#state#add_file(mode, status, filename, depth) dict
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
-	let diff_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color --patch -- " . dev_null . " "
-				\ .  magit#utils#add_quotes(a:filename)
-	let diff_list=magit#utils#systemlist(diff_cmd)
-	if ( empty(diff_list) )
-		echoerr "diff command \"" . diff_cmd . "\" returned nothing"
-	endif
 	let file = self.get_file(a:mode, a:filename, 1)
 	let file.exists = 1
 
 	let file.status = a:status
 	let file.depth = a:depth
+
+	" discard previous diff
+	let file.diff = deepcopy(s:diff_template)
 
 	if ( a:status == '?' && getftype(a:filename) == 'link' )
 		let file.status = 'L'
@@ -153,14 +179,26 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 	elseif ( magit#utils#is_submodule(a:filename))
 		let file.status = 'S'
 		let file.submodule = 1
+		if ( !file.is_visible() )
+			return
+		endif
+		let diff_list=magit#git#git_sub_summary(magit#utils#add_quotes(a:filename),
+					\ a:mode)
+		let file.diff.len = len(diff_list)
+
+		if ( self.check_max_lines(file) != 0 )
+			return
+		endif
+
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
-		if ( file.is_visible() )
-			let self.nb_diff_lines += len(diff_list)
-		endif
+		let self.nb_diff_lines += file.diff.len
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
 		let file.status = 'N'
 		let file.dir = 1
+		if ( !file.is_visible() )
+			return
+		endif
 		for subfile in magit#utils#ls_all(a:filename)
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
@@ -172,14 +210,25 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		let file.binary = 1
 		let file.diff.hunks[0].header = 'Binary file'
 	else
+		if ( !file.init_visible() )
+			return
+		endif
 		let line = 0
 		" match(
-		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
+		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
+					\ a:status, a:mode)
+		let file.diff.len = len(diff_list)
+
+		if ( self.check_max_lines(file) != 0 )
+			return
+		endif
+
+		while ( line < file.diff.len && diff_list[line] !~ "^@.*" )
 			call add(file.diff.header, diff_list[line])
 			let line += 1
 		endwhile
 
-		if ( line < len(diff_list) )
+		if ( line < file.diff.len )
 			let hunk = file.diff.hunks[0]
 			let hunk.header = diff_list[line]
 
@@ -193,10 +242,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 				call add(hunk.lines, diff_line)
 			endfor
 		endif
-		if ( file.is_visible() )
-			let self.nb_diff_lines += len(diff_list)
-		endif
+		let self.nb_diff_lines += file.diff.len
 	endif
+
 endfunction
 
 " magit#state#update: update self.dict
@@ -209,6 +257,7 @@ function! magit#state#update() dict
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			let file.exists = 0
+			let file.new = 0
 			" always discard previous diff
 			let file.diff = deepcopy(s:diff_template)
 		endfor
@@ -283,6 +332,7 @@ let magit#state#state = {
 			\ 'get_files': function("magit#state#get_files"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
+			\ 'check_max_lines': function("magit#state#check_max_lines"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }

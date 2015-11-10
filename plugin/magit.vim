@@ -45,8 +45,9 @@ let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     
 " user options
 let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
 let g:magit_show_help              = get(g:, 'magit_show_help',                 1)
-let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    0)
+let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
+let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
@@ -227,32 +228,34 @@ let s:magit_commit_mode=''
 "       'CC': prepare a brand new commit message
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
-	let commit_mode_str=""
-	if ( s:magit_commit_mode == 'CC' )
-		let commit_mode_str="normal"
-	elseif ( s:magit_commit_mode == 'CA' )
-		let commit_mode_str="amend"
-	endif
-	silent put =''
-	silent put =g:magit_sections.commit_start
-	silent put ='Commit mode: '.commit_mode_str
-	call <SID>mg_section_help('commit')
-	silent put =magit#utils#underline(g:magit_sections.commit_start)
-	silent put =''
+	if ( s:magit_commit_mode != '' )
+		let commit_mode_str=""
+		if ( s:magit_commit_mode == 'CC' )
+			let commit_mode_str="normal"
+		elseif ( s:magit_commit_mode == 'CA' )
+			let commit_mode_str="amend"
+		endif
+		silent put =''
+		silent put =g:magit_sections.commit_start
+		silent put ='Commit mode: '.commit_mode_str
+		call <SID>mg_section_help('commit')
+		silent put =magit#utils#underline(g:magit_sections.commit_start)
+		silent put =''
 
-	let git_dir=magit#git#git_dir()
-	" refresh the COMMIT_EDITMSG file
-	if ( s:magit_commit_mode == 'CC' )
-		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
-	elseif ( s:magit_commit_mode == 'CA' )
-		silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+		let git_dir=magit#git#git_dir()
+		" refresh the COMMIT_EDITMSG file
+		if ( s:magit_commit_mode == 'CC' )
+			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+		elseif ( s:magit_commit_mode == 'CA' )
+			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+		endif
+		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
+			let comment_char=<SID>mg_comment_char()
+			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+			put =commit_msg
+		endif
+		put =g:magit_sections.commit_end
 	endif
-	if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
-		let comment_char=<SID>mg_comment_char()
-		let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
-		put =commit_msg
-	endif
-	put =g:magit_sections.commit_end
 endfunction
 
 " s:mg_comment_char: this function gets the commentChar from git config
@@ -502,6 +505,16 @@ function! magit#open_close_folding(...)
 	call magit#update_buffer()
 endfunction
 
+" s:mg_display_functions: Dict wrapping all display related functions
+" This Dict should be accessed through g:magit_default_sections
+let s:mg_display_functions = {
+	\ 'info':        { 'fn': function("s:mg_get_info"), 'arg': []},
+	\ 'global_help': { 'fn': function("s:mg_section_help"), 'arg': ['global']},
+	\ 'commit':      { 'fn': function("s:mg_get_commit_section"), 'arg': []},
+	\ 'staged':      { 'fn': function("s:mg_get_staged_section"), 'arg': ['staged']},
+	\ 'unstaged':    { 'fn': function("s:mg_get_staged_section"), 'arg': ['unstaged']},
+	\ 'stash':       { 'fn': function("s:mg_get_stashes"), 'arg': []},
+\ }
 
 " magit#update_buffer: this function:
 " 1. checks that current buffer is the wanted one
@@ -527,26 +540,19 @@ function! magit#update_buffer()
 	" delete buffer
 	silent! execute "silent :%delete _"
 	
-	call <SID>mg_get_info()
-	call <SID>mg_section_help('global')
-	if ( s:magit_commit_mode != '' )
-		call <SID>mg_get_commit_section()
-	endif
 	call s:state.update()
 
-	if ( s:state.nb_diff_lines > g:magit_warning_max_lines && b:magit_warning_answered_yes == 0 )
-		let ret = input("There are " . s:state.nb_diff_lines . " diff lines to display. Do you want to display all diffs? y(es) / N(o) : ", "")
-		if ( ret !~? '^y\%(e\%(s\)\?\)\?$' )
-			let b:magit_default_show_all_files = 0
-			call s:state.set_files_visible(0)
-		else
-			let b:magit_warning_answered_yes = 1
-		endif
-	endif
-
-	call <SID>mg_get_staged_section('staged')
-	call <SID>mg_get_staged_section('unstaged')
-	call <SID>mg_get_stashes()
+	for section in g:magit_default_sections
+		try
+			let func = s:mg_display_functions[section]
+		catch
+			echohl WarningMsg
+			echom 'unknown section to display: ' . section
+			echom 'please check your redefinition of g:magit_default_sections'
+			echohl None
+		endtry
+		call call(func.fn, func.arg)
+	endfor
 
 	call winrestview(l:winview)
 
@@ -589,7 +595,7 @@ function! magit#show_magit(display, ...)
 
 	let b:magit_default_show_all_files = g:magit_default_show_all_files
 	let b:magit_default_fold_level = g:magit_default_fold_level
-	let b:magit_warning_answered_yes = 0
+	let b:magit_warning_max_lines_answered = 0
 
 	if ( a:0 > 0 )
 		let b:magit_default_show_all_files = a:1
@@ -598,11 +604,13 @@ function! magit#show_magit(display, ...)
 		let b:magit_default_fold_level = a:2
 	endif
 
-	silent! execute "bdelete " . g:magit_buffer_name
-	execute "file " . g:magit_buffer_name
+	if ( bufexists(g:magit_buffer_name) )
+		silent! execute "bdelete " . g:magit_buffer_name
+	endif
+	silent! execute "file " . g:magit_buffer_name
 
 	setlocal buftype=nofile
-	setlocal bufhidden=delete
+	setlocal bufhidden=hide
 	setlocal noswapfile
 	setlocal foldmethod=syntax
 	let &l:foldlevel = b:magit_default_fold_level
