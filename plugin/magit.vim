@@ -45,7 +45,7 @@ let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     
 " user options
 let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
 let g:magit_show_help              = get(g:, 'magit_show_help',                 1)
-let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    0)
+let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 

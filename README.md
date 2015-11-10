@@ -208,9 +208,9 @@ To disable chatty inline help in magit buffer (default 1)
 When this variable is set to 0, all diff files are hidden by default.
 When this variable is set to 1, all diff for modified files are shown by default.
 When this variable is set to 2, all diff for all files are shown by default.
-Default value is 0.
+Default value is 1.
 NB: for repository with large number of differences, display may be slow.
-> let g:magit_default_show_all_files=[01]
+> let g:magit_default_show_all_files=[012]
 
 #### g:magit_default_fold_level
 
