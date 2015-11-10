@@ -542,16 +542,6 @@ function! magit#update_buffer()
 	
 	call s:state.update()
 
-	if ( s:state.nb_diff_lines > g:magit_warning_max_lines && b:magit_warning_answered_yes == 0 )
-		let ret = input("There are " . s:state.nb_diff_lines . " diff lines to display. Do you want to display all diffs? y(es) / N(o) : ", "")
-		if ( ret !~? '^y\%(e\%(s\)\?\)\?$' )
-			let b:magit_default_show_all_files = 0
-			call s:state.set_files_visible(0)
-		else
-			let b:magit_warning_answered_yes = 1
-		endif
-	endif
-
 	for section in g:magit_default_sections
 		try
 			let func = s:mg_display_functions[section]
@@ -605,7 +595,7 @@ function! magit#show_magit(display, ...)
 
 	let b:magit_default_show_all_files = g:magit_default_show_all_files
 	let b:magit_default_fold_level = g:magit_default_fold_level
-	let b:magit_warning_answered_yes = 0
+	let b:magit_warning_max_lines_answered = 0
 
 	if ( a:0 > 0 )
 		let b:magit_default_show_all_files = a:1

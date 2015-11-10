@@ -75,6 +75,7 @@ let s:hunk_template = {
 " s:diff_template: template for diff object (nested in s:file_template)
 " WARNING: this variable must be deepcopy()'ied
 let s:diff_template = {
+\	'len': 0,
 \	'header': [],
 \	'hunks': [s:hunk_template],
 \}
@@ -139,6 +140,23 @@ function! magit#state#file_get_filename_header() dict
 	endif
 endfunction
 
+function! magit#state#check_max_lines(file) dict
+	let total_lines = self.nb_diff_lines + a:file.diff.len
+	if ( total_lines > g:magit_warning_max_lines && b:magit_warning_max_lines_answered == 0 )
+		echohl WarningMsg
+		let ret = input("There are " . total_lines . " diff lines to display. Do you want to display all diffs? y(es) / N(o) : ", "")
+		echohl None
+		let b:magit_warning_max_lines_answered = 1
+		if ( ret !~? '^y\%(e\%(s\)\?\)\?$' )
+			call a:file.set_visible(0)
+			let a:file.diff.len = 0
+			let b:magit_default_show_all_files = 0
+			return 1
+		endif
+	endif
+	return 0
+endfunction
+
 " magit#state#add_file: method to add a file with all its
 " properties (filename, exists, status, header and hunks)
 " param[in] mode: can be staged or unstaged
@@ -166,9 +184,15 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		endif
 		let diff_list=magit#git#git_sub_summary(magit#utils#add_quotes(a:filename),
 					\ a:mode)
+		let file.diff.len = len(diff_list)
+
+		if ( self.check_max_lines(file) != 0 )
+			return
+		endif
+
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
-		let self.nb_diff_lines += len(diff_list)
+		let self.nb_diff_lines += file.diff.len
 	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
 		let file.status = 'N'
 		let file.dir = 1
@@ -193,12 +217,18 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		" match(
 		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
 					\ a:status, a:mode)
-		while ( line < len(diff_list) && diff_list[line] !~ "^@.*" )
+		let file.diff.len = len(diff_list)
+
+		if ( self.check_max_lines(file) != 0 )
+			return
+		endif
+
+		while ( line < file.diff.len && diff_list[line] !~ "^@.*" )
 			call add(file.diff.header, diff_list[line])
 			let line += 1
 		endwhile
 
-		if ( line < len(diff_list) )
+		if ( line < file.diff.len )
 			let hunk = file.diff.hunks[0]
 			let hunk.header = diff_list[line]
 
@@ -212,8 +242,9 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 				call add(hunk.lines, diff_line)
 			endfor
 		endif
-		let self.nb_diff_lines += len(diff_list)
+		let self.nb_diff_lines += file.diff.len
 	endif
+
 endfunction
 
 " magit#state#update: update self.dict
@@ -301,6 +332,7 @@ let magit#state#state = {
 			\ 'get_files': function("magit#state#get_files"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
+			\ 'check_max_lines': function("magit#state#check_max_lines"),
 			\ 'update': function("magit#state#update"),
 			\ 'dict': { 'staged': {}, 'unstaged': {}},
 			\ }
