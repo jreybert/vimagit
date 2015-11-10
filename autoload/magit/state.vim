@@ -21,7 +21,9 @@ function! magit#state#init_file_visible() dict
 	if ( !self.new )
 		return self.is_visible()
 	else
-		call self.set_visible(b:magit_default_show_all_files)
+		if ( self.status == 'M' || b:magit_default_show_all_files > 1 )
+			call self.set_visible(b:magit_default_show_all_files)
+		endif
 		return self.is_visible()
 	endif
 endfunction

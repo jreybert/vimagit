@@ -104,7 +104,7 @@ It takes 3 parameters:
       - 'h', curent window is split horizontally, and magit is displayed in
         new buffer
       - 'c', magit is displayed in current buffer
-  * show_all_files: define is file diffs are shown by default for this session
+  * show_all_files: define how file diffs are shown by default for this session
     (see [g:magit_default_show_all_files](#gmagit_default_show_all_files))
   * foldlevel: set default magit buffer foldlevel for this session
     (see [g:magit_default_fold_level](#gmagit_default_fold_level))
@@ -206,7 +206,8 @@ To disable chatty inline help in magit buffer (default 1)
 #### g:magit_default_show_all_files
 
 When this variable is set to 0, all diff files are hidden by default.
-When this variable is set to 1, all diff files are shown by default.
+When this variable is set to 1, all diff for modified files are shown by default.
+When this variable is set to 2, all diff for all files are shown by default.
 Default value is 0.
 NB: for repository with large number of differences, display may be slow.
 > let g:magit_default_show_all_files=[01]
