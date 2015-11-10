@@ -26,8 +26,13 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
 More to come:
-* Vizualize and checkout branches.
+* Make vimagit more efficient for huge repositories, with a lot of diffs.
+* Add a push function, taking care if needed about the remote repository and branch.
+* Handle commit fixup! and squash!, with a smart git log popup.
+* Handle multiple git repositories within one vim session.
+* Stage multiple hunks or file by visually selecting them.
 * Go through history, cherry-pick changes.
+* Vizualize and checkout branches.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
 > Why should I use vimagit, there are already plethora git plugins for vim?
