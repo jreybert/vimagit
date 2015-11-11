@@ -29,7 +29,6 @@ let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        
 let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
 let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
 let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      'DDD' )
-let g:magit_commit_mapping_command = get(g:, 'magit_commit_mapping_command',    'w<cr>' )
 let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
 let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
@@ -624,7 +623,6 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "cnoremap <buffer> <silent> " . g:magit_commit_mapping_command." :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"

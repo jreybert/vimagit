@@ -226,11 +226,6 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
-                                    *vimagit-:w<CR>*
-                                    *vimagit-g:magit_commit_mapping_command*
-  :w<CR>    If in commit section, commit the all staged changes in commit mode
-            previously set.
-
                                     *vimagit-CA*     *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
   CA        If not in commit section, set commit mode to "Amend commit" and
