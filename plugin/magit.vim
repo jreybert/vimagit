@@ -587,7 +587,7 @@ function! magit#show_magit(display, ...)
 	elseif ( a:display == 'h' )
 		new 
 	elseif ( a:display == 'c' )
-		"nothing, use current buffer
+		enew
 	else
 		throw 'parameter_error'
 	endif
