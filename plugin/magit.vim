@@ -658,7 +658,7 @@ function! magit#close_magit()
 	catch /^Vim\%((\a\+)\)\=:E444/
 		try
 			edit #
-		catch /^Vim\%((\a\+)\)\=:E194/
+		catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
 			quit
 		endtry
 	endtry
