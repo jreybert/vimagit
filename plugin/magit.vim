@@ -29,7 +29,6 @@ let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        
 let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
 let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
 let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      'DDD' )
-let g:magit_commit_mapping_command = get(g:, 'magit_commit_mapping_command',    'w<cr>' )
 let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
 let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
@@ -588,7 +587,7 @@ function! magit#show_magit(display, ...)
 	elseif ( a:display == 'h' )
 		new 
 	elseif ( a:display == 'c' )
-		"nothing, use current buffer
+		enew
 	else
 		throw 'parameter_error'
 	endif
@@ -624,12 +623,11 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "cnoremap <buffer> <silent> " . g:magit_commit_mapping_command." :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :close<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
@@ -652,6 +650,18 @@ function! magit#show_magit(display, ...)
 	
 	call magit#update_buffer()
 	execute "normal! gg"
+endfunction
+
+function! magit#close_magit()
+	try
+		close
+	catch /^Vim\%((\a\+)\)\=:E444/
+		try
+			edit #
+		catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
+			quit
+		endtry
+	endtry
 endfunction
 
 function! s:mg_stage_closed_file(discard)

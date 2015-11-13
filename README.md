@@ -183,9 +183,6 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
  * If in commit section, commit the all staged changes in commit mode previously set.
 
-##### :w<cr>
- * If in commit section, commit the all staged changes in commit mode previously set.
-
 ##### CA
  * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
  * If in commit section, commit the staged changes in commit mode previously set.
