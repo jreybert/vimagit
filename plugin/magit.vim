@@ -583,11 +583,15 @@ function! magit#show_magit(display, ...)
 		return
 	endif
 	if ( a:display == 'v' )
-		vnew 
+		vnew
 	elseif ( a:display == 'h' )
-		new 
+		new
 	elseif ( a:display == 'c' )
-		enew
+		if ( bufname("%") == "" )
+			keepalt enew
+		else
+			enew
+		endif
 	else
 		throw 'parameter_error'
 	endif
@@ -603,18 +607,20 @@ function! magit#show_magit(display, ...)
 		let b:magit_default_fold_level = a:2
 	endif
 
-	if ( bufexists(g:magit_buffer_name) )
-		silent! execute "bdelete " . g:magit_buffer_name
-	endif
-	silent! execute "file " . g:magit_buffer_name
-
 	setlocal buftype=nofile
 	setlocal bufhidden=hide
 	setlocal noswapfile
 	setlocal foldmethod=syntax
+	setlocal nobuflisted
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 	"setlocal readonly
+
+	try
+		silent execute "buffer " . g:magit_buffer_name
+	catch /^Vim\%((\a\+)\)\=:E94/
+		silent execute "keepalt file " . g:magit_buffer_name
+	endtry
 
 	call magit#utils#setbufnr(bufnr(g:magit_buffer_name))
 	call magit#sign#init()
