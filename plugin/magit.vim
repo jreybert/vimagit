@@ -15,9 +15,6 @@ let g:loaded_magit = 1
 " syntax files
 execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
 
-" g:magit_buffer_name: vim buffer name for vimagit
-let g:magit_buffer_name = "magit-playground"
-
 let s:state = deepcopy(magit#state#state)
 
 " these mappings are broadly applied, for all vim buffers
@@ -125,8 +122,9 @@ function! s:mg_get_info()
 	silent put =''
 	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system("git show -s --oneline")
-	silent put ='Current branch: ' . branch
-	silent put ='Last commit:    ' . commit
+	silent put ='Current repository: ' . magit#git#top_dir()
+	silent put ='Current branch:     ' . branch
+	silent put ='Last commit:        ' . commit
 	silent put =''
 endfunction
 
@@ -522,8 +520,9 @@ let s:mg_display_functions = {
 " 4. fills with unstage stuff
 " 5. restore window state
 function! magit#update_buffer()
-	if ( @% != g:magit_buffer_name )
-		echoerr "Not in magit buffer " . g:magit_buffer_name . " but in " . @%
+	let buffer_name=bufname("%")
+	if ( buffer_name !~ 'magit://.*' )
+		echoerr "Not in magit buffer but in " . buffer_name
 		return
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
@@ -578,10 +577,14 @@ endfunction
 "     'h': horizontal split
 "     'c': current buffer (should be used when opening vim in vimagit mode
 function! magit#show_magit(display, ...)
-	if ( magit#utils#strip(system("git rev-parse --is-inside-work-tree")) != 'true' )
-		echoerr "Magit must be started from a git repository"
-		return
+	if ( &filetype == 'netrw' )
+		let cur_file_path = b:netrw_curdir
+	else
+		let cur_file = expand("%:p")
+		let cur_file_path = isdirectory(cur_file) ? cur_file : fnamemodify(cur_file, ":h")
 	endif
+	let try_paths = [ cur_file_path, getcwd() ]
+
 	if ( a:display == 'v' )
 		vnew
 	elseif ( a:display == 'h' )
@@ -595,6 +598,33 @@ function! magit#show_magit(display, ...)
 	else
 		throw 'parameter_error'
 	endif
+
+	for path in try_paths
+		if ( magit#git#set_top_dir(path) == 1 )
+			break
+		endif
+	endfor
+	try
+		let top_dir=magit#git#top_dir()
+	catch 'top_dir_not_set'
+		echohl ErrorMsg
+		echom "magit can not find any git repository"
+		echom "make sure that current opened file or vim current directory points to a git repository"
+		echom "search paths:"
+		for path in try_paths
+			echom path
+		endfor
+		echohl None
+		call magit#close_magit()
+		throw 'magit_not_in_git_repo'
+	endtry
+
+	let buffer_name='magit://' . top_dir
+	try
+		silent execute "buffer " . buffer_name
+	catch /^Vim\%((\a\+)\)\=:E94/
+		silent execute "keepalt file " . buffer_name
+	endtry
 
 	let b:magit_default_show_all_files = g:magit_default_show_all_files
 	let b:magit_default_fold_level = g:magit_default_fold_level
@@ -616,13 +646,7 @@ function! magit#show_magit(display, ...)
 	setlocal filetype=magit
 	"setlocal readonly
 
-	try
-		silent execute "buffer " . g:magit_buffer_name
-	catch /^Vim\%((\a\+)\)\=:E94/
-		silent execute "keepalt file " . g:magit_buffer_name
-	endtry
-
-	call magit#utils#setbufnr(bufnr(g:magit_buffer_name))
+	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
