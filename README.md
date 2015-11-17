@@ -127,7 +127,12 @@ It takes 3 parameters:
     (see [g:magit_default_fold_level](#gmagit_default_fold_level))
 
 #### :Magit
- * open magit buffer.
+open magit buffer in a vertical split
+
+#### :MagitOnly
+open magit buffer in current window
+
+You can create a bash alias like magit="vim -c MagitOnly"
 
 ### Mappings
 

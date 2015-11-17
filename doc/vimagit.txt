@@ -139,8 +139,12 @@ It takes 3 parameters:
   * foldlevel: set default magit buffer foldlevel for this session
     (see |vimagit-g:magit_default_fold_level|)
 
-                                        *:Magit*          *magit#show_magit('v')*
-  :Magit    open magit buffer
+                                                                         *:Magit*
+  :Magit     open magit buffer in a vertical split
+
+                                                                     *:MagitOnly*
+  :MagitOnly open magit buffer in current window
+You can create a bash alias like magit="vim -c MagitOnly"
 
 
 MAPPINGS                                                      *vimagit-mappings*

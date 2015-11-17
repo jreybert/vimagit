@@ -895,5 +895,6 @@ function! magit#commit_command(mode)
 endfunction
 
 command! Magit call magit#show_magit('v')
+command! MagitOnly call magit#show_magit('c')
 
 " }}}
