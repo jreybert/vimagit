@@ -1,0 +1,478 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>Vimagit by jreybert</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/github-dark.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="javascripts/respond.js"></script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <!--[if lt IE 8]>
+    <link rel="stylesheet" href="stylesheets/ie.css">
+    <![endif]-->
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+
+  </head>
+  <body>
+      <div id="header">
+        <nav>
+          <li class="fork"><a href="https://github.com/jreybert/vimagit">View On GitHub</a></li>
+          <li class="downloads"><a href="https://github.com/jreybert/vimagit/zipball/master">ZIP</a></li>
+          <li class="downloads"><a href="https://github.com/jreybert/vimagit/tarball/master">TAR</a></li>
+          <li class="title">DOWNLOADS</li>
+        </nav>
+      </div><!-- end header -->
+
+    <div class="wrapper">
+
+      <section>
+        <div id="title">
+          <h1>Vimagit</h1>
+          <p>A new way to use git within vim</p>
+          <hr>
+          <span class="credits left">Project maintained by <a href="https://github.com/jreybert">jreybert</a></span>
+          <span class="credits right">Hosted on GitHub Pages &mdash; Theme by <a href="https://twitter.com/michigangraham">mattgraham</a></span>
+        </div>
+
+        <h1>
+<a id="vimagit" class="anchor" href="#vimagit" aria-hidden="true"><span class="octicon octicon-link"></span></a>vimagit</h1>
+
+<p>This is a new (and hopefully very efficient) way to use git from vim.</p>
+
+<p>From a very single vim buffer, you can perform all basic git operations. To name a few:</p>
+
+<ul>
+<li>Visualize all diffs in your git repository.</li>
+<li>Stage files/hunks/parts of hunks with single key S.</li>
+<li>Write or amend your commit message and commit.</li>
+</ul>
+
+<p>See a usage example:
+<a href="https://asciinema.org/a/28761"><img src="https://asciinema.org/a/28761.png" alt="asciicast"></a></p>
+
+<p>This workflow is 100% inspired from magnificent emacs <a href="https://github.com/magit/magit">Magit</a> plugin.</p>
+
+<p>Take a look at <a href="#tldr">TL;DR</a> to start using it immediatly.</p>
+
+<h2>
+<a id="outstanding-features" class="anchor" href="#outstanding-features" aria-hidden="true"><span class="octicon octicon-link"></span></a>Outstanding features</h2>
+
+<ul>
+<li>[x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.</li>
+<li>[x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.</li>
+<li>[x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.</li>
+<li>[x] Start to write the commit message in one key press, commit also in one key press.</li>
+<li>[x] Modify in line the content just before staging it.</li>
+<li>[x] Visualize stashes. Apply, pop, drop are on going.</li>
+<li>[x] Add file to .gitignore file.</li>
+<li>[ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an <a href="https://github.com/jreybert/vimagit/issues/new">issue</a> on github <img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png" height="20" width="20" align="absmiddle"> !</li>
+</ul>
+
+<p>More to come:</p>
+
+<ul>
+<li>Make vimagit more efficient for huge repositories, with a lot of diffs.</li>
+<li>Add a push function, taking care if needed about the remote repository and branch.</li>
+<li>Handle commit fixup! and squash!, with a smart git log popup.</li>
+<li>Handle multiple git repositories within one vim session.</li>
+<li>Stage multiple hunks or file by visually selecting them.</li>
+<li>Go through history, cherry-pick changes.</li>
+<li>Vizualize and checkout branches.</li>
+<li>Something is missing? Open an <a href="https://github.com/jreybert/vimagit/issues/new">issue</a>!</li>
+</ul>
+
+<blockquote>
+<p>Why should I use vimagit, there are already plethora git plugins for vim?</p>
+</blockquote>
+
+<ul>
+<li>fugitive is a very complete plugin, with a lot of functions. I use it for years, and it is a fundamental tool in my workflow. But visualize your changes and staged them in broad number of files is really a pain.</li>
+<li>vim-gitgutter is very well integrated into vim, but without the ability to commit stages, it stays an informational plugin.</li>
+</ul>
+
+<h2>
+<a id="integration" class="anchor" href="#integration" aria-hidden="true"><span class="octicon octicon-link"></span></a>Integration</h2>
+
+<p>Branches <a href="https://github.com/jreybert/vimagit/">master</a> and <a href="https://github.com/jreybert/vimagit/tree/next">next</a> are continuously tested on <a href="https://travis-ci.org/jreybert/vimagit">travis</a> when published on github.</p>
+
+<p>vimagit is tested with various versions of vim on linux: vim 7.3.249, vim 7.4.273, and latest neovim version. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an <a href="https://github.com/jreybert/vimagit/issues/new">issue</a>.</p>
+
+<p>For the most enthusiastic, you can try the branch <a href="https://github.com/jreybert/vimagit/tree/next">next</a>. It is quite stable, just check its travis status before fetching it.</p>
+
+<p>Travis status:</p>
+
+<ul>
+<li>
+<strong><a href="https://travis-ci.org/jreybert/vimagit/branches">master status</a></strong>: <a href="https://travis-ci.org/jreybert/vimagit/branches"><img src="https://travis-ci.org/jreybert/vimagit.svg?branch=master" alt="Master build status"></a>
+</li>
+<li>
+<strong><a href="https://travis-ci.org/jreybert/vimagit/branches">next status</a></strong>: <a href="https://travis-ci.org/jreybert/vimagit/branches"><img src="https://travis-ci.org/jreybert/vimagit.svg?branch=next" alt="next build status"></a>
+</li>
+</ul>
+
+<h2>
+<a id="tldr" class="anchor" href="#tldr" aria-hidden="true"><span class="octicon octicon-link"></span></a>TL;DR</h2>
+
+<p>This is the minimal required set of command you must know to start playing with vimagit. See <a href="#mapping">Mapping</a> for a complete description.</p>
+
+<h4>
+<a id="magit" class="anchor" href="#magit" aria-hidden="true"><span class="octicon octicon-link"></span></a>:Magit</h4>
+
+<p>Open magit buffer.</p>
+
+<h4>
+<a id="entercr" class="anchor" href="#entercr" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter,&lt;CR&gt;</h4>
+
+<p>All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.</p>
+
+<h4>
+<a id="s" class="anchor" href="#s" aria-hidden="true"><span class="octicon octicon-link"></span></a>S</h4>
+
+<ul>
+<li>Modify a file, for example foo.c, in your repository.</li>
+<li>Move the cursor the line 'modfied: foo.c' in "Unstage changes" section, press <strong>S</strong> in Normal mode: the file is stage, and appears in "Stage changes" section.</li>
+<li>Move to the line 'modified: foo.c' in "Stage changes" section, press <strong>S</strong> in Normal mode: the file is unstage, and appears in "Unstaged changes" section.</li>
+</ul>
+
+<p>More about <strong>S</strong>:</p>
+
+<ul>
+<li>It works exactely the same for new/renamed/deleted files.</li>
+<li>Stage/unstage by hunk is easy: display file diffs with <a href="#entercr">Enter</a>. If diffs are composed of multiple hnuks, move the cursor to a hunk, and press <strong>S</strong> to stage/unstage this hunk.</li>
+</ul>
+
+<h4>
+<a id="cc" class="anchor" href="#cc" aria-hidden="true"><span class="octicon octicon-link"></span></a>CC</h4>
+
+<p>Once you have stage all the required changes, press <strong>CC</strong>. A new section "Commit message" appears and cursor move to it. Type your commit message, in Insert mode this time. Once it's done, go back in Normal mode, and press <strong>CC</strong>: you created your first commit with vimagit!</p>
+
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage</h2>
+
+<h3>
+<a id="sections" class="anchor" href="#sections" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sections</h3>
+
+<p>IMPORTANT: mappings can have different meanings regarding the cursor position.</p>
+
+<p>There are 5 sections:</p>
+
+<ul>
+<li>Info: this section display some information about the git repository, like the current branch and the HEAD commit.</li>
+<li>Commit message: this section appears in commit mode (see below). It contains the message to be commited.</li>
+<li>Staged changes: this sections contains all staged files/hunks, ready to commit.</li>
+<li>Unstaged changes: this section contains all unstaged and untracked files/hunks.</li>
+<li>Stash list: this section contains all stahes.</li>
+</ul>
+
+<h3>
+<a id="inline-modifications" class="anchor" href="#inline-modifications" aria-hidden="true"><span class="octicon octicon-link"></span></a>Inline modifications</h3>
+
+<ul>
+<li>It is possible to modify the content to be staged or unstaged in magit buffer, with some limitations:
+
+<ul>
+<li>only lines starting with a + sign can be modified</li>
+<li>no line can be deleted</li>
+</ul>
+</li>
+</ul>
+
+<h3>
+<a id="visual-selection" class="anchor" href="#visual-selection" aria-hidden="true"><span class="octicon octicon-link"></span></a>Visual selection</h3>
+
+<p>It is possible to stage part of hunk, by different ways:</p>
+
+<ul>
+<li>By visually selecting some lines, then staging the selection with <strong>S</strong>.</li>
+<li>By marking some lines "to be staged" with <strong>M</strong>, then staging these selected lines with <strong>S</strong>.</li>
+<li>Staging individual lines with <strong>L</strong>.</li>
+</ul>
+
+<p>Visual selection and marked lines have some limitations for the moment:</p>
+
+<ul>
+<li>It only work for "staging", not for "unstaging".</li>
+<li>Selection/marks must be within a single hunk.</li>
+<li>Marks not within the hunk currently staged are lost during stage process magit buffer refresh.</li>
+</ul>
+
+<h3>
+<a id="commands" class="anchor" href="#commands" aria-hidden="true"><span class="octicon octicon-link"></span></a>Commands</h3>
+
+<h4>
+<a id="magitshow_magit" class="anchor" href="#magitshow_magit" aria-hidden="true"><span class="octicon octicon-link"></span></a>magit#show_magit()</h4>
+
+<p>Function to open magit buffer.
+It takes 3 parameters:</p>
+
+<ul>
+<li>orientation (mandatory): it can be
+
+<ul>
+<li>'v', curent window is split vertically, and magit is displayed in new
+buffer</li>
+<li>'h', curent window is split horizontally, and magit is displayed in
+new buffer</li>
+<li>'c', magit is displayed in current buffer</li>
+</ul>
+</li>
+<li>show_all_files: define how file diffs are shown by default for this session
+(see <a href="#gmagit_default_show_all_files">g:magit_default_show_all_files</a>)</li>
+<li>foldlevel: set default magit buffer foldlevel for this session
+(see <a href="#gmagit_default_fold_level">g:magit_default_fold_level</a>)</li>
+</ul>
+
+<h4>
+<a id="magit-1" class="anchor" href="#magit-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>:Magit</h4>
+
+<ul>
+<li>open magit buffer.</li>
+</ul>
+
+<h3>
+<a id="mappings" class="anchor" href="#mappings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mappings</h3>
+
+<p>For each mapping, user can redefine the behavior with its own mapping. Each variable is described in vimagit help like <em>vimagit-g:magit_nameofmapping_mapping</em></p>
+
+<h4>
+<a id="global-mappings" class="anchor" href="#global-mappings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Global mappings</h4>
+
+<p>Following mappings are broadly set, and are applied in all vim buffers.</p>
+
+<h5>
+<a id="leaderm" class="anchor" href="#leaderm" aria-hidden="true"><span class="octicon octicon-link"></span></a>&lt;Leader&gt;M</h5>
+
+<p>Open Magit buffer</p>
+
+<h4>
+<a id="local-mappings" class="anchor" href="#local-mappings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Local mappings</h4>
+
+<p>Following mappings are set locally, for magit buffer only, in normal mode.</p>
+
+<h5>
+<a id="entercr-1" class="anchor" href="#entercr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter,&lt;CR&gt;</h5>
+
+<ul>
+<li>All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.</li>
+</ul>
+
+<h5>
+<a id="zozo" class="anchor" href="#zozo" aria-hidden="true"><span class="octicon octicon-link"></span></a>zo,zO</h5>
+
+<ul>
+<li>Typing zo on a file will unhide its diffs.</li>
+</ul>
+
+<h5>
+<a id="zczc" class="anchor" href="#zczc" aria-hidden="true"><span class="octicon octicon-link"></span></a>zc,zC</h5>
+
+<ul>
+<li>Typing zc on a file will hide its diffs.</li>
+</ul>
+
+<h5>
+<a id="s-1" class="anchor" href="#s-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>S</h5>
+
+<ul>
+<li>If cursor is in a hunk, stage/unstage hunk at cursor position.</li>
+<li>If cursor is in diff header, stage/unstage whole file at cursor position.</li>
+<li>If some lines in the hunk are selected (using <strong>v</strong>), stage only visual selected lines (only works for staging).</li>
+<li>If some lines in the hunk are marked (using <strong>M</strong>), stage only marked lines (only works for staging).</li>
+<li>When cursor is in "Unstaged changes" section, it will stage the hunk/file.</li>
+<li>On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.</li>
+</ul>
+
+<h5>
+<a id="f" class="anchor" href="#f" aria-hidden="true"><span class="octicon octicon-link"></span></a>F</h5>
+
+<ul>
+<li>Stage/unstage the whole file at cursor position.</li>
+<li>When cursor is in "Unstaged changes" section, it will stage the file.</li>
+<li>On the other side, when cursor is in "Staged changes" section, it will unstage file.</li>
+</ul>
+
+<h5>
+<a id="l" class="anchor" href="#l" aria-hidden="true"><span class="octicon octicon-link"></span></a>L</h5>
+
+<ul>
+<li>Stage the line under the cursor.</li>
+</ul>
+
+<h5>
+<a id="m" class="anchor" href="#m" aria-hidden="true"><span class="octicon octicon-link"></span></a>M</h5>
+
+<ul>
+<li>Mark the line under the cursor "to be staged".</li>
+<li>If some lines in the hunk are selected (using <strong>v</strong>), mark selected lines "to be staged".</li>
+<li>To staged marked lines in a hunk, move cursor to this hunk and press <strong>S</strong>.</li>
+</ul>
+
+<h5>
+<a id="ddd" class="anchor" href="#ddd" aria-hidden="true"><span class="octicon octicon-link"></span></a>DDD</h5>
+
+<ul>
+<li>If cursor is in a hunk, discard hunk at cursor position.</li>
+<li>If cursor is in diff header, discard whole file at cursor position.</li>
+<li>Only works in "Unstaged changes" section.</li>
+</ul>
+
+<h5>
+<a id="cc-1" class="anchor" href="#cc-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>CC</h5>
+
+<ul>
+<li>If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.</li>
+<li>If in commit section, commit the all staged changes in commit mode previously set.</li>
+</ul>
+
+<h5>
+<a id="ca" class="anchor" href="#ca" aria-hidden="true"><span class="octicon octicon-link"></span></a>CA</h5>
+
+<ul>
+<li>If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.</li>
+<li>If in commit section, commit the staged changes in commit mode previously set.</li>
+</ul>
+
+<h5>
+<a id="cf" class="anchor" href="#cf" aria-hidden="true"><span class="octicon octicon-link"></span></a>CF</h5>
+
+<ul>
+<li>Amend the staged changes into the previous commit, without modifying previous commit message.</li>
+</ul>
+
+<h5>
+<a id="i" class="anchor" href="#i" aria-hidden="true"><span class="octicon octicon-link"></span></a>I</h5>
+
+<ul>
+<li>Add the file under the cursor in .gitgnore</li>
+</ul>
+
+<h5>
+<a id="r" class="anchor" href="#r" aria-hidden="true"><span class="octicon octicon-link"></span></a>R</h5>
+
+<ul>
+<li>Refresh magit buffer</li>
+</ul>
+
+<h5>
+<a id="q" class="anchor" href="#q" aria-hidden="true"><span class="octicon octicon-link"></span></a>q</h5>
+
+<ul>
+<li>Close the magit buffer</li>
+</ul>
+
+<h5>
+<a id="h" class="anchor" href="#h" aria-hidden="true"><span class="octicon octicon-link"></span></a>h</h5>
+
+<ul>
+<li>Toggle help showing in magit buffer</li>
+</ul>
+
+<h3>
+<a id="options" class="anchor" href="#options" aria-hidden="true"><span class="octicon octicon-link"></span></a>Options</h3>
+
+<p>User can define in its prefered |vimrc| some options.</p>
+
+<h4>
+<a id="gmagit_enabled" class="anchor" href="#gmagit_enabled" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_enabled</h4>
+
+<p>To enable or disable vimagit plugin.
+Default value is 1.</p>
+
+<blockquote>
+<p>let g:magit_enabled=[01]</p>
+</blockquote>
+
+<h4>
+<a id="gmagit_show_help" class="anchor" href="#gmagit_show_help" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_show_help</h4>
+
+<p>To disable chatty inline help in magit buffer (default 1)</p>
+
+<blockquote>
+<p>let g:magit_show_help=[01]</p>
+</blockquote>
+
+<h4>
+<a id="gmagit_default_show_all_files" class="anchor" href="#gmagit_default_show_all_files" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_default_show_all_files</h4>
+
+<p>When this variable is set to 0, all diff files are hidden by default.
+When this variable is set to 1, all diff for modified files are shown by default.
+When this variable is set to 2, all diff for all files are shown by default.
+Default value is 1.
+NB: for repository with large number of differences, display may be slow.</p>
+
+<blockquote>
+<p>let g:magit_default_show_all_files=[012]</p>
+</blockquote>
+
+<h4>
+<a id="gmagit_default_fold_level" class="anchor" href="#gmagit_default_fold_level" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_default_fold_level</h4>
+
+<p>Default foldlevel for magit buffer.
+When set to 0, both filenames and hunks are folded.
+When set to 1, filenames are unfolded and hunks are folded.
+When set to 2, filenames and hunks are unfolded.
+Default value is 1.</p>
+
+<blockquote>
+<p>let g:magit_default_fold_level=[012]</p>
+</blockquote>
+
+<h4>
+<a id="gmagit_default_sections" class="anchor" href="#gmagit_default_sections" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_default_sections</h4>
+
+<p>With this variable, the user is able to choose which sections are displayed in magit
+buffer, and in which order.
+Default value:</p>
+
+<blockquote>
+<p>let g:magit_default_sections = ['info', 'global_help', 'commit', 'staged', 'unstaged']</p>
+</blockquote>
+
+<h4>
+<a id="gmagit_warning_max_lines" class="anchor" href="#gmagit_warning_max_lines" aria-hidden="true"><span class="octicon octicon-link"></span></a>g:magit_warning_max_lines</h4>
+
+<p>This variable is the maximum number of diff lines that vimagit will display
+without warning the user. If the number of diff lines to display is greater than
+this variable, vimagit will ask a confirmation to the user before refreshing the
+buffer. If user answer is 'yes', vimagit will display diff lines as expected.
+If user answer is 'no', vimagit will close all file diffs before refreshing.
+Default value is 10000.</p>
+
+<blockquote>
+<p>let g:magit_warning_max_lines=val</p>
+</blockquote>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span class="octicon octicon-link"></span></a>Installation</h2>
+
+<p>The plugin hierarchy tree respects the vim plugin standard. It is compatible
+with pathogen (and most probably vundle).</p>
+
+<p>To install:</p>
+
+<pre><code>cd ~/.vim/bundle
+git clone https://github.com/jreybert/vimagit
+</code></pre>
+
+<h2>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h2>
+
+<p>This part must be refined, I don't see any minimal version for git and vim, but for sure there should be one.</p>
+
+<p>At least, it is tested with vim 7.3.249 and git 1.8.5.6 (see <a href="#integration">Integration</a>).</p>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>Copyright (c) Jerome Reybert. Distributed under the same terms as Vim itself. See :help license.</p>
+      </section>
+
+    </div>
+    <!--[if !IE]><script>fixScale(document);</script><![endif]-->
+    
+  </body>
+</html>
