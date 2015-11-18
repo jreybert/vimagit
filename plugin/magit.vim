@@ -612,19 +612,19 @@ function! magit#show_magit(display, ...)
 	elseif ( a:display == 'h' )
 		silent execute "new " . buffer_name
 	elseif ( a:display == 'c' )
-		if ( bufexists(buffer_name) )
-			silent execute "buffer " . buffer_name
-		else
+		if ( !bufexists(buffer_name) )
 			if ( bufname("%") == "" )
 				keepalt enew
 			else
 				enew
 			endif
-			silent execute "file " . buffer_name
+			execute "file " . buffer_name
 		endif
 	else
 		throw 'parameter_error'
 	endif
+
+	silent execute "buffer " . buffer_name
 
 	call magit#git#set_top_dir(git_dir)
 
