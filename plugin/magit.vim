@@ -583,30 +583,17 @@ function! magit#show_magit(display, ...)
 		let cur_file = expand("%:p")
 		let cur_file_path = isdirectory(cur_file) ? cur_file : fnamemodify(cur_file, ":h")
 	endif
+
+	let git_dir=''
 	let try_paths = [ cur_file_path, getcwd() ]
-
-	if ( a:display == 'v' )
-		vnew
-	elseif ( a:display == 'h' )
-		new
-	elseif ( a:display == 'c' )
-		if ( bufname("%") == "" )
-			keepalt enew
-		else
-			enew
-		endif
-	else
-		throw 'parameter_error'
-	endif
-
 	for path in try_paths
-		if ( magit#git#set_top_dir(path) == 1 )
+		let git_dir=magit#git#is_work_tree(path)
+		if ( git_dir != '' )
 			break
 		endif
 	endfor
-	try
-		let top_dir=magit#git#top_dir()
-	catch 'top_dir_not_set'
+
+	if ( git_dir == '' )
 		echohl ErrorMsg
 		echom "magit can not find any git repository"
 		echom "make sure that current opened file or vim current directory points to a git repository"
@@ -615,16 +602,31 @@ function! magit#show_magit(display, ...)
 			echom path
 		endfor
 		echohl None
-		call magit#close_magit()
 		throw 'magit_not_in_git_repo'
-	endtry
+	endif
 
-	let buffer_name='magit://' . top_dir
-	try
-		silent execute "buffer " . buffer_name
-	catch /^Vim\%((\a\+)\)\=:E94/
-		silent execute "keepalt file " . buffer_name
-	endtry
+	let buffer_name='magit://' . git_dir
+
+	if ( a:display == 'v' )
+		silent execute "vnew " . buffer_name
+	elseif ( a:display == 'h' )
+		silent execute "new " . buffer_name
+	elseif ( a:display == 'c' )
+		if ( bufexists(buffer_name) )
+			silent execute "buffer " . buffer_name
+		else
+			if ( bufname("%") == "" )
+				keepalt enew
+			else
+				enew
+			endif
+			silent execute "file " . buffer_name
+		endif
+	else
+		throw 'parameter_error'
+	endif
+
+	call magit#git#set_top_dir(git_dir)
 
 	let b:magit_default_show_all_files = g:magit_default_show_all_files
 	let b:magit_default_fold_level = g:magit_default_fold_level
