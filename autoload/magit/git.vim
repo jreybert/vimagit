@@ -19,39 +19,65 @@ function! magit#git#get_status()
 	return file_list
 endfunction
 
-" s:magit_top_dir: top directory of git tree
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_top_dir=''
-" magit#git#top_dir: return the absolute path of current git worktree
-" return top directory
-function! magit#git#top_dir()
-	if ( s:magit_top_dir == '' )
-		let s:magit_top_dir=magit#utils#strip(
-			\ system(s:git_cmd . " rev-parse --show-toplevel")) . "/"
+" magit#git#is_work_tree: this function check that path passed as parameter is
+" inside a git work tree
+" param[in] path: path to check
+" return: top work tree path if in a work tree, empty string otherwise
+function! magit#git#is_work_tree(path)
+	let dir = getcwd()
+	try
+		call magit#utils#lcd(a:path)
+		let top_dir=magit#utils#strip(
+					\ system(s:git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_top_dir
+			return ''
 		endif
-	endif
-	return s:magit_top_dir
+		return top_dir
+	finally
+		call magit#utils#lcd(dir)
+	endtry
 endfunction
 
-" s:magit_git_dir: git directory
-" it is evaluated only once
-" FIXME: it won't work when playing with multiple git directories wihtin one
-" vim session
-let s:magit_git_dir=''
+" magit#git#set_top_dir: this function set b:magit_top_dir and b:magit_git_dir 
+" according to a path
+" param[in] path: path to set. This path must be in a git repository work tree
+function! magit#git#set_top_dir(path)
+	let dir = getcwd()
+	try
+		call magit#utils#lcd(a:path)
+		let top_dir=magit#utils#strip(
+					\ system(s:git_cmd . " rev-parse --show-toplevel")) . "/"
+		if ( v:shell_error != 0 )
+			throw "magit: git-show-toplevel error: " . top_dir
+		endif
+		let git_dir=magit#utils#strip(system(s:git_cmd . " rev-parse --git-dir")) . "/"
+		if ( v:shell_error != 0 )
+			throw "magit: git-git-dir error: " . git_dir
+		endif
+		let b:magit_top_dir=top_dir
+		let b:magit_git_dir=git_dir
+	finally
+		call magit#utils#lcd(dir)
+	endtry
+endfunction
+
+" magit#git#top_dir: return the absolute path of current git worktree for the
+" current magit buffer
+" return top directory
+function! magit#git#top_dir()
+	if ( !exists("b:magit_top_dir") )
+		throw 'top_dir_not_set'
+	endif
+	return b:magit_top_dir
+endfunction
+
 " magit#git#git_dir: return the absolute path of current git worktree
 " return git directory
 function! magit#git#git_dir()
-	if ( s:magit_git_dir == '' )
-		let s:magit_git_dir=magit#utils#strip(system(s:git_cmd . " rev-parse --git-dir")) . "/"
-		if ( v:shell_error != 0 )
-			echoerr "Git error: " . s:magit_git_dir
-		endif
+	if ( !exists("b:magit_git_dir") )
+		throw 'git_dir_not_set'
 	endif
-	return s:magit_git_dir
+	return b:magit_git_dir
 endfunction
 
 " magit#git#git_diff: helper function to get diff of a file

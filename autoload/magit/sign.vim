@@ -12,8 +12,6 @@ let s:dummy_sign_id = s:first_sign_id - 1
 " Remove-all-signs optimisation requires Vim 7.3.596+.
 let s:supports_star = v:version > 703 || (v:version == 703 && has("patch596"))
 
-let s:bufnr = bufnr(g:magit_buffer_name)
-
 function! magit#sign#remove_all(...)
 	if ( a:0 == 1 )
 		let pattern = a:1
