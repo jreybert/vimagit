@@ -90,7 +90,7 @@ let s:magit_inline_help = {
 \'You will still be able to toggle inline help with h',
 \],
 			\ 'commit': [
-\'CC,:w  commit all staged changes with commit mode previously set (normal or',
+\'CC     commit all staged changes with commit mode previously set (normal or',
 \'       amend) with message written in this section',
 \],
 \}
