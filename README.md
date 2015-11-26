@@ -7,8 +7,10 @@ From a very single vim buffer, you can perform all basic git operations. To name
 * Stage files/hunks/parts of hunks with single key S.
 * Write or amend your commit message and commit.
 
-See a usage example:
+See a usage example on asciicast:
 [![asciicast](https://asciinema.org/a/28761.png)](https://asciinema.org/a/28761)
+
+And a [commented video presenting vimagit](https://youtu.be/_3wMmmVi6bU) (thank you [Mike Hartington](https://github.com/mhartington)!)
 
 This workflow is 100% inspired from magnificent emacs [Magit](https://github.com/magit/magit) plugin.
 
