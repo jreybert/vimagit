@@ -64,6 +64,9 @@ Open magit buffer.
 
 All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.
 
+#### N
+* Jump to next hunk with **N**.
+
 #### S
 
 * Modify a file, for example foo.c, in your repository.
@@ -183,6 +186,9 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * If cursor is in a hunk, discard hunk at cursor position.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
+
+##### N,P
+ * Move to **N**ext or **P**revious hunk.
 
 ##### CC
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.

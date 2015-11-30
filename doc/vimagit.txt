@@ -59,6 +59,11 @@ All files diffs are hidden by default. To inspect changes in a file, move
 cursor to the filename line, and press 'Enter' in Normal mode. Diffs are
 displayed below the file name.
 
+  N
+-----------
+
+* Jump to next hunk with N.
+
   S
 -----------
 
@@ -222,6 +227,10 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If cursor is in diff header, discard whole file at cursor
             position.
             Only works in "Unstaged changes" section.
+
+                                    *vimagit-N*                *magit#jump_hunk()*
+                                    *vimagit-P*
+  N,P       Move to Next or Previous hunk.
 
                                     *vimagit-CC*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*

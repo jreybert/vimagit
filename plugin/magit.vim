@@ -38,6 +38,8 @@ let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
 let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
 
+let g:magit_jump_next_hunk         = get(g:, 'magit_jump_next_hunk',            'N')
+let g:magit_jump_prev_hunk         = get(g:, 'magit_jump_prev_hunk',            'P')
 " user options
 let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
@@ -665,7 +667,10 @@ function! magit#show_magit(display, ...)
 	
 	execute "nnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
 	execute "xnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
-	
+
+	execute "nnoremap <buffer> <silent> " . g:magit_jump_next_hunk .       " :call magit#jump_hunk('N')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_jump_prev_hunk .       " :call magit#jump_hunk('P')<cr>"
+
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
@@ -916,6 +921,28 @@ function! magit#commit_command(mode)
 		endif
 	endif
 	call magit#update_buffer()
+endfunction
+
+" magit#jump_hunk: function to jump among hunks
+" it closes the current fold (if any), jump to next hunk and unfold it
+" param[in] dir: can be 'N' (for next) or 'P' (for previous)
+function! magit#jump_hunk(dir)
+	let back = ( a:dir == 'P' ) ? 'b' : ''
+	let line = search("^@@ ", back . 'wn')
+	if ( line != 0 )
+		try
+			foldclose
+		catch /^Vim\%((\a\+)\)\=:E490/
+		endtry
+		call cursor(line, 0)
+		try
+			foldopen
+		catch /^Vim\%((\a\+)\)\=:E490/
+			echohl WarningMsg
+			echom "Warning: you should have jumped on a folded hunk"
+			echohl None
+		endtry
+	endif
 endfunction
 
 command! Magit call magit#show_magit('v')
