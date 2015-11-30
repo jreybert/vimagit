@@ -239,23 +239,23 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
-                                    *vimagit-CA*     *magit#commit_command('CA')*
+                                    *vimagit-CA*      *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
   CA        If not in commit section, set commit mode to "Amend commit" and
             show "Commit message" section with previous commit message.
             If in commit section, commit the staged changes in commit mode
             previously set.
 
-                                    *vimagit-CF*     *magit#commit_command('CF')*
+                                    *vimagit-CF*      *magit#commit_command('CF')*
                                     *vimagit-g:magit_commit_fixup_mapping*
   CF        Amend the staged changes into the previous commit, without
             modifying previous commit message
 
-                                    *vimagit-I*            *magit#ignore_file()*
+                                    *vimagit-I*              *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore
 
-                                    *vimagit-R*          *magit#update_buffer()*
+                                    *vimagit-R*            *magit#update_buffer()*
                                     *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
 
@@ -263,7 +263,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-g:magit_close_mapping*
   q         close magit buffer.
 
-                                    *vimagit-h*            *magit#toggle_help()*
+                                    *vimagit-h*              *magit#toggle_help()*
                                     *vimagit-g:magit_toggle_help_mapping*
   h         Toggle help showing in magit buffer
 

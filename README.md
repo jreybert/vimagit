@@ -21,7 +21,7 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
-* [x] Visualize stashes. Apply, pop, drop are on going.
+* [x] Move easily through hunks.
 * [x] Add file to .gitignore file.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
@@ -32,6 +32,7 @@ More to come:
 * Handle multiple git repositories within one vim session.
 * Stage multiple hunks or file by visually selecting them.
 * Go through history, cherry-pick changes.
+* Handle stash: add, pop, apply, drop...
 * Vizualize and checkout branches.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
