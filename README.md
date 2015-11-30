@@ -22,6 +22,7 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
 * [x] Move easily through hunks.
+* [x] Handle multiple git repositories within one vim instance.
 * [x] Add file to .gitignore file.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
@@ -59,7 +60,7 @@ This is the minimal required set of command you must know to start playing with 
 
 #### :Magit
 
-Open magit buffer.
+Open magit buffer (see [details](#magitshow_magit)).
 
 #### Enter,\<CR\>
 
@@ -117,7 +118,9 @@ Visual selection and marked lines have some limitations for the moment:
 
 #### magit#show_magit()
 
-Function to open magit buffer.
+Function to open magit buffer. This buffer will handle the git repository including focused file.
+It is possible to handle multiple git repositories within one vim instance.
+
 It takes 3 parameters:
   * orientation (mandatory): it can be
       - 'v', curent window is split vertically, and magit is displayed in new
@@ -131,10 +134,10 @@ It takes 3 parameters:
     (see [g:magit_default_fold_level](#gmagit_default_fold_level))
 
 #### :Magit
-open magit buffer in a vertical split
+Open magit buffer in a vertical split (see [details](magitshow_magit)).
 
 #### :MagitOnly
-open magit buffer in current window
+Open magit buffer in current window (see [details](magitshow_magit)).
 
 You can create a bash alias like magit="vim -c MagitOnly"
 

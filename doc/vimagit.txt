@@ -50,7 +50,7 @@ with vimagit. See |vimagit-commands| for a complete description.
   :Magit
 -----------
 
-Open magit buffer.
+Open magit buffer (see |magit#show_magit()|)
 
   Enter
 -----------
@@ -131,7 +131,11 @@ Visual selection and marked lines have some limitations for the moment:
 COMMANDS                                                      *vimagit-commands*
 
                                                             *magit#show_magit()*
-Function to open magit buffer.
+Function to open magit buffer. This buffer will handle the git repository
+including focused file.
+It is possible to handle multiple git repositories within one vim instance.
+Each git repository will have its own buffer.
+
 It takes 3 parameters:
   * orientation (mandatory): it can be
       - 'v', curent window is split vertically, and magit is displayed in new
@@ -144,11 +148,11 @@ It takes 3 parameters:
   * foldlevel: set default magit buffer foldlevel for this session
     (see |vimagit-g:magit_default_fold_level|)
 
-                                                                         *:Magit*
-  :Magit     open magit buffer in a vertical split
+                                                                        *:Magit*
+  :Magit     open magit buffer in a vertical split (see |magit#show_magit()|)
 
-                                                                     *:MagitOnly*
-  :MagitOnly open magit buffer in current window
+                                                                    *:MagitOnly*
+  :MagitOnly open magit buffer in current window (see |magit#show_magit()|)
 You can create a bash alias like magit="vim -c MagitOnly"
 
 
