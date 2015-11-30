@@ -1,16 +1,118 @@
+Release 1.5.0
+=============
+
+Features
+--------
+
+* vimagit is now able to handle multiple git repositories (fix #44,#34,#29).
+* add mappings N and P to jump to next and previous hunk (fix #25).
+* reorder magit display: display modified files first.
+* disable inline help by default (fix #46). It is always possible to switch
+  inline help display with 'h', or with g:magit_show_help
+* rework magit buffer color syntax.
+* display commit mode in Info section.
+* rename magit buffer, now named after git repository path, e.g.
+  magit:///path/to/git/repo/
+* add MagitOnly command. It can be used to craft a bash alias like:
+  alias magit='vim -c MagitOnly'
+
+Fixes
+-----
+
+* safe and smart handling of quit command (fix #41,#43).
+    * close vimagit window if there is another window.
+    * switch to alternate buffer if any.
+    * close vim if magit buffer the only buffer.
+* disable ':w' mapping, which was not safe. This feature will be re inserted
+  with a safer method later.
+
+Release 1.4.2
+=============
+
+Enhancements
+------------
+
+* smarter way to handle magit buffer:
+    * improve some internal mechanisms, which should improve performances for
+      huge repositories
+    * by default, do not show untracked/deleted/added/renamed files diffs (ref
+      #28)
+    * see g:magit_default_show_all_files new behavior
+* add g:magit_default_sections to let user choose which sections are displayed
+  (fix #37) user can now choose which sections to display, and in which order
+
+Bug fixes
+---------
+
+* magit buffer become empty after switching to other window and back (#35)
+* remove warning when opening magit buffer
+* check that magit buffer exists before removing it (refs #39)
+
+Release 1.4.1
+=============
+
+Fixes
+-----
+
+* fix add binary file (fixes #27)
+* fix some display problem (Unstaged changes may not be highlighted)
+* fix reset and discard for binary files
+
+Features
+--------
+
+* git works in a clean environment, without any configuration
+
+Release 1.4
+===========
+
+This is a major step for vimagit. It should now contain all primary command
+needed for staging. Then, this release should be the real 1.0 version.
+
+Features
+--------
+
+* Stage parts of hunk (fixes #8 and #19)
+    * select some with v, then stage your selection with S
+    * stage a single line with L
+    * mark lines (can be non contiguous) with M, then stage marked lines in
+      the hunk with S
+* Stage single files in new directories (fixes #10)
+* New options (fixes #18)
+    * g:magit_default_show_all_files to define if file diffs are shown or not
+      at magit buffer opening.
+    * If magit buffer contains more than g:magit_warning_max_lines (default
+      10000) lines to display, user is asked if he wants to display all
+      these lines.
+    * g:magit_default_fold_level to define foldlevel of magit buffer.
+    * These options can be overriden with new magit#show_magit() parameters
+      (allowing user to define its own mappings/commands)
+* File display is now sorted.
+* Show submodule diffs (fixes #12)
+
+Fixes
+-----
+
+No bugs have been reported since release 1.3.
+
 Release 1.3
 ===========
 
 Features
 --------
 
-* hide file diffs: to hide/unhide diffs for a file, move the cursor to the filename and press <CR> (Enter). It allows vimagit to be fast when there is a lot of diffs in a repository.
+* hide file diffs: to hide/unhide diffs for a file, move the cursor to the
+  filename and press <CR> (Enter). It allows vimagit to be fast when there is a
+  lot of diffs in a repository.
 * zo, zO, zc, zC mappings on a filename hide/unhide file diffs.
-* modify hunk before staging: in the Magit buffer, it is possible to modify a hunk before staging it. Only '+' lines can be modified. No lines can be deleted or added for the moment. (fixes #9).
+* modify hunk before staging: in the Magit buffer, it is possible to modify a
+  hunk before staging it. Only '+' lines can be modified. No lines can be
+  deleted or added for the moment. (fixes #9).
 * handle new empty files and new symlink (fix #11).
 * handle binary files (fix #13).
 * stage/unstage/ignore/discard a file with cursor on the filename.
-* add global mapping <Leader>M to open magit buffer (it can be overwritten with g:magit_show_magit_mapping).
+* add global mapping <Leader>M to open magit buffer (it can be overwritten
+  with g:magit_show_magit_mapping).
 * remove 'C' default mapping.
 
 Fixes
@@ -25,7 +127,8 @@ Release 1.2
 Fixes
 -----
 
-* read COMMIT_EDITMSG only if exists (commit command failed for fresh new git directory)
+* read COMMIT_EDITMSG only if exists (commit command failed for fresh new git
+  directory)
 * fix issue of some rare hunk staging (because of some whitespaces)
 
 Features
@@ -40,8 +143,10 @@ Release 1.1
 Fixes
 -----
 
-* add wrappers to system and systemlist, when vim doesn't support system with List (available since vim v7.4.248)
-* fix git diff failing when cwd is not in top dir (it ends with an empty Magit buffer)
+* add wrappers to system and systemlist, when vim doesn't support system with
+  List (available since vim v7.4.248)
+* fix git diff failing when cwd is not in top dir (it ends with an empty Magit
+  buffer)
 * ensure to not use external diff if any
 * Check commentChar from git config
 

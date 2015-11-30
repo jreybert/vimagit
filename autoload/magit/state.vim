@@ -304,11 +304,29 @@ function! magit#state#set_files_visible(is_visible) dict
 	endfor
 endfunction
 
-" magit#state#get_files: global dict getter function
+" magit#state#get_files: global dict file objects getter function
 " param[in] mode: mode to select, can be 'staged' or 'unstaged'
-" return all files belonging to mode
+" return list of file objects belonging to mode
 function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
+endfunction
+
+" magit#state#get_filenames: global dict filenames getter function
+" param[in] mode: mode to select, can be 'staged' or 'unstaged'
+" return ordered list of filename strings belonging to mode, modified files
+" first
+function! magit#state#get_filenames(mode) dict
+	let modified = []
+	let others = []
+	for filename in sort(keys(self.dict[a:mode]))
+		let file = self.get_file(a:mode, filename)
+		if ( file.status == 'M' )
+			call add(modified, filename)
+		else
+			call add(others, filename)
+		endif
+	endfor
+	return modified + others
 endfunction
 
 
@@ -330,6 +348,7 @@ let magit#state#state = {
 			\ 'nb_diff_lines': 0,
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
+			\ 'get_filenames': function("magit#state#get_filenames"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
 			\ 'check_max_lines': function("magit#state#check_max_lines"),

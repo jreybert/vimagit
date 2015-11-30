@@ -50,7 +50,7 @@ with vimagit. See |vimagit-commands| for a complete description.
   :Magit
 -----------
 
-Open magit buffer.
+Open magit buffer (see |magit#show_magit()|)
 
   Enter
 -----------
@@ -58,6 +58,11 @@ Open magit buffer.
 All files diffs are hidden by default. To inspect changes in a file, move
 cursor to the filename line, and press 'Enter' in Normal mode. Diffs are
 displayed below the file name.
+
+  N
+-----------
+
+* Jump to next hunk with N.
 
   S
 -----------
@@ -126,7 +131,11 @@ Visual selection and marked lines have some limitations for the moment:
 COMMANDS                                                      *vimagit-commands*
 
                                                             *magit#show_magit()*
-Function to open magit buffer.
+Function to open magit buffer. This buffer will handle the git repository
+including focused file.
+It is possible to handle multiple git repositories within one vim instance.
+Each git repository will have its own buffer.
+
 It takes 3 parameters:
   * orientation (mandatory): it can be
       - 'v', curent window is split vertically, and magit is displayed in new
@@ -139,8 +148,12 @@ It takes 3 parameters:
   * foldlevel: set default magit buffer foldlevel for this session
     (see |vimagit-g:magit_default_fold_level|)
 
-                                        *:Magit*          *magit#show_magit('v')*
-  :Magit    open magit buffer
+                                                                        *:Magit*
+  :Magit     open magit buffer in a vertical split (see |magit#show_magit()|)
+
+                                                                    *:MagitOnly*
+  :MagitOnly open magit buffer in current window (see |magit#show_magit()|)
+You can create a bash alias like magit="vim -c MagitOnly"
 
 
 MAPPINGS                                                      *vimagit-mappings*
@@ -219,6 +232,10 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             position.
             Only works in "Unstaged changes" section.
 
+                                    *vimagit-N*                *magit#jump_hunk()*
+                                    *vimagit-P*
+  N,P       Move to Next or Previous hunk.
+
                                     *vimagit-CC*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
   CC        If not in commit section, set commit mode to "New commit" and show 
@@ -226,23 +243,23 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, commit the all staged changes in commit mode
             previously set.
 
-                                    *vimagit-CA*     *magit#commit_command('CA')*
+                                    *vimagit-CA*      *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
   CA        If not in commit section, set commit mode to "Amend commit" and
             show "Commit message" section with previous commit message.
             If in commit section, commit the staged changes in commit mode
             previously set.
 
-                                    *vimagit-CF*     *magit#commit_command('CF')*
+                                    *vimagit-CF*      *magit#commit_command('CF')*
                                     *vimagit-g:magit_commit_fixup_mapping*
   CF        Amend the staged changes into the previous commit, without
             modifying previous commit message
 
-                                    *vimagit-I*            *magit#ignore_file()*
+                                    *vimagit-I*              *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore
 
-                                    *vimagit-R*          *magit#update_buffer()*
+                                    *vimagit-R*            *magit#update_buffer()*
                                     *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
 
@@ -250,7 +267,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-g:magit_close_mapping*
   q         close magit buffer.
 
-                                    *vimagit-h*            *magit#toggle_help()*
+                                    *vimagit-h*              *magit#toggle_help()*
                                     *vimagit-g:magit_toggle_help_mapping*
   h         Toggle help showing in magit buffer
 

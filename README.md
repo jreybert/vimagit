@@ -23,7 +23,8 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
-* [x] Visualize stashes. Apply, pop, drop are on going.
+* [x] Move easily through hunks.
+* [x] Handle multiple git repositories within one vim instance.
 * [x] Add file to .gitignore file.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
@@ -34,6 +35,7 @@ More to come:
 * Handle multiple git repositories within one vim session.
 * Stage multiple hunks or file by visually selecting them.
 * Go through history, cherry-pick changes.
+* Handle stash: add, pop, apply, drop...
 * Vizualize and checkout branches.
 * Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
@@ -60,11 +62,14 @@ This is the minimal required set of command you must know to start playing with 
 
 #### :Magit
 
-Open magit buffer.
+Open magit buffer (see [details](#magitshow_magit)).
 
 #### Enter,\<CR\>
 
 All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.
+
+#### N
+* Jump to next hunk with **N**.
 
 #### S
 
@@ -115,7 +120,9 @@ Visual selection and marked lines have some limitations for the moment:
 
 #### magit#show_magit()
 
-Function to open magit buffer.
+Function to open magit buffer. This buffer will handle the git repository including focused file.
+It is possible to handle multiple git repositories within one vim instance.
+
 It takes 3 parameters:
   * orientation (mandatory): it can be
       - 'v', curent window is split vertically, and magit is displayed in new
@@ -129,7 +136,12 @@ It takes 3 parameters:
     (see [g:magit_default_fold_level](#gmagit_default_fold_level))
 
 #### :Magit
- * open magit buffer.
+Open magit buffer in a vertical split (see [details](magitshow_magit)).
+
+#### :MagitOnly
+Open magit buffer in current window (see [details](magitshow_magit)).
+
+You can create a bash alias like magit="vim -c MagitOnly"
 
 ### Mappings
 
@@ -180,6 +192,9 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * If cursor is in a hunk, discard hunk at cursor position.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
+
+##### N,P
+ * Move to **N**ext or **P**revious hunk.
 
 ##### CC
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
