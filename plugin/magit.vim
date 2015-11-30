@@ -15,8 +15,6 @@ let g:loaded_magit = 1
 " syntax files
 execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
 
-let s:state = deepcopy(magit#state#state)
-
 " these mappings are broadly applied, for all vim buffers
 let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
 
@@ -142,8 +140,8 @@ endfunction
 function! s:mg_display_files(mode, curdir, depth)
 
 	" FIXME: ouch, must store subdirs in more efficient way
-	for filename in s:state.get_filenames(a:mode)
-		let file = s:state.get_file(a:mode, filename, 0)
+	for filename in b:state.get_filenames(a:mode)
+		let file = b:state.get_file(a:mode, filename, 0)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
@@ -177,7 +175,7 @@ function! s:mg_display_files(mode, curdir, depth)
 endfunction
 
 " s:mg_get_staged_section: this function writes in current buffer all staged
-" or unstaged files, using s:state.dict information
+" or unstaged files, using b:state.dict information
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
@@ -392,7 +390,7 @@ function! s:mg_create_diff_from_select(select_lines)
 	endif
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let hunks = s:state.get_file(section, filename).get_hunks()
+	let hunks = b:state.get_file(section, filename).get_hunks()
 	for hunk in hunks
 		if ( hunk.header == getline(starthunk) )
 			let current_hunk = hunk
@@ -490,7 +488,7 @@ function! magit#open_close_folding(...)
 	let section=<SID>mg_get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
-	let file = s:state.get_file(section, filename, 0)
+	let file = b:state.get_file(section, filename, 0)
 	if ( a:0 == 1 )
 		call file.set_visible(a:1)
 	else
@@ -535,7 +533,7 @@ function! magit#update_buffer()
 	" delete buffer
 	silent! execute "silent :%delete _"
 	
-	call s:state.update()
+	call b:state.update()
 
 	for section in g:magit_default_sections
 		try
@@ -645,6 +643,8 @@ function! magit#show_magit(display, ...)
 	setlocal filetype=magit
 	"setlocal readonly
 
+	let b:state = deepcopy(g:magit#state#state)
+
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
 
@@ -702,7 +702,7 @@ function! s:mg_stage_closed_file(discard)
 		let filename = list[2]
 		let section=<SID>mg_get_section()
 		
-		let file = s:state.get_file(section, filename)
+		let file = b:state.get_file(section, filename)
 		if ( file.is_visible() == 0 ||
 			\ file.is_dir() == 1 )
 			if ( a:discard == 0 )
@@ -739,9 +739,9 @@ endfunction
 function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let header = s:state.get_file(section, filename).get_header()
+	let header = b:state.get_file(section, filename).get_header()
 	
-	let file = s:state.get_file(section, filename, 0)
+	let file = b:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
