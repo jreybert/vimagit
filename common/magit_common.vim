@@ -10,6 +10,12 @@ let g:magit_sections = {
  \ 'stash':          'Stash list'
  \ }
 
+let g:magit_section_info = {
+ \ 'cur_repo':       'Current repository',
+ \ 'cur_branch':     'Current branch',
+ \ 'cur_commit':     'Last commit',
+ \ }
+
 let g:magit_git_status_code = {
  \ 'M': 'modified', 
  \ 'A': 'added',

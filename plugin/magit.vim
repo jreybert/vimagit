@@ -119,9 +119,9 @@ function! s:mg_get_info()
 	silent put =''
 	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system("git show -s --oneline")
-	silent put ='Current repository: ' . magit#git#top_dir()
-	silent put ='Current branch:     ' . branch
-	silent put ='Last commit:        ' . commit
+	silent put =g:magit_section_info.cur_repo   . ': ' . magit#git#top_dir()
+	silent put =g:magit_section_info.cur_branch . ':     ' . branch
+	silent put =g:magit_section_info.cur_commit . ':        ' . commit
 	silent put =''
 	silent put ='Press h to display help'
 endfunction

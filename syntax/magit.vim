@@ -36,4 +36,20 @@ execute 'syn region gitHunk start=/' .
  \ g:magit_hunk_re . '/ end=/\%(' . g:magit_end_diff_re . '\|' . g:magit_hunk_re 
  \ '\)\@=/ contains=@diff fold'
 
+execute 'syn region gitInfo start=/^' . g:magit_sections.info . '$/ end=/' .
+ \ g:magit_section_re . '/'
+
+execute 'syn region gitInfoRepo start=/^' . g:magit_section_info.cur_repo .
+ \ ':\s*.*/hs=s+20 end=/$/ oneline'
+highlight default link gitInfoRepo Directory
+execute 'syn region gitInfoBranch start=/^' . g:magit_section_info.cur_branch .
+ \ ':\s*.*/hs=s+20 end=/$/ oneline'
+highlight default link gitInfoBranch Identifier
+
+execute 'syn region gitInfoCommit start=/^' . g:magit_section_info.cur_commit .
+ \ ':\s*\(.*\)/ end=/$/ contains=infoSha1 oneline'
+syntax match infoSha1 containedin=gitInfoCommit "\x\{7}"
+highlight default link infoSha1 Identifier
+
+
 let b:current_syntax = "magit"
