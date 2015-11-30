@@ -9,14 +9,8 @@ syn sync minlines=50
 
 syn include @diff syntax/diff.vim
 
-execute 'syn match titleEntry "' . g:magit_section_re . '" contains=titleSign'
-if has("conceal")
-	syn match titleSign contained "\%(&@\|@&\)" conceal
-else
-	syn match titleSign contained "\%(&@\|@&\)"
-endif
-hi def link titleEntry String
-hi def link titleSign  Ignore
+execute 'syn match titleEntry "' . g:magit_section_re . '\n=\+"'
+hi def link titleEntry Comment
 
 execute 'syn match stashEntry "' . g:magit_stash_re . '"'
 hi def link stashEntry String
