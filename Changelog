@@ -9,7 +9,8 @@ Features
 * reorder magit display: display modified files first.
 * disable inline help by default (fix #46). It is always possible to switch
   inline help display with 'h', or with g:magit_show_help
-* add some color in Info section.
+* rework magit buffer color syntax.
+* display commit mode in Info section.
 * rename magit buffer, now named after git repository path, e.g.
   magit:///path/to/git/repo/
 * add MagitOnly command. It can be used to craft a bash alias like:
