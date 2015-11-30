@@ -121,9 +121,13 @@ function! s:mg_get_info()
 	silent put =''
 	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system("git show -s --oneline")
-	silent put =g:magit_section_info.cur_repo   . ': ' . magit#git#top_dir()
-	silent put =g:magit_section_info.cur_branch . ':     ' . branch
-	silent put =g:magit_section_info.cur_commit . ':        ' . commit
+	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
+	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
+	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
+	if ( s:magit_commit_mode != '' )
+	silent put =g:magit_section_info.commit_mode . ':        '
+				\ . g:magit_commit_mode[s:magit_commit_mode]
+	endif
 	silent put =''
 	silent put ='Press h to display help'
 endfunction
@@ -226,15 +230,8 @@ let s:magit_commit_mode=''
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
 	if ( s:magit_commit_mode != '' )
-		let commit_mode_str=""
-		if ( s:magit_commit_mode == 'CC' )
-			let commit_mode_str="normal"
-		elseif ( s:magit_commit_mode == 'CA' )
-			let commit_mode_str="amend"
-		endif
 		silent put =''
 		silent put =g:magit_sections.commit_start
-		silent put ='Commit mode: '.commit_mode_str
 		call <SID>mg_section_help('commit')
 		silent put =magit#utils#underline(g:magit_sections.commit_start)
 		silent put =''
@@ -324,7 +321,7 @@ function! s:mg_git_commit(mode) abort
 	else
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
-		let commit_jump_line = 3 + <SID>mg_get_inline_help_line_nb('commit')
+		let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
 		let [start, end] = <SID>mg_search_block(
 		 \ [commit_section_pat_start, commit_jump_line],
 		 \ [ [commit_section_pat_end, -1] ], "")
@@ -557,7 +554,7 @@ function! magit#update_buffer()
 	if ( s:magit_commit_mode != '' )
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
-		silent! call cursor(section_line+3+<SID>mg_get_inline_help_line_nb('commit'), 0)
+		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
 	endif
 
 	set filetype=magit

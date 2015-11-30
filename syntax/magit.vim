@@ -39,6 +39,9 @@ highlight default link gitInfoRepo Directory
 execute 'syn region gitInfoBranch start=/^' . g:magit_section_info.cur_branch .
  \ ':\s*.*/hs=s+20 end=/$/ oneline'
 highlight default link gitInfoBranch Identifier
+execute 'syn region gitCommitMode start=/^' . g:magit_section_info.commit_mode .
+ \ ':\s*.*/hs=s+20 end=/$/ oneline'
+highlight default link gitCommitMode Special
 
 execute 'syn region gitInfoCommit start=/^' . g:magit_section_info.cur_commit .
  \ ':\s*\(.*\)/ end=/$/ contains=infoSha1 oneline'

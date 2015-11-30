@@ -14,6 +14,7 @@ let g:magit_section_info = {
  \ 'cur_repo':       'Current repository',
  \ 'cur_branch':     'Current branch',
  \ 'cur_commit':     'Last commit',
+ \ 'commit_mode':    'Commit mode',
  \ }
 
 let g:magit_git_status_code = {
@@ -29,6 +30,11 @@ let g:magit_git_status_code = {
  \ 'L': 'symlink',
  \ 'N': 'new dir',
  \ 'S': 'submodule',
+ \ }
+
+let g:magit_commit_mode = {
+ \ 'CC': 'normal',
+ \ 'CA': 'amend',
  \ }
 
 " Regular expressions used to select blocks
