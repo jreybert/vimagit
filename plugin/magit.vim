@@ -122,9 +122,9 @@ function! s:mg_get_info()
 	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
 	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
 	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
-	if ( s:magit_commit_mode != '' )
+	if ( b:magit_current_commit_mode != '' )
 	silent put =g:magit_section_info.commit_mode . ':        '
-				\ . g:magit_commit_mode[s:magit_commit_mode]
+				\ . g:magit_commit_mode[b:magit_current_commit_mode]
 	endif
 	silent put =''
 	silent put ='Press h to display help'
@@ -211,23 +211,16 @@ function! s:mg_get_stashes()
 	endif
 endfunction
 
-" s:magit_commit_mode: global variable which states in which commit mode we are
-" values are:
-"       '': not in commit mode
-"       'CC': normal commit mode, next commit command will create a new commit
-"       'CA': amend commit mode, next commit command will ament current commit
-"       'CF': fixup commit mode, it should not be a global state mode
-let s:magit_commit_mode=''
 
 " s:mg_get_commit_section: this function writes in current buffer the commit
-" section. It is a commit message, depending on s:magit_commit_mode
+" section. It is a commit message, depending on b:magit_current_commit_mode
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
-" param[in] s:magit_commit_mode: this function uses global commit mode
+" param[in] b:magit_current_commit_mode: this function uses global commit mode
 "       'CC': prepare a brand new commit message
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
-	if ( s:magit_commit_mode != '' )
+	if ( b:magit_current_commit_mode != '' )
 		silent put =''
 		silent put =g:magit_sections.commit_start
 		call <SID>mg_section_help('commit')
@@ -236,9 +229,9 @@ function! s:mg_get_commit_section()
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
-		if ( s:magit_commit_mode == 'CC' )
+		if ( b:magit_current_commit_mode == 'CC' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
-		elseif ( s:magit_commit_mode == 'CA' )
+		elseif ( b:magit_current_commit_mode == 'CA' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
@@ -549,7 +542,7 @@ function! magit#update_buffer()
 
 	call winrestview(l:winview)
 
-	if ( s:magit_commit_mode != '' )
+	if ( b:magit_current_commit_mode != '' )
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
@@ -644,6 +637,13 @@ function! magit#show_magit(display, ...)
 	"setlocal readonly
 
 	let b:state = deepcopy(g:magit#state#state)
+	" s:magit_commit_mode: global variable which states in which commit mode we are
+	" values are:
+	"       '': not in commit mode
+	"       'CC': normal commit mode, next commit command will create a new commit
+	"       'CA': amend commit mode, next commit command will ament current commit
+	"       'CF': fixup commit mode, it should not be a global state mode
+	let b:magit_current_commit_mode=''
 
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
@@ -896,25 +896,25 @@ endfunction
 " magit#commit_command: entry function for commit mode
 " INFO: it has a different effect if current section is commit section or not
 " param[in] mode: commit mode
-"   'CF': do not set global s:magit_commit_mode, directly call magit#git_commit
+"   'CF': do not set global b:magit_current_commit_mode, directly call magit#git_commit
 "   'CA'/'CF': if in commit section mode, call magit#git_commit, else just set
-"   global state variable s:magit_commit_mode,
+"   global state variable b:magit_current_commit_mode,
 function! magit#commit_command(mode)
 	if ( a:mode == 'CF' )
 		call <SID>mg_git_commit(a:mode)
 	else
 		let section=<SID>mg_get_section()
 		if ( section == 'commit_start' )
-			if ( s:magit_commit_mode == '' )
+			if ( b:magit_current_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
 			endif
 			" when we do commit, it is prefered ot commit the way we prepared it
 			" (.i.e normal or amend), whatever we commit with CC or CA.
-			call <SID>mg_git_commit(s:magit_commit_mode)
-			let s:magit_commit_mode=''
+			call <SID>mg_git_commit(b:magit_current_commit_mode)
+			let b:magit_current_commit_mode=''
 		else
-			let s:magit_commit_mode=a:mode
+			let b:magit_current_commit_mode=a:mode
 		endif
 	endif
 	call magit#update_buffer()
