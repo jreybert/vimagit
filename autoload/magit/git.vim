@@ -95,11 +95,22 @@ function! magit#git#git_diff(filename, status, mode)
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
 		echohl WarningMsg
-		echom "diff command \"" . diff_cmd . "\" returned nothing"
+		echom "diff command \"" . git_cmd . "\" returned nothing"
 		echohl None
 		throw 'diff error'
 	endif
 	return diff_list
+endfunction
+
+" magit#git#sub_check: this function checks if given submodule has modified or
+" untracked content
+" param[in] submodule: submodule path
+" param[in] check_level: can be modified or untracked
+function! magit#git#sub_check(submodule, check_level)
+	let ignore_flag = ( a:check_level == 'modified' ) ?
+				\ '--ignore-submodules=untracked' : ''
+	let git_cmd="git status --porcelain " . ignore_flag . " " . a:submodule
+	return ( !empty(magit#utils#systemlist(git_cmd)) )
 endfunction
 
 " magit#git#git_sub_summary: helper function to get diff of a submodule
@@ -113,8 +124,16 @@ function! magit#git#git_sub_summary(filename, mode)
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
+		if ( a:mode == 'unstaged' )
+			if ( magit#git#sub_check(a:filename, 'modified') )
+				return "modified content"
+			endif
+			if ( magit#git#sub_check(a:filename, 'untracked') )
+				return "untracked content"
+			endif
+		endif
 		echohl WarningMsg
-		echom "diff command \"" . diff_cmd . "\" returned nothing"
+		echom "diff command \"" . git_cmd . "\" returned nothing"
 		echohl None
 		throw 'diff error'
 	endif
