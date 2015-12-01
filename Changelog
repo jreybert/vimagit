@@ -5,6 +5,7 @@ Fixes
 -----
 
 * fix next/prev jump folding
+* fix modified/untracked content in submodule (fix #49)
 
 Release 1.5.0
 =============
