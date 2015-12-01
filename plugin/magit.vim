@@ -927,18 +927,20 @@ function! magit#jump_hunk(dir)
 	let back = ( a:dir == 'P' ) ? 'b' : ''
 	let line = search("^@@ ", back . 'wn')
 	if ( line != 0 )
-		try
-			foldclose
-		catch /^Vim\%((\a\+)\)\=:E490/
-		endtry
+		if ( foldlevel(line('.')) == 2 )
+			try
+				foldclose
+			catch /^Vim\%((\a\+)\)\=:E490/
+			endtry
+		endif
 		call cursor(line, 0)
-		try
-			foldopen
-		catch /^Vim\%((\a\+)\)\=:E490/
-			echohl WarningMsg
-			echom "Warning: you should have jumped on a folded hunk"
-			echohl None
-		endtry
+		while ( foldclosed(line) != -1 )
+			try
+				foldopen
+			catch /^Vim\%((\a\+)\)\=:E490/
+				break
+			endtry
+		endwhile
 	endif
 endfunction
 
