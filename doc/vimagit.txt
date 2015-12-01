@@ -47,46 +47,27 @@ To install:
 This is the minimal required set of command you must know to start playing
 with vimagit. See |vimagit-commands| for a complete description.
 
-  :Magit
------------
+To simply test vimagit, modify/add/delete/rename some files in a git
+repository and open vim.
 
-Open magit buffer (see |magit#show_magit()|)
+> :Magit
+Open magit buffer with :Magit command.
 
-  Enter
------------
+> N
+Jump to next hunk with N. The cursor should be on the header of a hunk.
 
-All files diffs are hidden by default. To inspect changes in a file, move
-cursor to the filename line, and press 'Enter' in Normal mode. Diffs are
-displayed below the file name.
+> S
+If the hunk is in "Unstage changes" section, press S in Normal mode: the
+hunk is now staged, and appears in "Staged changes" section. The opposite is
+also possible, i.e. unstage a hunk from "Staged section".
 
-  N
------------
+If you move the cursor to the file header and press S, the whole file is
+staged.
 
-* Jump to next hunk with N.
-
-  S
------------
-
-* Modify a file, for example foo.c, in your repository.
-* Move the cursor the line 'modified: foo.c' in "Unstage changes" section,
-  press S in Normal mode: the file is stage, and appears in "Stage changes"
-  section.
-* Move to the line 'modified: foo.c' in "Stage changes" section, press S in
-  Normal mode: the file is unstage, and appears in "Unstaged changes" section.
-
-More about S:
-
-* It works exactely the same for new/renamed/deleted files.
-* Stage/unstage by hunk is easy: display file diffs with Enter. If
-  diffs are composed of multiple hnuks, move the cursor to a hunk, and press
-  'S' to stage/unstage this hunk.
-
-  CC
------------
-
-Once you have stage all the required changes, press CC. A new section
-"Commit message" appears and cursor move to it. Type your commit message, in
-Insert mode this time. Once it's done, go back in Normal mode, and CC: you
+> CC
+Once you have stage all the required changes, press CC. A new section "Commit
+message" appears and cursor move to it. Type your commit message, in Insert
+mode this time. Once it's done, go back in Normal mode, and press CC: you
 created your first commit with vimagit!
 
 ===============================================================================

@@ -60,27 +60,20 @@ Travis status:
 
 This is the minimal required set of command you must know to start playing with vimagit. See [Mapping](#mapping) for a complete description.
 
+To simply test vimagit, modify/add/delete/rename some files in a git repository and open vim.
+
 #### :Magit
 
-Open magit buffer (see [details](#magitshow_magit)).
-
-#### Enter,\<CR\>
-
-All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.
+Open magit buffer with [:Magit](#magitshow_magit) command.
 
 #### N
-* Jump to next hunk with **N**.
+
+* Jump to next hunk with **N**. The cursor should be on the header of a hunk.
 
 #### S
 
-* Modify a file, for example foo.c, in your repository.
-* Move the cursor the line 'modfied: foo.c' in "Unstage changes" section, press **S** in Normal mode: the file is stage, and appears in "Stage changes" section.
-* Move to the line 'modified: foo.c' in "Stage changes" section, press **S** in Normal mode: the file is unstage, and appears in "Unstaged changes" section.
-
-More about **S**:
-
-* It works exactely the same for new/renamed/deleted files.
-* Stage/unstage by hunk is easy: display file diffs with [Enter](#entercr). If diffs are composed of multiple hnuks, move the cursor to a hunk, and press **S** to stage/unstage this hunk.
+* If the hunk is in "Unstage changes" section, press **S** in Normal mode: the hunk is now staged, and appears in "Staged changes" section. The opposite is also possible, i.e. unstage a hunk from "Staged section".
+* If you move the cursor to the file header and press **S**, the whole file is staged.
 
 #### CC
 
