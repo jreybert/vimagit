@@ -278,6 +278,12 @@ This part must be refined, I don't see any minimal version for git and vim, but 
 
 At least, it is tested with vim 7.3.249 and git 1.8.5.6 (see [Integration](#integration)).
 
+## Credits
+
+* Obviously, big credit to [magit](https://github.com/magit/magit). For the moment, I am only copying their stage workflow, but I won't stop there! They have a lot of other good ideas.
+* Sign handling is based on [gitgutter](https://github.com/airblade/vim-gitgutter) work.
+* Command line completion is based on [hypergit](https://github.com/c9s/hypergit.vim) work.
+
 ## License
 
 Copyright (c) Jerome Reybert. Distributed under the same terms as Vim itself. See :help license.
