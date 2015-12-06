@@ -1,5 +1,21 @@
 let s:git_cmd="GIT_CONFIG=/dev/null GIT_CONFIG_NOSYSTEM=1 XDG_CONFIG_HOME=/ git"
 
+function! magit#git#get_version()
+	if ( !exists("s:git_version") )
+		let s:git_version = matchlist(system(s:git_cmd . " --version"),
+		\ 'git version \(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(g\x\+\)')[1:5]
+	endif
+	return s:git_version
+endfunction
+
+function! magit#git#is_version_sup_equal(major, minor, rev)
+	let git_ver = magit#git#get_version()
+	return ( ( a:major > git_ver[0] ) ||
+			\ (a:major >= git_ver[0] && a:minor > git_ver[1] ) ||
+			\ (a:major >= git_ver[0] && a:minor >= git_ver[1] && a:rev >= git_ver[2] )
+			\ )
+endfunction
+
 " magit#git#get_status: this function returns the git status output formated
 " into a List of Dict as
 " [ {staged', 'unstaged', 'filename'}, ... ]
