@@ -1,4 +1,5 @@
-let s:git_cmd="GIT_CONFIG=/dev/null GIT_CONFIG_NOSYSTEM=1 XDG_CONFIG_HOME=/ git"
+let s:git_cmd="GIT_CONFIG=/dev/null GIT_CONFIG_NOSYSTEM=1 git"
+
 
 function! magit#git#get_version()
 	if ( !exists("s:git_version") )
@@ -268,6 +269,70 @@ function! magit#git#git_unapply(header, selection, mode)
 	endif
 endfunction
 
+" magit#git#submodule_status: return the submodule status output
 function! magit#git#submodule_status()
 	return system(s:git_cmd . " submodule status")
 endfunction
+
+" magit#git#current_branch: return the current branch name, HEAD if not on a
+" branch
+function! magit#git#current_branch()
+	return magit#utils#strip(magit#utils#system(s:git_cmd .
+				\ " rev-parse --abbrev-ref HEAD"))
+endfunction
+
+" magit#git#last_commit: return the summary of the last commit of the current
+" branch
+function! magit#git#last_commit()
+	return magit#utils#strip(magit#utils#system(s:git_cmd .
+				\ " show -s --oneline"))
+endfunction
+
+" magit#git#default_remote: return the default remote name of the current
+" branch
+function! magit#git#default_remote(branch)
+	let git_cmd = s:git_cmd .
+		\ " for-each-ref --format='%(push:short)' refs/heads/" . a:branch
+	let remote = magit#utils#strip(magit#utils#system(git_cmd))
+	"WRONG! local branch can be different than remote branch!
+	let remote = remote[:-(strlen(a:branch)+2)]
+	if ( index(remote, b:remote_names) == -1 )
+		echoerr 'Magit internal error in magit#git#default_remote, please report a bug'
+	endif
+	return remote
+endfunction
+
+" magit#git#refresh_remote_list: update the buffer variable b:remote_names
+" with remote names
+function! magit#git#refresh_remote_list()
+	let b:remote_names = magit#utils#systemlist(s:git_cmd . " remote")
+endfunction
+
+" magit#git#remote_comp: completion function for remote names
+function! magit#git#remote_comp(lead,cmd,pos)
+	return filter(copy(b:remote_names), 'v:val =~ "^' .a:lead. '"'  )
+endfunction
+
+" magit#git#remote_branch_comp: completion function for remote branch names
+function! magit#git#remote_branch_comp(lead,cmd,pos)
+	let remote_name = b:cur_push_remote . "/"
+	let remote_branches = magit#utils#systemlist(s:git_cmd .
+		\ " for-each-ref --format='%(refname:short)' refs/remotes/" .
+		\ remote_name)
+	let len=strlen(remote_name)
+	call map(remote_branches, 'v:val[' . len . ':]')
+	call filter(remote_branches, 'v:val =~ "^' .a:lead. '"'  )
+	return remote_branches
+endfunction
+
+" magit#git#push
+function! magit#git#push(remote, branch)
+	silent let git_result=magit#utils#system(
+		\ s:git_cmd . " push " . a:remote . " " . a:branch )
+	if ( v:shell_error != 0 )
+		echoerr "Git push error: " . git_result
+	endif
+endfunction
+
+" remote.pushdefault and branch.<name>.pushremote since 1.8.3
+" @{push} since 2.5.0
