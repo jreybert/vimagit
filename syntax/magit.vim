@@ -4,12 +4,22 @@ endif
 
 execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
 
+highlight GitaPseudoSeparatorDefault
+      \ term=undercurl
+      \ cterm=underline ctermfg=8
+      \ gui=underline guifg=#363636
+sign define GitaPseudoSeparatorSign
+      \ texthl=SignColumn
+      \ linehl=GitaPseudoSeparator
+
+highlight default link GitaPseudoSeparator GitaPseudoSeparatorDefault
+
 syn case match
 syn sync minlines=50
 
 syn include @diff syntax/diff.vim
 
-execute 'syn match titleEntry "' . g:magit_section_re . '\n=\+"'
+execute 'syn match titleEntry "' . g:magit_section_re . '\n$"'
 hi def link titleEntry Comment
 
 execute 'syn match stashEntry "' . g:magit_stash_re . '"'

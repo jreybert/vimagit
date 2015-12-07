@@ -115,10 +115,15 @@ endfunction
 function! s:mg_get_info()
 	silent put =''
 	silent put =g:magit_sections.info
-	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
-	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
-	let commit=magit#utils#system("git show -s --oneline")
+	let linenum = line('.')
+	let bufnr = magit#utils#bufnr()
+	execute printf(
+				\ 'sign place %d line=%d name=GitaPseudoSeparatorSign buffer=%d',
+				\ linenum, linenum, bufnr,
+				\)
+	let branch=magit#git#current_branch()
+	let commit=magit#git#last_commit()
 	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
 	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
 	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
@@ -139,6 +144,7 @@ endfunction
 " directory)
 function! s:mg_display_files(mode, curdir, depth)
 
+	let bufnr = magit#utils#bufnr()
 	" FIXME: ouch, must store subdirs in more efficient way
 	for filename in b:state.get_filenames(a:mode)
 		let file = b:state.get_file(a:mode, filename, 0)
@@ -182,9 +188,14 @@ endfunction
 function! s:mg_get_staged_section(mode)
 	put =''
 	put =g:magit_sections[a:mode]
-	call <SID>mg_section_help(a:mode)
-	put =magit#utils#underline(g:magit_sections[a:mode])
 	put =''
+	let linenum = line('.')
+	let bufnr = magit#utils#bufnr()
+	execute printf(
+				\ 'sign place %d line=%d name=GitaPseudoSeparatorSign buffer=%d',
+				\ linenum, linenum, bufnr,
+				\)
+	call <SID>mg_section_help(a:mode)
 	call s:mg_display_files(a:mode, '', 0)
 endfunction
 
@@ -200,8 +211,13 @@ function! s:mg_get_stashes()
 	if (!empty(stash_list))
 		silent put =''
 		silent put =g:magit_sections.stash
-		silent put =magit#utils#underline(g:magit_sections.stash)
 		silent put =''
+		let linenum = line('.')
+		let bufnr = magit#utils#bufnr()
+		execute printf(
+					\ 'sign place %d line=%d name=GitaPseudoSeparatorSign buffer=%d',
+					\ linenum, linenum, bufnr,
+					\)
 
 		for stash in stash_list
 			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
@@ -223,9 +239,14 @@ function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
 		silent put =''
 		silent put =g:magit_sections.commit_start
-		call <SID>mg_section_help('commit')
-		silent put =magit#utils#underline(g:magit_sections.commit_start)
 		silent put =''
+		let linenum = line('.')
+		let bufnr = magit#utils#bufnr()
+		execute printf(
+					\ 'sign place %d line=%d name=GitaPseudoSeparatorSign buffer=%d',
+					\ linenum, linenum, bufnr,
+					\)
+		call <SID>mg_section_help('commit')
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
