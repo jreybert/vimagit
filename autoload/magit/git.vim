@@ -106,7 +106,7 @@ function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
 	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
 	let git_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color --patch -- " . dev_null . " "
+				\ "--no-color -p -- " . dev_null . " "
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
