@@ -103,13 +103,13 @@ endfunction
 " param[in] status: status of the file (see g:magit_git_status_code)
 " param[in] mode: can be staged or unstaged
 function! magit#git#git_diff(filename, status, mode)
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
+	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
 	let git_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color -p -- " . dev_null . " "
-				\ .a:filename
+				\ " --no-color -p -- " . dev_null . " "
+				\ . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
-	if ( v:shell_error != 0 )
+	if ( dev_null != "" && v:shell_error != 0 )
 		echohl WarningMsg
 		echom "Git error: " . string(diff_list)
 		echom "Git cmd: " . git_cmd
