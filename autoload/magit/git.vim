@@ -109,7 +109,7 @@ function! magit#git#git_diff(filename, status, mode)
 				\ " --no-color -p -- " . dev_null . " "
 				\ . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
-	if ( dev_null != "" && v:shell_error != 0 )
+	if ( a:status != '?' && v:shell_error != 0 )
 		echohl WarningMsg
 		echom "Git error: " . string(diff_list)
 		echom "Git cmd: " . git_cmd
