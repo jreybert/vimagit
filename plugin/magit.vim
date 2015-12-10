@@ -297,6 +297,18 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [start,end]
 endfunction
 
+" s:mg_get_commit_msg: get the commit meesgae currently in commit section
+" return a string containg the commit message
+function! s:mg_get_commit_msg()
+	let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
+	let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
+	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
+	let [start, end] = <SID>mg_search_block(
+				\ [commit_section_pat_start, commit_jump_line],
+				\ [ [commit_section_pat_end, -1] ], "")
+	return getline(start, end)
+endfunction
+
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
 " param[in] mode: mode to commit
 "       'CF': don't use commit section, just amend previous commit with staged
@@ -310,13 +322,7 @@ function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
 		silent let git_result=magit#utils#system("git commit --amend -C HEAD")
 	else
-		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
-		let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
-		let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
-		let [start, end] = <SID>mg_search_block(
-		 \ [commit_section_pat_start, commit_jump_line],
-		 \ [ [commit_section_pat_end, -1] ], "")
-		let commit_msg = getline(start, end)
+		let commit_msg=s:mg_get_commit_msg()
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
