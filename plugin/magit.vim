@@ -27,6 +27,7 @@ let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      
 let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
 let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
+let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
 let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
 let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
@@ -661,6 +662,7 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
@@ -924,6 +926,13 @@ function! magit#commit_command(mode)
 		endif
 	endif
 	call magit#update_buffer()
+endfunction
+
+" magit#close_commit: cancel for commit mode
+" close commit section if opened
+function! magit#close_commit()
+  let b:magit_current_commit_mode=''
+  call magit#update_buffer()
 endfunction
 
 " magit#jump_hunk: function to jump among hunks
