@@ -935,6 +935,13 @@ function! magit#close_commit()
     return
   endif
 
+  let git_dir=magit#git#git_dir()
+  let commit_editmsg=git_dir . 'COMMIT_EDITMSG'
+  if ( filereadable(commit_editmsg) )
+    let commit_msg=s:mg_get_commit_msg()
+    call writefile(commit_msg, commit_editmsg)
+  endif
+
   let b:magit_current_commit_mode=''
   call magit#update_buffer()
 endfunction
