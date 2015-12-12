@@ -931,6 +931,10 @@ endfunction
 " magit#close_commit: cancel for commit mode
 " close commit section if opened
 function! magit#close_commit()
+  if ( b:magit_current_commit_mode == '' )
+    return
+  endif
+
   let b:magit_current_commit_mode=''
   call magit#update_buffer()
 endfunction
