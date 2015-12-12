@@ -236,6 +236,11 @@ Following mappings are set locally, for magit buffer only, in normal mode.
   CF        Amend the staged changes into the previous commit, without
             modifying previous commit message
 
+                                    *vimagit-CU*      *magit#close_commit()*
+                                    *vimagit-g:magit_close_commit_mapping*
+  CU        Close a commit section (If you need soon after open or editing
+            Ucommit message, pressing 'u' is good enough).
+
                                     *vimagit-I*              *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore

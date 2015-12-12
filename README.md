@@ -200,6 +200,9 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 ##### CF
  * Amend the staged changes into the previous commit, without modifying previous commit message.
 
+##### CU
+ * Close a commit section (If you need soon after open or editing commit message, pressing 'u' is good enough).
+
 ##### I
  * Add the file under the cursor in .gitgnore
 
