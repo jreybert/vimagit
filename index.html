@@ -51,8 +51,15 @@
 <li>Write or amend your commit message and commit.</li>
 </ul>
 
-<p>See a usage example:
-<a href="https://asciinema.org/a/28761"><img src="https://asciinema.org/a/28761.png" alt="asciicast"></a></p>
+<p><img src="../gh-pages/images/vimagit_screenshot_1.5.1.png?raw=true" alt="Example of vimagit 1.5.1" title="Example of vimagit 1.5.1"></p>
+
+<p>Some screencasts:</p>
+
+<ul>
+<li>A simple <a href="https://asciinema.org/a/28761">asciicast</a>
+</li>
+<li>A <a href="https://youtu.be/_3wMmmVi6bU">commented video presenting vimagit</a> (thank you <a href="https://github.com/mhartington">Mike Hartington</a>!)</li>
+</ul>
 
 <p>This workflow is 100% inspired from magnificent emacs <a href="https://github.com/magit/magit">Magit</a> plugin.</p>
 
@@ -67,7 +74,8 @@
 <li>[x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.</li>
 <li>[x] Start to write the commit message in one key press, commit also in one key press.</li>
 <li>[x] Modify in line the content just before staging it.</li>
-<li>[x] Visualize stashes. Apply, pop, drop are on going.</li>
+<li>[x] Move easily through hunks.</li>
+<li>[x] Handle multiple git repositories within one vim instance.</li>
 <li>[x] Add file to .gitignore file.</li>
 <li>[ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an <a href="https://github.com/jreybert/vimagit/issues/new">issue</a> on github <img class="emoji" title=":heart:" alt=":heart:" src="https://assets-cdn.github.com/images/icons/emoji/unicode/2764.png" height="20" width="20" align="absmiddle"> !</li>
 </ul>
@@ -81,6 +89,7 @@
 <li>Handle multiple git repositories within one vim session.</li>
 <li>Stage multiple hunks or file by visually selecting them.</li>
 <li>Go through history, cherry-pick changes.</li>
+<li>Handle stash: add, pop, apply, drop...</li>
 <li>Vizualize and checkout branches.</li>
 <li>Something is missing? Open an <a href="https://github.com/jreybert/vimagit/issues/new">issue</a>!</li>
 </ul>
@@ -119,30 +128,26 @@
 
 <p>This is the minimal required set of command you must know to start playing with vimagit. See <a href="#mapping">Mapping</a> for a complete description.</p>
 
+<p>To simply test vimagit, modify/add/delete/rename some files in a git repository and open vim.</p>
+
 <h4>
 <a id="magit" class="anchor" href="#magit" aria-hidden="true"><span class="octicon octicon-link"></span></a>:Magit</h4>
 
-<p>Open magit buffer.</p>
+<p>Open magit buffer with <a href="#magitshow_magit">:Magit</a> command.</p>
 
 <h4>
-<a id="entercr" class="anchor" href="#entercr" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter,&lt;CR&gt;</h4>
+<a id="n" class="anchor" href="#n" aria-hidden="true"><span class="octicon octicon-link"></span></a>N</h4>
 
-<p>All files diffs are hidden by default. To inspect changes in a file, move cursor to the filename line, and press 'Enter' in Normal mode. Diffs are displayed below the file name.</p>
+<ul>
+<li>Jump to next hunk with <strong>N</strong>. The cursor should be on the header of a hunk.</li>
+</ul>
 
 <h4>
 <a id="s" class="anchor" href="#s" aria-hidden="true"><span class="octicon octicon-link"></span></a>S</h4>
 
 <ul>
-<li>Modify a file, for example foo.c, in your repository.</li>
-<li>Move the cursor the line 'modfied: foo.c' in "Unstage changes" section, press <strong>S</strong> in Normal mode: the file is stage, and appears in "Stage changes" section.</li>
-<li>Move to the line 'modified: foo.c' in "Stage changes" section, press <strong>S</strong> in Normal mode: the file is unstage, and appears in "Unstaged changes" section.</li>
-</ul>
-
-<p>More about <strong>S</strong>:</p>
-
-<ul>
-<li>It works exactely the same for new/renamed/deleted files.</li>
-<li>Stage/unstage by hunk is easy: display file diffs with <a href="#entercr">Enter</a>. If diffs are composed of multiple hnuks, move the cursor to a hunk, and press <strong>S</strong> to stage/unstage this hunk.</li>
+<li>If the hunk is in "Unstage changes" section, press <strong>S</strong> in Normal mode: the hunk is now staged, and appears in "Staged changes" section. The opposite is also possible, i.e. unstage a hunk from "Staged section".</li>
+<li>If you move the cursor to the file header and press <strong>S</strong>, the whole file is staged.</li>
 </ul>
 
 <h4>
@@ -206,8 +211,10 @@
 <h4>
 <a id="magitshow_magit" class="anchor" href="#magitshow_magit" aria-hidden="true"><span class="octicon octicon-link"></span></a>magit#show_magit()</h4>
 
-<p>Function to open magit buffer.
-It takes 3 parameters:</p>
+<p>Function to open magit buffer. This buffer will handle the git repository including focused file.
+It is possible to handle multiple git repositories within one vim instance.</p>
+
+<p>It takes 3 parameters:</p>
 
 <ul>
 <li>orientation (mandatory): it can be
@@ -229,9 +236,14 @@ new buffer</li>
 <h4>
 <a id="magit-1" class="anchor" href="#magit-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>:Magit</h4>
 
-<ul>
-<li>open magit buffer.</li>
-</ul>
+<p>Open magit buffer in a vertical split (see <a href="magitshow_magit">details</a>).</p>
+
+<h4>
+<a id="magitonly" class="anchor" href="#magitonly" aria-hidden="true"><span class="octicon octicon-link"></span></a>:MagitOnly</h4>
+
+<p>Open magit buffer in current window (see <a href="magitshow_magit">details</a>).</p>
+
+<p>You can create a bash alias like magit="vim -c MagitOnly"</p>
 
 <h3>
 <a id="mappings" class="anchor" href="#mappings" aria-hidden="true"><span class="octicon octicon-link"></span></a>Mappings</h3>
@@ -254,7 +266,7 @@ new buffer</li>
 <p>Following mappings are set locally, for magit buffer only, in normal mode.</p>
 
 <h5>
-<a id="entercr-1" class="anchor" href="#entercr-1" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter,&lt;CR&gt;</h5>
+<a id="entercr" class="anchor" href="#entercr" aria-hidden="true"><span class="octicon octicon-link"></span></a>Enter,&lt;CR&gt;</h5>
 
 <ul>
 <li>All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.</li>
@@ -318,6 +330,13 @@ new buffer</li>
 <li>If cursor is in a hunk, discard hunk at cursor position.</li>
 <li>If cursor is in diff header, discard whole file at cursor position.</li>
 <li>Only works in "Unstaged changes" section.</li>
+</ul>
+
+<h5>
+<a id="np" class="anchor" href="#np" aria-hidden="true"><span class="octicon octicon-link"></span></a>N,P</h5>
+
+<ul>
+<li>Move to <strong>N</strong>ext or <strong>P</strong>revious hunk.</li>
 </ul>
 
 <h5>
@@ -464,6 +483,15 @@ git clone https://github.com/jreybert/vimagit
 <p>This part must be refined, I don't see any minimal version for git and vim, but for sure there should be one.</p>
 
 <p>At least, it is tested with vim 7.3.249 and git 1.8.5.6 (see <a href="#integration">Integration</a>).</p>
+
+<h2>
+<a id="credits" class="anchor" href="#credits" aria-hidden="true"><span class="octicon octicon-link"></span></a>Credits</h2>
+
+<ul>
+<li>Obviously, big credit to <a href="https://github.com/magit/magit">magit</a>. For the moment, I am only copying their stage workflow, but I won't stop there! They have a lot of other good ideas.</li>
+<li>Sign handling is based on <a href="https://github.com/airblade/vim-gitgutter">gitgutter</a> work.</li>
+<li>Command line completion is based on <a href="https://github.com/c9s/hypergit.vim">hypergit</a> work.</li>
+</ul>
 
 <h2>
 <a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
