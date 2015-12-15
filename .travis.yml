@@ -1,4 +1,6 @@
-language: vim
+language: generic
+
+dist: precise
 
 branches:
   only:
