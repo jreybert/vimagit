@@ -1,6 +1,4 @@
-language: generic
-
-dist: precise
+language: python
 
 branches:
   only:
