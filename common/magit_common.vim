@@ -22,6 +22,7 @@ let g:magit_git_status_code = {
  \ 'A': 'added',
  \ 'D': 'deleted',
  \ 'R': 'renamed',
+ \ 'T': 'typechanged',
  \ 'C': 'copied',
  \ 'U': 'updated but unmerged',
  \ '?': 'untracked',
