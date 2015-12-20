@@ -146,7 +146,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
-		put =file.get_filename_header()
+		silent put =file.get_filename_header()
 
 		if ( file.dir != 0 )
 			if ( file.visible == 1 )
@@ -156,7 +156,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		endif
 
 		if ( file.visible == 0 )
-			put =''
+			silent put =''
 			continue
 		endif
 		if ( file.exists == 0 )
@@ -171,7 +171,7 @@ function! s:mg_display_files(mode, curdir, depth)
 				silent put =hunk.lines
 			endif
 		endfor
-		put =''
+		silent put =''
 	endfor
 endfunction
 
@@ -181,11 +181,11 @@ endfunction
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
 function! s:mg_get_staged_section(mode)
-	put =''
-	put =g:magit_sections[a:mode]
+	silent put =''
+	silent put =g:magit_sections[a:mode]
 	call <SID>mg_section_help(a:mode)
-	put =magit#utils#underline(g:magit_sections[a:mode])
-	put =''
+	silent put =magit#utils#underline(g:magit_sections[a:mode])
+	silent put =''
 	call s:mg_display_files(a:mode, '', 0)
 endfunction
 
@@ -206,7 +206,7 @@ function! s:mg_get_stashes()
 
 		for stash in stash_list
 			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
-			put =stash
+			silent put =stash
 			silent! execute "read !git stash show -p " . stash_id
 		endfor
 	endif
@@ -238,9 +238,9 @@ function! s:mg_get_commit_section()
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=<SID>mg_comment_char()
 			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
-			put =commit_msg
+			silent put =commit_msg
 		endif
-		put =g:magit_sections.commit_end
+		silent put =g:magit_sections.commit_end
 	endif
 endfunction
 
