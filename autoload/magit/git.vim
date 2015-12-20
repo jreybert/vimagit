@@ -103,12 +103,19 @@ endfunction
 " param[in] status: status of the file (see g:magit_git_status_code)
 " param[in] mode: can be staged or unstaged
 function! magit#git#git_diff(filename, status, mode)
-	let dev_null = ( a:status == '?' ) ? " /dev/null " : " "
-	let staged_flag = ( a:mode == 'staged' ) ? " --staged " : " "
+	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
+	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
 	let git_cmd="git diff --no-ext-diff " . staged_flag .
-				\ "--no-color -p -- " . dev_null . " "
-				\ .a:filename
+				\ " --no-color -p -- " . dev_null . " "
+				\ . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
+	if ( a:status != '?' && v:shell_error != 0 )
+		echohl WarningMsg
+		echom "Git error: " . string(diff_list)
+		echom "Git cmd: " . git_cmd
+		echohl None
+		throw 'diff error'
+	endif
 	if ( empty(diff_list) )
 		echohl WarningMsg
 		echom "diff command \"" . git_cmd . "\" returned nothing"
@@ -164,8 +171,11 @@ function! magit#git#git_add(filename)
 	let git_cmd=s:git_cmd . " add --no-ignore-removal -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
+		echohl WarningMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . git_cmd
+		echohl None
+		throw 'add error'
 	endif
 endfunction
 
@@ -177,8 +187,11 @@ function! magit#git#git_checkout(filename)
 	let git_cmd=s:git_cmd . " checkout -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
+		echohl WarningMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . git_cmd
+		echohl None
+		throw 'checkout error'
 	endif
 endfunction
 
@@ -190,8 +203,11 @@ function! magit#git#git_reset(filename)
 	let git_cmd=s:git_cmd . " reset HEAD -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
+		echohl WarningMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . git_cmd
+		echohl None
+		throw 'reset error'
 	endif
 endfunction
 
@@ -209,10 +225,13 @@ function! magit#git#git_apply(header, selection)
 	let git_cmd=s:git_cmd . " apply --recount --no-index --cached -"
 	silent let git_result=magit#utils#system(git_cmd, selection)
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Git cmd: " . git_cmd
-		echoerr "Tried to aply this"
-		echoerr string(selection)
+		echohl WarningMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . git_cmd
+		echom "Tried to aply this"
+		echom string(selection)
+		echohl None
+		throw 'apply error'
 	endif
 endfunction
 
@@ -235,9 +254,12 @@ function! magit#git#git_unapply(header, selection, mode)
 		\ s:git_cmd . " apply --recount --no-index " . cached_flag . " --reverse - ",
 		\ selection)
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
-		echoerr "Tried to unaply this"
-		echoerr string(selection)
+		echohl WarningMsg
+		echom "Git error: " . git_result
+		echom "Tried to unaply this"
+		echom string(selection)
+		echohl None
+		throw 'unapply error'
 	endif
 endfunction
 

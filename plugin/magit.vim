@@ -27,6 +27,7 @@ let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      
 let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
 let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
+let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
 let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
 let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
@@ -297,6 +298,18 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	return [start,end]
 endfunction
 
+" s:mg_get_commit_msg: get the commit meesgae currently in commit section
+" return a string containg the commit message
+function! s:mg_get_commit_msg()
+	let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
+	let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
+	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
+	let [start, end] = <SID>mg_search_block(
+				\ [commit_section_pat_start, commit_jump_line],
+				\ [ [commit_section_pat_end, -1] ], "")
+	return getline(start, end)
+endfunction
+
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
 " param[in] mode: mode to commit
 "       'CF': don't use commit section, just amend previous commit with staged
@@ -310,13 +323,7 @@ function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
 		silent let git_result=magit#utils#system("git commit --amend -C HEAD")
 	else
-		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
-		let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
-		let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
-		let [start, end] = <SID>mg_search_block(
-		 \ [commit_section_pat_start, commit_jump_line],
-		 \ [ [commit_section_pat_end, -1] ], "")
-		let commit_msg = getline(start, end)
+		let commit_msg=s:mg_get_commit_msg()
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
@@ -655,6 +662,7 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
@@ -918,6 +926,24 @@ function! magit#commit_command(mode)
 		endif
 	endif
 	call magit#update_buffer()
+endfunction
+
+" magit#close_commit: cancel for commit mode
+" close commit section if opened
+function! magit#close_commit()
+  if ( b:magit_current_commit_mode == '' )
+    return
+  endif
+
+  let git_dir=magit#git#git_dir()
+  let commit_editmsg=git_dir . 'COMMIT_EDITMSG'
+  if ( filereadable(commit_editmsg) )
+    let commit_msg=s:mg_get_commit_msg()
+    call writefile(commit_msg, commit_editmsg)
+  endif
+
+  let b:magit_current_commit_mode=''
+  call magit#update_buffer()
 endfunction
 
 " magit#jump_hunk: function to jump among hunks
