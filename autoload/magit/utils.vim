@@ -35,6 +35,21 @@ function! magit#utils#lcd(dir)
 	execute s:magit_cd_cmd . a:dir
 endfunction
 
+" magit#utils#clear_undo: this function clear local undo history.
+" vimagit wants to clear undo history after each changes in vimagit buffer by
+" vimagit backend.
+" Use this function with caution: to be effective, the undo must be ack'ed
+" with a change. The hack is the line
+" exe "normal a \<BS>\<Esc>"
+" If the cursor is on a closed folding, it will open it!
+function! magit#utils#clear_undo()
+	let old_undolevels = &l:undolevels
+	setlocal undolevels=-1
+	exe "normal a \<BS>\<Esc>"
+	let &l:undolevels = old_undolevels
+	unlet old_undolevels
+endfunction
+
 " magit#utils#system: wrapper for system, which only takes String as input in vim,
 " although it can take String or List input in neovim.
 " INFO: temporarly change pwd to git top directory, then restore to previous
