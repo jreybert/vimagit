@@ -547,6 +547,8 @@ function! magit#update_buffer()
 		call call(func.fn, func.arg)
 	endfor
 
+	call magit#utils#clear_undo()
+
 	call winrestview(l:winview)
 
 	if ( b:magit_current_commit_mode != '' )
