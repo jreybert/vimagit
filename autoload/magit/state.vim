@@ -206,17 +206,25 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 		let file.status = 'E'
 		let file.empty = 1
 		let file.diff.hunks[0].header = 'New empty file'
-	elseif ( magit#utils#is_binary(magit#utils#add_quotes(a:filename)))
-		let file.binary = 1
-		let file.diff.hunks[0].header = 'Binary file'
 	else
 		if ( !file.init_visible() )
 			return
 		endif
 		let line = 0
 		" match(
-		let diff_list=magit#git#git_diff(magit#utils#add_quotes(a:filename),
+		let [ is_bin, diff_list ] =
+					\ magit#git#git_diff(magit#utils#add_quotes(a:filename),
 					\ a:status, a:mode)
+
+		if ( is_bin )
+			let file.binary = 1
+			let file.diff.hunks[0].header = 'Binary file'
+			if ( file.new )
+				call file.set_visible(0)
+			endif
+			return
+		endif
+
 		let file.diff.len = len(diff_list)
 
 		if ( self.check_max_lines(file) != 0 )
