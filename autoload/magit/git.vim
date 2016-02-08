@@ -102,6 +102,9 @@ endfunction
 " param[in] filemane: it must be quoted if it contains spaces
 " param[in] status: status of the file (see g:magit_git_status_code)
 " param[in] mode: can be staged or unstaged
+" return: two values
+"        [0]: boolean, if true current file is binary
+"        [1]: string array containing diff output
 function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
 	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
@@ -122,7 +125,9 @@ function! magit#git#git_diff(filename, status, mode)
 		echohl None
 		throw 'diff error'
 	endif
-	return diff_list
+	return [
+		\ ( diff_list[-1] =~ "^Binary files .* differ$" && len(diff_list) <= 4 )
+		\, diff_list ]
 endfunction
 
 " magit#git#sub_check: this function checks if given submodule has modified or

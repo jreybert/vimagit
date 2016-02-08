@@ -1,11 +1,4 @@
 
-" s:magit#utils#is_binary: check if file is a binary file
-" param[in] filename: the file path. it must quoted if it contains spaces
-function! magit#utils#is_binary(filename)
-	return ( match(system("file --mime " . a:filename ),
-				\ ".*charset=binary") != -1 )
-endfunction
-
 " magit#utils#ls_all: list all files (including hidden ones) in a given path
 " return : list of filenames
 function! magit#utils#ls_all(path)
