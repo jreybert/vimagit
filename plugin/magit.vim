@@ -609,11 +609,11 @@ function! magit#show_magit(display, ...)
 	elseif ( a:display == 'c' )
 		if ( !bufexists(buffer_name) )
 			if ( bufname("%") == "" )
-				keepalt enew
+				silent keepalt enew
 			else
-				enew
+				silent enew
 			endif
-			execute "file " . buffer_name
+			silent execute "file " . buffer_name
 		endif
 	else
 		throw 'parameter_error'
