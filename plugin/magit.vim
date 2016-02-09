@@ -753,6 +753,7 @@ function! s:mg_stage_closed_file(discard)
 								\ g:magit_sections.staged . "\" section, "
 								\ "unstage file first."
 					echohl None
+					return
 				endif
 			endif
 			call magit#update_buffer()
