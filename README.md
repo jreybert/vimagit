@@ -266,6 +266,12 @@ If user answer is 'no', vimagit will close all file diffs before refreshing.
 Default value is 10000.
 > let g:magit_warning_max_lines=val
 
+#### g:magit_discard_untracked_do_delete
+
+When set to 1, discard an untracked file will indeed delete this file.
+Default value is 0.
+> let g:magit_discard_untracked_do_delete=[01]
+
 ## Installation
 
 The plugin hierarchy tree respects the vim plugin standard. It is compatible

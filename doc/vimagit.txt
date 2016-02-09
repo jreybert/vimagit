@@ -303,6 +303,11 @@ If user answer is 'no', vimagit will close all file diffs before refreshing.
 Defaulty value is 10000.
 let g:magit_warning_max_lines=val
 
+                                   *vimagit-g:magit_discard_untracked_do_delete*
+When set to 1, discard an untracked file will indeed delete this file.
+Default value is 0.
+let g:magit_discard_untracked_do_delete=[01]
+
 ===============================================================================
 6. FAQ                                                             *vimagit-FAQ*
 

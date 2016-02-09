@@ -45,6 +45,7 @@ let g:magit_show_help              = get(g:, 'magit_show_help',                 
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
+let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
@@ -729,11 +730,20 @@ function! s:mg_stage_closed_file(discard)
 			else
 				if ( section == 'unstaged' )
 					if ( file.status == '?' )
+						if ( g:magit_discard_untracked_do_delete == 1 )
+							if ( delete(filename) != 0 )
+								echoerr "Can not delete \"" . filename . "\""
+								return
+							endif
+						else
 							echohl WarningMsg
 							echomsg "By default, vimagit won't discard "
 								\ "untracked file (which means delete this file)"
+							echomsg "You can force this behaviour, "
+								\ "setting g:magit_discard_untracked_do_delete=1"
 							echohl None
 							return
+						endif
 					else
 						call magit#git#git_checkout(magit#utils#add_quotes(filename))
 					endif
