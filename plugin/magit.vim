@@ -728,10 +728,21 @@ function! s:mg_stage_closed_file(discard)
 				endif
 			else
 				if ( section == 'unstaged' )
-					call magit#git#git_checkout(magit#utils#add_quotes(filename))
+					if ( file.status == '?' )
+							echohl WarningMsg
+							echomsg "By default, vimagit won't discard "
+								\ "untracked file (which means delete this file)"
+							echohl None
+							return
+					else
+						call magit#git#git_checkout(magit#utils#add_quotes(filename))
+					endif
 				else
-					echoerr "Must be in \"" .
-								\ g:magit_sections.unstaged . "\" section"
+					echohl WarningMsg
+					echomsg "Can not discard file in \"" .
+								\ g:magit_sections.staged . "\" section, "
+								\ "unstage file first."
+					echohl None
 				endif
 			endif
 			call magit#update_buffer()
