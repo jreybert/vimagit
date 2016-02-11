@@ -18,8 +18,8 @@ Fixes
   which means undo still works while the user is typing its commit message
   for example.
 * binary file detection is done with git diff (fix #60, #61)
-  it fixes binary file detection on Windows, and may speed up the refresh
-  process.
+  it fixes false positive binary file detection, binary file detection on
+  Windows, and may eventually speed up the refresh process :)
 * output an understandable message when user tries ot discard an untracked file (fix #58)
 * remove unwanted --No lines in buffer-- in status line when opening magit buffer (fix #56)
 * use 'diff -p' instead of 'diff --patch' (fix #52)
