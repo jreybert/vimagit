@@ -1,3 +1,31 @@
+Release 1.5.2
+=============
+
+Features
+--------
+
+* add command CU (commit undo) to close commit section (fix #55)
+* add g:magit_discard_untracked_do_delete option (fix #66)
+  when set, discard an untracked file will actually delete this file
+* support 'typechanged' git status type
+
+Fixes
+-----
+
+* clear undo history after each update_buffer() call (refs #64)
+  undo in magit buffer did the user believe that it may undoes some vimagit
+  actions: it is not! magit buffer undo history is wiped at each refresh;
+  which means undo still works while the user is typing its commit message
+  for example.
+* binary file detection is done with git diff (fix #60, #61)
+  it fixes binary file detection on Windows, and may speed up the refresh
+  process.
+* output an understandable message when user tries ot discard an untracked file (fix #58)
+* remove unwanted --No lines in buffer-- in status line when opening magit buffer (fix #56)
+* use 'diff -p' instead of 'diff --patch' (fix #52)
+* better handling of some command line error code and improve some error messages
+* set local foldnestmax (fix #62)
+
 Release 1.5.1
 =============
 
