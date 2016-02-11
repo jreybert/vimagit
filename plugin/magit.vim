@@ -515,7 +515,9 @@ let s:mg_display_functions = {
 " 3. delete buffer
 " 4. fills with unstage stuff
 " 5. restore window state
-function! magit#update_buffer()
+" param[in] updated file (optional): if set and if gitgutter is installed,
+"           update gitgutter signs in this buffer
+function! magit#update_buffer(...)
 	let buffer_name=bufname("%")
 	if ( buffer_name !~ 'magit://.*' )
 		echoerr "Not in magit buffer but in " . buffer_name
@@ -560,6 +562,14 @@ function! magit#update_buffer()
 
 	set filetype=magit
 
+	if ( a:0 == 1 )
+		let updated_buffer = bufnr(a:1)
+		if ( updated_buffer != -1 )
+			if ( exists("*gitgutter#process_buffer") )
+				call gitgutter#process_buffer(bufnr(updated_buffer), 0)
+			endif
+		endif
+	endif
 endfunction
 
 " magit#toggle_help: toggle inline help showing in magit buffer
@@ -756,7 +766,8 @@ function! s:mg_stage_closed_file(discard)
 					return
 				endif
 			endif
-			call magit#update_buffer()
+
+			call magit#update_buffer(filename)
 			return
 		endif
 	endif
@@ -806,7 +817,7 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	endif
 
-	call magit#update_buffer()
+	call magit#update_buffer(filename)
 endfunction
 
 " magit#stage_file: this function (un)stage a whole file, from the current
