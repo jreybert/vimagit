@@ -563,10 +563,9 @@ function! magit#update_buffer(...)
 	set filetype=magit
 
 	if ( a:0 == 1 )
-		let updated_buffer = bufnr(a:1)
-		if ( updated_buffer != -1 )
+		if ( bufexists(a:1) != 0 )
 			if ( exists("*gitgutter#process_buffer") )
-				call gitgutter#process_buffer(bufnr(updated_buffer), 0)
+				call gitgutter#process_buffer(a:1, 0)
 			endif
 		endif
 	endif
