@@ -47,9 +47,17 @@ let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
+let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         1)
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
+
+if ( g:magit_refresh_gitgutter == 1 )
+	autocmd User VimagitUpdateFile
+			\ if ( exists("*gitgutter#process_buffer") ) |
+			\ 	call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
+			\ endif
+endif
 " }}}
 
 " {{{ Internal functions
@@ -498,6 +506,8 @@ function! magit#open_close_folding(...)
 	call magit#update_buffer()
 endfunction
 
+let g:magit_last_updated_buffer = ''
+
 " s:mg_display_functions: Dict wrapping all display related functions
 " This Dict should be accessed through g:magit_default_sections
 let s:mg_display_functions = {
@@ -515,8 +525,9 @@ let s:mg_display_functions = {
 " 3. delete buffer
 " 4. fills with unstage stuff
 " 5. restore window state
-" param[in] updated file (optional): if set and if gitgutter is installed,
-"           update gitgutter signs in this buffer
+" param[in] updated file (optional): this filename is updated to absolute
+" path, set in g:magit_last_updated_buffer and the User autocmd
+" VimagitUpdateFile event is raised
 function! magit#update_buffer(...)
 	let buffer_name=bufname("%")
 	if ( buffer_name !~ 'magit://.*' )
@@ -562,13 +573,21 @@ function! magit#update_buffer(...)
 
 	set filetype=magit
 
+	let g:magit_last_updated_buffer = ''
 	if ( a:0 == 1 )
-		if ( bufexists(a:1) != 0 )
-			if ( exists("*gitgutter#process_buffer") )
-				call gitgutter#process_buffer(a:1, 0)
+		let abs_filename = magit#git#top_dir() . a:1
+		if ( bufexists(abs_filename) )
+			let g:magit_last_updated_buffer = abs_filename
+			if exists('#User#VimagitUpdateFile')
+				doautocmd User VimagitUpdateFile
 			endif
 		endif
 	endif
+
+	if exists('#User#VimagitRefresh')
+		doautocmd User VimagitRefresh
+	endif
+
 endfunction
 
 " magit#toggle_help: toggle inline help showing in magit buffer
@@ -700,7 +719,11 @@ function! magit#show_magit(display, ...)
 	for mapping in g:magit_folding_close_mapping
 		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<cr>"
 	endfor
-	
+
+	if exists('#User#VimagitBufferInit')
+		doautocmd User VimagitBufferInit
+	endif
+
 	call magit#update_buffer()
 	execute "normal! gg"
 endfunction

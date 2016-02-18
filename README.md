@@ -218,6 +218,47 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 ##### h
  * Toggle help showing in magit buffer
 
+#### Autocommand events
+
+Magit will raise some events at some point. User can plug some specific
+commands to these events (see [example](autocommand_example).
+
+##### VimagitBufferInit
+
+This event is raised when the magit buffer is initialized (i.e. each time
+[magit#show_magit()](magitshow_magit) is called.
+
+#### VimagitRefresh
+
+This event is raised every time the magit buffer is refreshed, event if no
+file is updated.
+
+#### VimagitUpdateFile
+
+This event is raised each time a file status is updated in magit buffer
+(typically when a file or a hunk is staged or unstaged). The variable
+`g:magit_last_updated_buffer` is set to the last updated file, with its
+absolute path.
+
+*Note:* `g:magit_last_updated_buffer` will be updated and VimagitUpdateFile event will
+be raised only if the buffer is currently opened in vim.
+
+#### Autocmd example
+
+The following example calls the vim-gitgutter refresh function on a specific
+buffer each time vimagit update the git status of this file.
+
+```
+  autocmd User VimagitUpdateFile
+    \ if ( exists("*gitgutter#process_buffer") ) |
+    \ 	call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
+    \ endif
+```
+
+The following example is already embeded in vimagit plugin (see
+[g:magit_refresh_gitgutter](gmagit_refresh_gitgutter)), then you shouldn't add this particular
+example to your vimrc.
+
 ### Options
 
 User can define in its prefered |vimrc| some options.
@@ -273,6 +314,14 @@ Default value is 10000.
 When set to 1, discard an untracked file will indeed delete this file.
 Default value is 0.
 > let g:magit_discard_untracked_do_delete=[01]
+
+#### g:magit_refresh_gitgutter
+
+When set to 1, and if vim-gitgutter plugin is installed, gitgutter signs will
+be updated each time magit update the git status of a file (i.e. when a file
+or a hunk is staged/unstaged).
+Default value is 1.
+> let g:magit_refresh_gitgutter=[01]
 
 ## Installation
 
