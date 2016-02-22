@@ -627,7 +627,11 @@ function! magit#show_magit(display, ...)
 
 	let buffer_name='magit://' . git_dir
 
-	if ( a:display == 'v' )
+	let magit_win = magit#utils#search_buffer_in_windows(buffer_name)
+
+	if ( magit_win != 0 )
+		silent execute magit_win."wincmd w"
+	elseif ( a:display == 'v' )
 		silent execute "vnew " . buffer_name
 	elseif ( a:display == 'h' )
 		silent execute "new " . buffer_name
