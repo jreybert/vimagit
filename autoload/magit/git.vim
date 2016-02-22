@@ -33,6 +33,16 @@ function! magit#git#get_status()
 	return file_list
 endfunction
 
+function! magit#git#get_config(conf_name, default)
+	silent! let git_result=magit#utils#strip(
+				\ magit#utils#system(g:magit_git_cmd . " config --get " . a:conf_name))
+	if ( v:shell_error != 0 )
+		return a:default
+	else
+		return git_result
+	endif
+endfunction
+
 " magit#git#is_work_tree: this function check that path passed as parameter is
 " inside a git work tree
 " param[in] path: path to check

@@ -249,23 +249,11 @@ function! s:mg_get_commit_section()
 						\ g:magit_git_cmd . " commit --amend -e 2> /dev/null")
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
-			let comment_char=<SID>mg_comment_char()
+			let comment_char=magit#git#get_config("core.commentChar", '#')
 			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 			silent put =commit_msg
 		endif
 		silent put =g:magit_sections.commit_end
-	endif
-endfunction
-
-" s:mg_comment_char: this function gets the commentChar from git config
-function! s:mg_comment_char()
-	silent! let git_result=magit#utils#strip(
-				\ magit#utils#system(g:magit_git_cmd .
-				\" config --get core.commentChar"))
-	if ( v:shell_error != 0 )
-		return '#'
-	else
-		return git_result
 	endif
 endfunction
 
