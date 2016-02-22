@@ -108,7 +108,7 @@ endfunction
 function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
 	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
-	let git_cmd="git diff --no-ext-diff " . staged_flag .
+	let git_cmd=s:git_cmd . " diff --no-ext-diff " . staged_flag .
 				\ " --no-color -p -- " . dev_null . " "
 				\ . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
@@ -137,7 +137,7 @@ endfunction
 function! magit#git#sub_check(submodule, check_level)
 	let ignore_flag = ( a:check_level == 'modified' ) ?
 				\ '--ignore-submodules=untracked' : ''
-	let git_cmd="git status --porcelain " . ignore_flag . " " . a:submodule
+	let git_cmd=s:git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
 	return ( !empty(magit#utils#systemlist(git_cmd)) )
 endfunction
 
@@ -148,7 +148,7 @@ endfunction
 " param[in] mode: can be staged or unstaged
 function! magit#git#git_sub_summary(filename, mode)
 	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
-	let git_cmd="git submodule summary " . staged_flag . " HEAD "
+	let git_cmd=s:git_cmd . " submodule summary " . staged_flag . " HEAD "
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
