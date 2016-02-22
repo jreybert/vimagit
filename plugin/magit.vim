@@ -29,6 +29,7 @@ let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
 let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
 let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
+let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
 let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
 let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       'h' )
@@ -689,6 +690,7 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_edit_mapping .         " :call magit#jump_to()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
@@ -1023,6 +1025,36 @@ function! magit#jump_hunk(dir)
 				break
 			endtry
 		endwhile
+	endif
+endfunction
+
+" magit#jump_to: function to move cursor to the file location of the current
+" hunk
+" if this file is already displayed in a window, jump to the window, if not,
+" jump to last window and open buffer, at the beginning of the hunk
+function! magit#jump_to()
+	let section=<SID>mg_get_section()
+	let filename=<SID>mg_get_filename()
+	" let file = b:state.get_file(section, filename)
+	let line=substitute(s:mg_get_hunkheader(),
+				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
+	let context = magit#git#get_config("diff.context", 3)
+	let line += context
+
+	" winnr('#') is overwritten by magit#get_win()
+	let last_win = winnr('#')
+	let buf_win = magit#utils#search_buffer_in_windows(filename)
+	let buf_win = ( buf_win == 0 ) ? last_win : buf_win
+	if ( buf_win == 0 || winnr('$') == 1 )
+		rightbelow vnew
+	else
+		execute buf_win."wincmd w"
+	endif
+
+	if ( bufexists(filename) )
+		execute "buffer " . "+" . line . " " filename
+	else
+		execute "edit " . "+" . line . " " filename
 	endif
 endfunction
 
