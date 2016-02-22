@@ -182,6 +182,18 @@ function! magit#utils#bufnr()
 	return s:bufnr
 endfunction
 
+" magit#utils#search_buffer_in_windows: search if a buffer is displayed in one
+" of opened windows
+" NOTE: windo command modify winnr('#'), if you want to use it, save it before
+" calling this function
+" param[in] filename: filename to search
+" return: window id, 0 if not found
+function! magit#utils#search_buffer_in_windows(filename)
+	let files={}
+	windo if ( !empty(@%) ) | let files[@%] = winnr() | endif
+	return ( has_key(files, a:filename) ) ? files[a:filename] : 0
+endfunction
+
 function! magit#utils#start_profile(...)
 	let prof_file = ( a:0 == 1 ) ? a:1 : "/tmp/vimagit.log"
 	execute "profile start " . prof_file . " | profile pause"
