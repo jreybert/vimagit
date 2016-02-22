@@ -269,6 +269,11 @@ To enable or disable vimagit plugin.
 Default value is 1.
 > let g:magit_enabled=[01]
 
+#### g:magit_git_cmd
+
+Git command, may be simply simply "git" if git is in your path. Defualt is "git"
+> let g:magit_git_cmd="git"
+
 #### g:magit_show_help
 
 To disable chatty inline help in magit buffer (default 1)

@@ -50,6 +50,8 @@ let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_de
 let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         1)
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
+let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
+
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 
 if ( g:magit_refresh_gitgutter == 1 )
@@ -127,8 +129,8 @@ function! s:mg_get_info()
 	silent put =g:magit_sections.info
 	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
-	let branch=magit#utils#system("git rev-parse --abbrev-ref HEAD")
-	let commit=magit#utils#system("git show -s --oneline")
+	let branch=magit#utils#system(g:magit_git_cmd . " rev-parse --abbrev-ref HEAD")
+	let commit=magit#utils#system(g:magit_git_cmd . " show -s --oneline")
 	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
 	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
 	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
@@ -202,7 +204,7 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_stashes()
-	silent! let stash_list=magit#utils#systemlist("git stash list")
+	silent! let stash_list=magit#utils#systemlist(g:magit_git_cmd . " stash list")
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . stash_list
 	endif
@@ -240,9 +242,11 @@ function! s:mg_get_commit_section()
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit -e 2> /dev/null")
+			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+						\ g:magit_git_cmd . " commit -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false git commit --amend -e 2> /dev/null")
+			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+						\ g:magit_git_cmd . " commit --amend -e 2> /dev/null")
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=<SID>mg_comment_char()
@@ -256,7 +260,8 @@ endfunction
 " s:mg_comment_char: this function gets the commentChar from git config
 function! s:mg_comment_char()
 	silent! let git_result=magit#utils#strip(
-				\ magit#utils#system("git config --get core.commentChar"))
+				\ magit#utils#system(g:magit_git_cmd .
+				\" config --get core.commentChar"))
 	if ( v:shell_error != 0 )
 		return '#'
 	else
@@ -330,15 +335,16 @@ endfunction
 " return no
 function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
-		silent let git_result=magit#utils#system("git commit --amend -C HEAD")
+		silent let git_result=magit#utils#system(g:magit_git_cmd .
+					\ " commit --amend -C HEAD")
 	else
 		let commit_msg=s:mg_get_commit_msg()
 		let amend_flag=""
 		if ( a:mode == 'CA' )
 			let amend_flag=" --amend "
 		endif
-		silent! let git_result=magit#utils#system(
-					\ "git commit " . amend_flag . " --file - ", commit_msg)
+		silent! let git_result=magit#utils#system(g:magit_git_cmd .
+					\ " commit " . amend_flag . " --file - ", commit_msg)
 	endif
 	if ( v:shell_error != 0 )
 		echoerr "Git error: " . git_result

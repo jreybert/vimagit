@@ -1,8 +1,6 @@
-let s:git_cmd="GIT_CONFIG=/dev/null GIT_CONFIG_NOSYSTEM=1 XDG_CONFIG_HOME=/ git"
-
 function! magit#git#get_version()
 	if ( !exists("s:git_version") )
-		let s:git_version = matchlist(system(s:git_cmd . " --version"),
+		let s:git_version = matchlist(system(g:magit_git_cmd . " --version"),
 		\ 'git version \(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(g\x\+\)')[1:5]
 	endif
 	return s:git_version
@@ -26,7 +24,7 @@ function! magit#git#get_status()
 	" we can't use git status -z here, because system doesn't make the
 	" difference between NUL and NL. -status z terminate entries with NUL,
 	" instead of NF
-	let status_list=magit#utils#systemlist(s:git_cmd . " status --porcelain")
+	let status_list=magit#utils#systemlist(g:magit_git_cmd . " status --porcelain")
 	for file_status_line in status_list
 		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
@@ -44,7 +42,7 @@ function! magit#git#is_work_tree(path)
 	try
 		call magit#utils#lcd(a:path)
 		let top_dir=magit#utils#strip(
-					\ system(s:git_cmd . " rev-parse --show-toplevel")) . "/"
+					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
 			return ''
 		endif
@@ -62,11 +60,11 @@ function! magit#git#set_top_dir(path)
 	try
 		call magit#utils#lcd(a:path)
 		let top_dir=magit#utils#strip(
-					\ system(s:git_cmd . " rev-parse --show-toplevel")) . "/"
+					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
 			throw "magit: git-show-toplevel error: " . top_dir
 		endif
-		let git_dir=magit#utils#strip(system(s:git_cmd . " rev-parse --git-dir")) . "/"
+		let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --git-dir")) . "/"
 		if ( v:shell_error != 0 )
 			throw "magit: git-git-dir error: " . git_dir
 		endif
@@ -108,7 +106,7 @@ endfunction
 function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
 	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
-	let git_cmd=s:git_cmd . " diff --no-ext-diff " . staged_flag .
+	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
 				\ " --no-color -p -- " . dev_null . " "
 				\ . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
@@ -137,7 +135,7 @@ endfunction
 function! magit#git#sub_check(submodule, check_level)
 	let ignore_flag = ( a:check_level == 'modified' ) ?
 				\ '--ignore-submodules=untracked' : ''
-	let git_cmd=s:git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
+	let git_cmd=g:magit_git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
 	return ( !empty(magit#utils#systemlist(git_cmd)) )
 endfunction
 
@@ -148,7 +146,7 @@ endfunction
 " param[in] mode: can be staged or unstaged
 function! magit#git#git_sub_summary(filename, mode)
 	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
-	let git_cmd=s:git_cmd . " submodule summary " . staged_flag . " HEAD "
+	let git_cmd=g:magit_git_cmd . " submodule summary " . staged_flag . " HEAD "
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
@@ -173,7 +171,7 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_add(filename)
-	let git_cmd=s:git_cmd . " add --no-ignore-removal -- " . a:filename
+	let git_cmd=g:magit_git_cmd . " add --no-ignore-removal -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
 		echohl WarningMsg
@@ -189,7 +187,7 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_checkout(filename)
-	let git_cmd=s:git_cmd . " checkout -- " . a:filename
+	let git_cmd=g:magit_git_cmd . " checkout -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
 		echohl WarningMsg
@@ -205,7 +203,7 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_reset(filename)
-	let git_cmd=s:git_cmd . " reset HEAD -- " . a:filename
+	let git_cmd=g:magit_git_cmd . " reset HEAD -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
 		echohl WarningMsg
@@ -227,7 +225,7 @@ function! magit#git#git_apply(header, selection)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	let git_cmd=s:git_cmd . " apply --recount --no-index --cached -"
+	let git_cmd=g:magit_git_cmd . " apply --recount --no-index --cached -"
 	silent let git_result=magit#utils#system(git_cmd, selection)
 	if ( v:shell_error != 0 )
 		echohl WarningMsg
@@ -256,7 +254,7 @@ function! magit#git#git_unapply(header, selection, mode)
 		let selection += [ '' ]
 	endif
 	silent let git_result=magit#utils#system(
-		\ s:git_cmd . " apply --recount --no-index " . cached_flag . " --reverse - ",
+		\ g:magit_git_cmd . " apply --recount --no-index " . cached_flag . " --reverse - ",
 		\ selection)
 	if ( v:shell_error != 0 )
 		echohl WarningMsg
@@ -269,5 +267,5 @@ function! magit#git#git_unapply(header, selection, mode)
 endfunction
 
 function! magit#git#submodule_status()
-	return system(s:git_cmd . " submodule status")
+	return system(g:magit_git_cmd . " submodule status")
 endfunction
