@@ -34,11 +34,14 @@ endfunction
 " Use this function with caution: to be effective, the undo must be ack'ed
 " with a change. The hack is the line
 " exe "normal a \<BS>\<Esc>"
-" If the cursor is on a closed folding, it will open it!
+" We move on first line to make this trick where it should be no folding
 function! magit#utils#clear_undo()
 	let old_undolevels = &l:undolevels
+	let cur_pos = line('.')
 	setlocal undolevels=-1
+	call cursor(1, 0)
 	exe "normal a \<BS>\<Esc>"
+	call cursor(cur_pos, 0)
 	let &l:undolevels = old_undolevels
 	unlet old_undolevels
 endfunction
