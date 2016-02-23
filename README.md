@@ -24,16 +24,17 @@ Take a look at [TL;DR](#tldr) to start using it immediatly.
 * [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
 * [x] Start to write the commit message in one key press, commit also in one key press.
 * [x] Modify in line the content just before staging it.
-* [x] Move easily through hunks.
+* [x] Jump to the file containing the hunk at cursor position.
+* [x] Move easily through hunks in the magit buffer.
 * [x] Handle multiple git repositories within one vim instance.
 * [x] Add file to .gitignore file.
+* [x] Update vim-gitgutter signs at each git status changes.
 * [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
 More to come:
 * Make vimagit more efficient for huge repositories, with a lot of diffs.
 * Add a push function, taking care if needed about the remote repository and branch.
 * Handle commit fixup! and squash!, with a smart git log popup.
-* Handle multiple git repositories within one vim session.
 * Stage multiple hunks or file by visually selecting them.
 * Go through history, cherry-pick changes.
 * Handle stash: add, pop, apply, drop...
