@@ -192,7 +192,7 @@ endfunction
 " param[in] filename: filename to search
 " return: window id, 0 if not found
 function! magit#utils#search_buffer_in_windows(filename)
-	let cur_win = winnr('$')
+	let cur_win = winnr()
 	let last_win = winnr('#')
 	let files={}
 	windo if ( !empty(@%) ) | let files[@%] = winnr() | endif
