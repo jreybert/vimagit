@@ -1037,8 +1037,7 @@ endfunction
 " jump to last window and open buffer, at the beginning of the hunk
 function! magit#jump_to()
 	let section=<SID>mg_get_section()
-	let filename= magit#git#top_dir() . <SID>mg_get_filename()
-	" let file = b:state.get_file(section, filename)
+	let filename=fnameescape(magit#git#top_dir() . <SID>mg_get_filename())
 	let line=substitute(s:mg_get_hunkheader(),
 				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
 	let context = magit#git#get_config("diff.context", 3)
@@ -1054,11 +1053,7 @@ function! magit#jump_to()
 		execute buf_win."wincmd w"
 	endif
 
-	if ( bufexists(filename) )
-		execute "buffer " . "+" . line . " " filename
-	else
 		execute "edit " . "+" . line . " " filename
-	endif
 endfunction
 
 command! Magit call magit#show_magit('v')
