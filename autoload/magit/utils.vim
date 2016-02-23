@@ -191,7 +191,8 @@ endfunction
 function! magit#utils#search_buffer_in_windows(filename)
 	let files={}
 	windo if ( !empty(@%) ) | let files[@%] = winnr() | endif
-	return ( has_key(files, a:filename) ) ? files[a:filename] : 0
+	return ( has_key(files, buffer_name(a:filename)) ) ?
+				\files[buffer_name(a:filename)] : 0
 endfunction
 
 function! magit#utils#start_profile(...)

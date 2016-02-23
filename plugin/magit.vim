@@ -1037,7 +1037,7 @@ endfunction
 " jump to last window and open buffer, at the beginning of the hunk
 function! magit#jump_to()
 	let section=<SID>mg_get_section()
-	let filename=<SID>mg_get_filename()
+	let filename= magit#git#top_dir() . <SID>mg_get_filename()
 	" let file = b:state.get_file(section, filename)
 	let line=substitute(s:mg_get_hunkheader(),
 				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
