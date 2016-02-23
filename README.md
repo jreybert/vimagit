@@ -189,6 +189,20 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
 
+##### E
+If cursor is in a hunk, cursor will move in the file containing this hunk, at
+ the line of the beginning of the hunk.
+ * if the file is already visible in a |window|, cursor moves to this window at
+ the hunk line
+ * if there is more than one window open, cursor moves to last accessed window
+ and open buffer at the hunk line
+ * if there is only magit window opened, split vertically, moves cursor to new
+ split and open buffer at the hunk line
+
+E means 'edit'.
+
+:exclamation: this function is extremly powerful, just give it a try!
+
 ##### N,P
  * Move to **N**ext or **P**revious hunk.
 
