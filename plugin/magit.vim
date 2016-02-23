@@ -82,6 +82,8 @@ let s:magit_inline_help = {
 \'       if visual selection in hunk (with v), mark selected lines "to be'
 \'       staged"',
 \'F      if cursor on filename header or hunk, stage whole file',
+\'E      edit, jump cursor to file containing this hunk',
+\'N,P    move to Next/Previous hunk in magit buffer',
 \'DDD    discard file changes (warning, changes will be lost)',
 \'I      add file in .gitgnore',
 \],
@@ -92,6 +94,7 @@ let s:magit_inline_help = {
 \'       commit message',
 \'CF     amend staged changes to previous commit without modifying the previous',
 \'       commit message',
+\'CU     commit undo, cancel and close current commit message',
 \'R      refresh magit buffer',
 \'q      close magit buffer',
 \'h      toggle help showing in magit buffer',
