@@ -567,6 +567,9 @@ function! magit#update_buffer(...)
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
+		if exists('#User#VimagitEnterCommit')
+			doautocmd User VimagitEnterCommit
+		endif
 	endif
 
 	set filetype=magit
