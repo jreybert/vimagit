@@ -227,6 +227,10 @@ function! s:mg_get_stashes()
 	endif
 endfunction
 
+" b:magit_current_commit_msg: this variable store the current commit message,
+" saving it among refreshes (remember? the whole buffer is wiped at each
+" refresh).
+let b:magit_current_commit_msg = []
 
 " s:mg_get_commit_section: this function writes in current buffer the commit
 " section. It is a commit message, depending on b:magit_current_commit_mode
@@ -241,7 +245,6 @@ function! s:mg_get_commit_section()
 		silent put =g:magit_sections.commit_start
 		call <SID>mg_section_help('commit')
 		silent put =magit#utils#underline(g:magit_sections.commit_start)
-		silent put =''
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
@@ -257,6 +260,10 @@ function! s:mg_get_commit_section()
 			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 			silent put =commit_msg
 		endif
+		if ( !empty(b:magit_current_commit_msg) )
+			silent put =b:magit_current_commit_msg
+		endif
+		silent put =''
 		silent put =g:magit_sections.commit_end
 	endif
 endfunction
@@ -274,15 +281,20 @@ endfunction
 " (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
+" \param[in] out_of_block: bool, if set it will search out of block
 " return: [startline, endline]
-function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
+function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern,
+			\ ... )
 
+	let out_of_block = a:0 == 1 ? a:1 : 0
 	let upper_limit=0
 	if ( a:upper_limit_pattern != "" )
-		let upper_limit=search(a:upper_limit_pattern, "cbnW")
+		let upper_limit=search(a:upper_limit_pattern, "cbn" .
+					\ out_of_block == 1 ? "" : "W")
 	endif
 
-	let start=search(a:start_pattern[0], "cbnW")
+	let start=search(a:start_pattern[0], "cbn" .
+				\ out_of_block == 1 ? "" : "W")
 	if ( start == 0 || start < upper_limit )
 		throw "out_of_block"
 	endif
@@ -291,7 +303,8 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let end=0
 	let min=line('$')
 	for end_p in a:end_pattern
-		let curr_end=search(end_p[0], "nW")
+		let curr_end=search(end_p[0], "n" .
+					\ out_of_block == 1 ? "" : "W")
 		if ( curr_end != 0 && curr_end <= min )
 			let end=curr_end + end_p[1]
 			let min=curr_end
@@ -312,8 +325,8 @@ function! s:mg_get_commit_msg()
 	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
 	let [start, end] = <SID>mg_search_block(
 				\ [commit_section_pat_start, commit_jump_line],
-				\ [ [commit_section_pat_end, -1] ], "")
-	return getline(start, end)
+				\ [ [commit_section_pat_end, -1] ], "", 1)
+	return filter(getline(start, end), "v:val != ''")
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
@@ -532,6 +545,15 @@ function! magit#update_buffer(...)
 		echoerr "Not in magit buffer but in " . buffer_name
 		return
 	endif
+
+	echom "mode " . b:magit_current_commit_mode
+	if ( b:magit_current_commit_mode != '' )
+		try
+			let b:magit_current_commit_msg = s:mg_get_commit_msg()
+		catch /^out_of_block$/
+			let b:magit_current_commit_msg = []
+		endtry
+	endif
 	" FIXME: find a way to save folding state. According to help, this won't
 	" help:
 	" > This does not save fold information.
@@ -567,6 +589,9 @@ function! magit#update_buffer(...)
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
+		if exists('#User#VimagitEnterCommit')
+			doautocmd User VimagitEnterCommit
+		endif
 	endif
 
 	set filetype=magit
@@ -982,6 +1007,7 @@ function! magit#commit_command(mode)
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
 			let b:magit_current_commit_mode=''
+			let b:magit_current_commit_msg=[]
 		else
 			let b:magit_current_commit_mode=a:mode
 		endif
@@ -1004,6 +1030,7 @@ function! magit#close_commit()
   endif
 
   let b:magit_current_commit_mode=''
+  let b:magit_current_commit_msg=[]
   call magit#update_buffer()
 endfunction
 
