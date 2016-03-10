@@ -336,7 +336,7 @@ function! s:mg_get_commit_msg(...)
 			call cursor(old_pos, 0)
 		endif
 	endtry
-	return filter(getline(start, end), "v:val != ''")
+	return magit#utils#strip_array(getline(start, end))
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section

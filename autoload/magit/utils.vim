@@ -115,6 +115,22 @@ function! magit#utils#strip(string)
 	return substitute(a:string, '^\s*\(.\{-}\)\s*\n\=$', '\1', '')
 endfunction
 
+" magit#utils#strip_array: helper function to strip an array (remove empty rows
+" on both sides)
+" param[in] array: array to strop
+" return: stripped array
+function! magit#utils#strip_array(array)
+	let start = 0
+	while ( a:array[start] == '' )
+		let start += 1
+	endwhile
+	let end = len(a:array) - 1
+	while ( a:array[end] == '' )
+		let end -= 1
+	endwhile
+	return a:array[ start : end ]
+endfunction
+
 " magit#utils#join_list: helper function to concatente a list of strings with newlines
 " param[in] list: List to to concat
 " return: concatenated list
