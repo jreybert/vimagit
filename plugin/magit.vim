@@ -227,6 +227,10 @@ function! s:mg_get_stashes()
 	endif
 endfunction
 
+" b:magit_current_commit_msg: this variable store the current commit message,
+" saving it among refreshes (remember? the whole buffer is wiped at each
+" refresh).
+let b:magit_current_commit_msg = []
 
 " s:mg_get_commit_section: this function writes in current buffer the commit
 " section. It is a commit message, depending on b:magit_current_commit_mode
@@ -241,7 +245,6 @@ function! s:mg_get_commit_section()
 		silent put =g:magit_sections.commit_start
 		call <SID>mg_section_help('commit')
 		silent put =magit#utils#underline(g:magit_sections.commit_start)
-		silent put =''
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
@@ -257,6 +260,10 @@ function! s:mg_get_commit_section()
 			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 			silent put =commit_msg
 		endif
+		if ( !empty(b:magit_current_commit_msg) )
+			silent put =b:magit_current_commit_msg
+		endif
+		silent put =''
 		silent put =g:magit_sections.commit_end
 	endif
 endfunction
@@ -306,14 +313,30 @@ endfunction
 
 " s:mg_get_commit_msg: get the commit meesgae currently in commit section
 " return a string containg the commit message
-function! s:mg_get_commit_msg()
+" \param[in] out_of_block (optional): if set, will first move the cursor to
+" the commit block before getting content
+function! s:mg_get_commit_msg(...)
 	let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 	let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
 	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
-	let [start, end] = <SID>mg_search_block(
-				\ [commit_section_pat_start, commit_jump_line],
-				\ [ [commit_section_pat_end, -1] ], "")
-	return getline(start, end)
+	let out_of_block = a:0 == 1 ? a:1 : 0
+	if ( out_of_block )
+		let old_pos=line('.')
+		let commit_pos=search(commit_section_pat_start, "cw")
+		if ( commit_pos != 0 )
+			call cursor(commit_pos+1)
+		endif
+	endif
+	try
+		let [start, end] = <SID>mg_search_block(
+					\ [commit_section_pat_start, commit_jump_line],
+					\ [ [commit_section_pat_end, -1] ], "")
+	finally
+		if ( out_of_block && commit_pos != 0 )
+			call cursor(old_pos)
+		endif
+	endtry
+	return filter(getline(start, end), "v:val != ''")
 endfunction
 
 " s:mg_git_commit: commit staged stuff with message prepared in commit section
@@ -531,6 +554,14 @@ function! magit#update_buffer(...)
 	if ( buffer_name !~ 'magit://.*' )
 		echoerr "Not in magit buffer but in " . buffer_name
 		return
+	endif
+
+	if ( b:magit_current_commit_mode != '' )
+		try
+			let b:magit_current_commit_msg = s:mg_get_commit_msg(1)
+		catch /^out_of_block$/
+			let b:magit_current_commit_msg = []
+		endtry
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
 	" help:
@@ -985,6 +1016,7 @@ function! magit#commit_command(mode)
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
 			let b:magit_current_commit_mode=''
+			let b:magit_current_commit_msg=[]
 		else
 			let b:magit_current_commit_mode=a:mode
 		endif
@@ -1007,6 +1039,7 @@ function! magit#close_commit()
   endif
 
   let b:magit_current_commit_mode=''
+  let b:magit_current_commit_msg=[]
   call magit#update_buffer()
 endfunction
 
