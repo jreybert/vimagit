@@ -260,7 +260,7 @@ be raised only if the buffer is currently opened in vim.
 
 ##### VimagitCommitEnter
 
-This event is raised when the commit section is enabled and the cursor is
+This event is raised when the commit section opens and the cursor is
 placed in this section. For example, the user may want to go straight into
 insert mode when committing, defining this |autocmd| in its vimrc:
 

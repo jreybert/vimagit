@@ -324,7 +324,7 @@ function! s:mg_get_commit_msg(...)
 		let old_pos=line('.')
 		let commit_pos=search(commit_section_pat_start, "cw")
 		if ( commit_pos != 0 )
-			call cursor(commit_pos+1)
+			call cursor(commit_pos+1, 0)
 		endif
 	endif
 	try
@@ -333,7 +333,7 @@ function! s:mg_get_commit_msg(...)
 					\ [ [commit_section_pat_end, -1] ], "")
 	finally
 		if ( out_of_block && commit_pos != 0 )
-			call cursor(old_pos)
+			call cursor(old_pos, 0)
 		endif
 	endtry
 	return filter(getline(start, end), "v:val != ''")
@@ -594,13 +594,14 @@ function! magit#update_buffer(...)
 
 	call magit#utils#clear_undo()
 
-	if ( b:magit_current_commit_mode != '' )
+	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
 		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
 		if exists('#User#VimagitEnterCommit')
 			doautocmd User VimagitEnterCommit
 		endif
+		let b:magit_commit_newly_open = 0
 	endif
 
 	set filetype=magit
@@ -719,6 +720,7 @@ function! magit#show_magit(display, ...)
 	"       'CA': amend commit mode, next commit command will ament current commit
 	"       'CF': fixup commit mode, it should not be a global state mode
 	let b:magit_current_commit_mode=''
+	let b:magit_commit_newly_open=0
 
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
@@ -1019,6 +1021,7 @@ function! magit#commit_command(mode)
 			let b:magit_current_commit_msg=[]
 		else
 			let b:magit_current_commit_mode=a:mode
+			let b:magit_commit_newly_open=1
 		endif
 	endif
 	call magit#update_buffer()
