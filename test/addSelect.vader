@@ -56,4 +56,15 @@ Execute (Stage marks):
     let diff=Git_diff('staged', Get_filename())
     call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_4_marks_diff.expect', diff)
 
+Execute (Unstage selection):
+    call Cd_test_sub()
+    Magit
+    call Search_file('staged')
+    call magit#open_close_folding(1)
+    %foldopen!
+    call Search_pattern("^+\t\tif product.cover_url is not '':$")
+    execute "normal! v4j:call magit#stage_vselect()\<cr>"
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename())
+    call Expect_diff(g:test_script_dir . 'addSelect/addSelect_' . Get_safe_filename() . '_5_vselect_diff.expect', diff)
 Include: cleanup.inc
