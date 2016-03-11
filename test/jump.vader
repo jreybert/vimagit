@@ -1,0 +1,66 @@
+Include: setup.inc
+
+Execute (Jump to hunk):
+    call Cd_test_sub()
+    Magit
+    call Search_file('unstaged', 0)
+    call magit#open_close_folding(1)
+    %foldopen!
+
+    call Search_pattern("^+\t\tif product.cover_url is not '':$")
+    call magit#jump_to()
+    let buf_nr = winnr()
+    Assert( winnr('$') == 2 ), 'There should be 2 windows' . winnr('$')
+    Assert( expand("%:t") == fnamemodify(expand(Get_filename(0)), ":t")),
+    \ 'Did not jump in good file, expect ' . Get_filename(0) . ' and got '.
+    \ expand("%")
+    Assert( line('.') == Get_filename(1) ), 'Did not jump at good line, '.
+    \'expect ' .Get_filename(1) . ' and jumped to ' . getline('.')
+    wincmd p " go to previous window, should be magit
+    Assert( &ft == 'magit' ), 'Did not jump back to magit window'
+
+    call Search_pattern("^ \tbook_copy = models.ForeignKey(Book_copy)$")
+    call magit#jump_to()
+    Assert( winnr('$') == 2 ), 'There should be 2 windows' . winnr('$')
+    Assert( winnr() == buf_nr ), 'It may have open a existing window'
+    Assert( expand("%:t") == fnamemodify(expand(Get_filename(0)), ":t")),
+    \ 'Did not jump in good file, expect ' . Get_filename(0) . ' and got '.
+    \ expand("%")
+    Assert( line('.') == Get_filename(2) ), 'Did not jump at good line, '.
+    \'expect ' .Get_filename(2) . ' and jumped to ' . getline('.')
+    wincmd p " go to previous window, should be magit
+    Assert( &ft == 'magit' ), 'Did not jump back to magit window'
+    call Search_file('unstaged', 3)
+
+    call Search_file('unstaged', 3)
+    call Search_pattern("^ def search_isbn(isbn):$")
+    call magit#jump_to()
+    Assert( winnr('$') == 2 ), 'There should be 2 windows' . winnr('$')
+    Assert( winnr() == buf_nr ), 'It may have open a existing window'
+    Assert( expand("%:t") == fnamemodify(expand(Get_filename(3)), ":t")),
+    \ 'Did not jump in good file, expect ' . Get_filename(3) . ' and got '.
+    \ expand("%")
+    Assert( line('.') == Get_filename(4) ), 'Did not jump at good line, '.
+    \'expect ' .Get_filename(4) . ' and jumped to ' . getline('.')
+    wincmd p " go to previous window, should be magit
+    Assert( &ft == 'magit' ), 'Did not jump back to magit window'
+
+    call Search_file('unstaged', 0)
+    call magit#stage_file()
+    call Search_file('staged', 0)
+    call magit#open_close_folding(1)
+    %foldopen!
+
+    call Search_pattern("^+\t\tif product.cover_url is not '':$")
+    call magit#jump_to()
+    let buf_nr = winnr()
+    Assert( winnr('$') == 2 ), 'There should be 2 windows' . winnr('$')
+    Assert( expand("%:t") == fnamemodify(expand(Get_filename(0)), ":t")),
+    \ 'Did not jump in good file, expect ' . Get_filename(0) . ' and got '.
+    \ expand("%")
+    Assert( line('.') == Get_filename(1) ), 'Did not jump at good line, '.
+    \'expect ' .Get_filename(1) . ' and jumped to ' . getline('.')
+    wincmd p " go to previous window, should be magit
+    Assert( &ft == 'magit' ), 'Did not jump back to magit window'
+
+Include: cleanup.inc
