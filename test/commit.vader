@@ -1,0 +1,78 @@
+Include: setup.inc
+
+Execute (Stage untracked file with magit#stage_hunk on end hunk):
+    call Cd_test_sub()
+    Magit
+
+    Log("Stage first hunk")
+    call Search_file('unstaged', 0)
+    call magit#open_close_folding(1)
+    /^@@ 
+    call Move_relative(+3)
+    call Cursor_position()
+    call magit#stage_hunk(0)
+
+    Log("Check first stage")
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename(0))
+    call Expect_diff(g:test_script_dir . 'commit/commit_diff1.expect', diff)
+    call Cd_test_sub()
+
+    Log("Start a commit")
+    call magit#commit_command('CC')
+    call append(line('.'), ['Add bootstrap file', '', 'Some description text', 'On multiple lines', '', 'With blanks'])
+
+    Log("Stage a second hunk")
+    call Search_file('unstaged', 1)
+    call magit#stage_hunk(0)
+
+    Log("Check second stage")
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename(1))
+    call Expect_diff(g:test_script_dir . 'commit/commit_diff2.expect', diff)
+
+    Log("Complete commit message")
+    call magit#commit_command('CC')
+    call append(line('.'), ['Add more line after refresh', ''])
+    call Cd_test_sub()
+
+    Log("Update buffer")
+    call cursor(1, 0)
+    call magit#update_buffer()
+    call cursor(line('$'), 0)
+    call magit#update_buffer()
+
+    call magit#commit_command('CC')
+    call magit#commit_command('CC')
+    call Cd_test()
+    let commit_msg=Git_commit_msg('HEAD')
+    call Expect_diff(g:test_script_dir . 'commit/commit_commit1.expect', commit_msg)
+
+    Log("Stage third hunk")
+    call Search_file('unstaged', 0)
+    call magit#open_close_folding(1)
+    /^@@ 
+    call magit#stage_hunk(0)
+
+    Log("Check third stage")
+    call Cd_test()
+    let diff=Git_diff('staged', Get_filename(0))
+    call Expect_diff(g:test_script_dir . 'commit/commit_diff3.expect', diff)
+
+    Log("Start a commit")
+    call magit#commit_command('CC')
+    call append(line('.'), ['Dont want these lines'])
+    call Cd_test_sub()
+
+    Log("Close commit")
+    call magit#close_commit()
+
+    Log("Finish commit")
+    call magit#commit_command('CC')
+    call append(line('.'), ['Uber commit message'])
+    call magit#commit_command('CC')
+    call Cd_test()
+    let commit_msg=Git_commit_msg('HEAD')
+    call Expect_diff(g:test_script_dir . 'commit/commit_commit2.expect', commit_msg)
+
+Include: cleanup.inc
