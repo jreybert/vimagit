@@ -431,13 +431,25 @@ function! s:mg_create_diff_from_select(select_lines)
 	call add(selection, current_hunk.header)
 
 	let current_line = starthunk + 1
+	" when staging by visual selection, lines out of selection must be
+	" ignored. To do so, + lines are simply ignored, - lines are considered as
+	" untouched.
+	" For unstaging, - lines must be ignored and + lines considered untouched.
+	if ( section == 'unstaged' )
+		let remove_line_char = '+'
+		let replace_line_char = '-'
+	else
+		let remove_line_char = '-'
+		let replace_line_char = '+'
+	endif
 	for hunk_line in current_hunk.lines
 		if ( index(a:select_lines, current_line) != -1 )
 			call add(selection, getline(current_line))
-		elseif ( hunk_line =~ '^+.*' )
+		elseif ( hunk_line =~ '^'.remove_line_char.'.*' )
 			" just ignore these lines
-		elseif ( hunk_line =~ '^-.*' )
-			call add(selection, substitute(hunk_line, '^-\(.*\)$', ' \1', ''))
+		elseif ( hunk_line =~ '^'.replace_line_char.'.*' )
+			call add(selection, substitute(hunk_line,
+						\ '^'.replace_line_char.'\(.*\)$', ' \1', ''))
 		elseif ( hunk_line =~ '^ .*' )
 			call add(selection, hunk_line)
 		else
