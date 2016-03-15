@@ -1,3 +1,31 @@
+Release 1.6.0
+=============
+
+New feature *jump* is really awesome, you must try it!
+
+Features
+--------
+
+* From a hunk in the magit buffer, press *E* and *jump* the corresponding file
+  at the diff position. If this file is already opened in a window, cursor move
+  to this window.
+* Add events at key points in magit buffer. User can plug commands to these
+  events. This new feature brings the two next features:
+  * If vim-gitgutter is installed, auto update its signs when git status is
+    updated.
+  * You can find in help a tip to enter in commit mode in insert mode.
+* User can set its own git exec binary with g:magit_git_cmd variable.
+
+Fixes
+-----
+
+* Commit message is preserved when the magit buffer is refreshed (fix #57)
+* It is now possible to unstage by selection (fix #32)
+* When opening a magit session, if a magit buffer for this git repository is
+  already open, jump to this buffer.
+* Inline help shows mapped key instead of default (fix #72)
+* Fix peculiar folding behavior when magit buffer is refreshing.
+
 Release 1.5.2
 =============
 
