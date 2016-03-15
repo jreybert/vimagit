@@ -68,39 +68,58 @@ endif
 " s:magit_inline_help: Dict containing inline help for each section
 let s:magit_inline_help = {
 			\ 'staged': [
-\'S      if cursor on filename header, unstage file',
+\g:magit_stage_hunk_mapping
+\.'      if cursor on filename header, unstage file',
 \'       if cursor in hunk, unstage hunk',
-\'F      if cursor on filename header or hunk, unstage whole file',
+\g:magit_stage_file_mapping
+\.'      if cursor on filename header or hunk, unstage whole file',
 \],
 			\ 'unstaged': [
-\'S      if cursor on filename header, stage file',
+\g:magit_stage_hunk_mapping
+\.'      if cursor on filename header, stage file',
 \'       if cursor in hunk, stage hunk',
 \'       if visual selection in hunk (with v), stage selection',
 \'       if lines marked in hunk (with M), stage marked lines',
-\'L      stage the line under the cursor',
-\'M      if cursor in hunk, mark line under cursor "to be staged"',
+\g:magit_stage_line_mapping
+\.'      stage the line under the cursor',
+\g:magit_mark_line_mapping
+\.'      if cursor in hunk, mark line under cursor "to be staged"',
 \'       if visual selection in hunk (with v), mark selected lines "to be'
 \'       staged"',
-\'F      if cursor on filename header or hunk, stage whole file',
-\'E      edit, jump cursor to file containing this hunk',
-\'N,P    move to Next/Previous hunk in magit buffer',
-\'DDD    discard file changes (warning, changes will be lost)',
-\'I      add file in .gitgnore',
+\g:magit_stage_file_mapping
+\.'      if cursor on filename header or hunk, stage whole file',
+\g:magit_edit_mapping
+\.'      edit, jump cursor to file containing this hunk',
+\g:magit_jump_next_hunk.','.g:magit_jump_prev_hunk
+\.  '    move to Next/Previous hunk in magit buffer',
+\g:magit_discard_hunk_mapping
+\.  '    discard file changes (warning, changes will be lost)',
+\g:magit_ignore_mapping
+\.'      add file in .gitgnore',
 \],
 			\ 'global': [
-\'<CR>   if cursor on filename header line, unhide diffs for this file',
-\'CC     set commit mode to normal, and show "Commit message" section',
-\'CA     set commit mode amend, and show "Commit message" section with previous',
+\g:magit_folding_toggle_mapping[0]
+\.   '   if cursor on filename header line, unhide diffs for this file',
+\g:magit_commit_mapping
+\. '     set commit mode to normal, and show "Commit message" section',
+\g:magit_commit_amend_mapping
+\. '     set commit mode amend, and show "Commit message" section with previous',
 \'       commit message',
-\'CF     amend staged changes to previous commit without modifying the previous',
+\g:magit_commit_fixup_mapping
+\. '     amend staged changes to previous commit without modifying the previous',
 \'       commit message',
-\'CU     commit undo, cancel and close current commit message',
-\'R      refresh magit buffer',
-\'q      close magit buffer',
-\'h      toggle help showing in magit buffer',
+\g:magit_close_commit_mapping
+\. '     commit undo, cancel and close current commit message',
+\g:magit_reload_mapping
+\.'      refresh magit buffer',
+\g:magit_close_mapping
+\.'      close magit buffer',
+\g:magit_toggle_help_mapping
+\.'      toggle help showing in magit buffer',
 \],
 			\ 'commit': [
-\'CC     commit all staged changes with commit mode previously set (normal or',
+\g:magit_commit_mapping
+\. '     commit all staged changes with commit mode previously set (normal or',
 \'       amend) with message written in this section',
 \],
 \}
