@@ -59,7 +59,7 @@ endfunction
 
 " helper function to get a commit message (without sha1)
 function! Git_commit_msg(sha1)
-	let commit_cmd="git show --src-prefix='' --dst-prefix='' --format='%s%B' " . a:sha1 .
+	let commit_cmd="git show --src-prefix='' --dst-prefix='' --format='%B' " . a:sha1 .
 				\ " | \\grep -v " . g:index_regex
 	return Git_cmd(commit_cmd)
 endfunction
