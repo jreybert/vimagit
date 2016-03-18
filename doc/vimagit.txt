@@ -1,4 +1,4 @@
-*vimagit*    vimagit is an attempt to reproduce the magnificient Magit to vim.
+*vimagit*    vimagit is an attempt to reproduce the magnificent Magit to vim.
 
 Author:            Jerome Reybert
 Plugin Homepage:   <https://github.com/jreybert/vimagit>
@@ -81,7 +81,7 @@ There are 5 sections:
 * Info: this section display some information about the git repository, like
   the current branch and the HEAD commit.
 * Commit message: this section appears in commit mode (see below). It contains
-  the message to be commited.
+  the message to be committed.
 * Staged changes: this sections contains all staged files/hunks, ready to
   commit.
 * Unstaged changes: this section contains all unstaged and untracked
@@ -223,7 +223,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
              - if there is only magit window opened, split vertically, moves
                cursor to new split and open buffer at the hunk line
             E means 'edit'.
-            NOTE: this function is extremly powerful, just give it a try!
+            NOTE: this function is extremely powerful, just give it a try!
 
                                     *vimagit-N*                *magit#jump_hunk()*
                                     *vimagit-P*
