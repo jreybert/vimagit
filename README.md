@@ -15,7 +15,7 @@ Some screencasts:
 
 This workflow is 100% inspired from magnificent emacs [Magit](https://github.com/magit/magit) plugin.
 
-Take a look at [TL;DR](#tldr) to start using it immediatly.
+Take a look at [TL;DR](#tldr) to start using it immediately.
 
 ## Outstanding features
 
@@ -58,7 +58,7 @@ Travis status:
 * **[master status](https://travis-ci.org/jreybert/vimagit/branches)**: [![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit/branches)
 * **[next status](https://travis-ci.org/jreybert/vimagit/branches)**: [![next build status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)](https://travis-ci.org/jreybert/vimagit/branches)
 
-A lot a features are developped in dev/feature_name branches. While it may be asked to users to test these branches (during a bug fix for example), one is warned that these branches may be heavily rebased/deleted.
+A lot a features are developed in dev/feature_name branches. While it may be asked to users to test these branches (during a bug fix for example), one is warned that these branches may be heavily rebased/deleted.
 
 ## TL;DR
 
@@ -91,7 +91,7 @@ IMPORTANT: mappings can have different meanings regarding the cursor position.
 
 There are 5 sections:
 * Info: this section display some information about the git repository, like the current branch and the HEAD commit.
-* Commit message: this section appears in commit mode (see below). It contains the message to be commited.
+* Commit message: this section appears in commit mode (see below). It contains the message to be committed.
 * Staged changes: this sections contains all staged files/hunks, ready to commit.
 * Unstaged changes: this section contains all unstaged and untracked files/hunks.
 * Stash list: this section contains all stahes.
@@ -202,7 +202,7 @@ If cursor is in a hunk, cursor will move in the file containing this hunk, at
 
 E means 'edit'.
 
-:exclamation: this function is extremly powerful, just give it a try!
+:exclamation: this function is extremely powerful, just give it a try!
 
 ##### N,P
  * Move to **N**ext or **P**revious hunk.

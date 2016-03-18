@@ -132,7 +132,7 @@ function! magit#utils#strip_array(array)
 endfunction
 
 " magit#utils#join_list: helper function to concatente a list of strings with newlines
-" param[in] list: List to to concat
+" param[in] list: List to concat
 " return: concatenated list
 function! magit#utils#join_list(list)
 	return join(a:list, "\n") . "\n"
