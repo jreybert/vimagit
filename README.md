@@ -19,27 +19,22 @@ Take a look at [TL;DR](#tldr) to start using it immediately.
 
 ## Outstanding features
 
-* [x] See all your changes, staged changes, untracked/removed/renamed files in one unique buffer.
-* [x] Staged/unstaged/discard changes with one key press, moving the cursor around. Stage at hunk or file level. Line and partial line staging are ongoing.
-* [x] Stage part of hunks, by visual select, lines or selecting bunch of lines with marks.
-* [x] Start to write the commit message in one key press, commit also in one key press.
-* [x] Modify in line the content just before staging it.
+* [x] Preview all your git changes in one unique buffer, folded at hunk level.
+* [x] Interactively stage/unstage/discard changes with one key press.
+* [x] Stage/unstage at file/hunk/line level.
+* [x] Write the commit message in the same buffer.
 * [x] From a hunk in magit buffer, jump to the file at the diff position.
-* [x] Move easily through hunks in the magit buffer.
-* [x] Handle multiple git repositories within one vim instance.
-* [x] Add file to .gitignore file.
 * [x] Update vim-gitgutter signs when git status is updated.
-* [ ] Chase all corner cases. Please remember that vimagit is at an early development stage. If you try vimagit and nothing is working, please don't throw it, fill an [issue](https://github.com/jreybert/vimagit/issues/new) on github :heart: !
 
 More to come:
-* Make vimagit more efficient for huge repositories, with a lot of diffs.
-* Add a push function, taking care if needed about the remote repository and branch.
-* Handle commit fixup! and squash!, with a smart git log popup.
-* Stage multiple hunks or file by visually selecting them.
-* Go through history, cherry-pick changes.
-* Handle stash: add, pop, apply, drop...
-* Vizualize and checkout branches.
-* Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
+* [ ] Make vimagit more efficient for huge repositories, with a lot of diffs.
+* [ ] Add a push function, taking care if needed about the remote repository and branch.
+* [ ] Handle commit fixup! and squash!, with a smart git log popup.
+* [ ] Stage multiple hunks or file by visually selecting them.
+* [ ] Go through history, cherry-pick changes.
+* [ ] Handle stash: add, pop, apply, drop...
+* [ ] Vizualize and checkout branches.
+* [ ] Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
 > Why should I use vimagit, there are already plethora git plugins for vim?
 
