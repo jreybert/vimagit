@@ -120,12 +120,13 @@ endfunction
 " param[in] array: array to strop
 " return: stripped array
 function! magit#utils#strip_array(array)
+	let array_len = len(a:array)
 	let start = 0
-	while ( a:array[start] == '' )
+	while ( start < array_len && a:array[start] == '' )
 		let start += 1
 	endwhile
-	let end = len(a:array) - 1
-	while ( a:array[end] == '' )
+	let end = array_len - 1
+	while ( end >= 0 && a:array[end] == '' )
 		let end -= 1
 	endwhile
 	return a:array[ start : end ]
