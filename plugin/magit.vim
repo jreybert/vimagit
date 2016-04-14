@@ -32,7 +32,7 @@ let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            
 let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
 let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
-let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       'h' )
+let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       '?' )
 
 let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
@@ -372,16 +372,44 @@ function! s:mg_git_commit(mode) abort
 		silent let git_result=magit#utils#system(g:magit_git_cmd .
 					\ " commit --amend -C HEAD")
 	else
-		let commit_msg=s:mg_get_commit_msg()
-		let amend_flag=""
-		if ( a:mode == 'CA' )
-			let amend_flag=" --amend "
+		let commit_flag=""
+		if ( empty( magit#get_staged_files() ) )
+			let choice = confirm(
+				\ "Do you really want to commit without any staged files?",
+				\ "&Yes\n&No", 2)
+			if ( choice != 1 )
+				return
+			else
+				let commit_flag.=" --allow-empty "
+			endif
 		endif
-		silent! let git_result=magit#utils#system(g:magit_git_cmd .
-					\ " commit " . amend_flag . " --file - ", commit_msg)
+
+		let commit_msg=s:mg_get_commit_msg()
+		if ( empty( commit_msg ) )
+			let choice = confirm(
+				\ "Do you really want to commit with an empty message?",
+				\ "&Yes\n&No", 2)
+			if ( choice != 1 )
+				return
+			else
+				let commit_flag.=" --allow-empty-message "
+			endif
+		endif
+
+		if ( a:mode == 'CA' )
+			let commit_flag.=" --amend "
+		endif
+		let commit_cmd=g:magit_git_cmd . " commit " . commit_flag .
+					\ " --file - "
+		silent! let git_result=magit#utils#system(commit_cmd, commit_msg)
+		let b:magit_current_commit_mode=''
+		let b:magit_current_commit_msg=[]
 	endif
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
+		echohl ErrorMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . commit_cmd
+		echohl None
 	endif
 endfunction
 
@@ -1048,8 +1076,6 @@ function! magit#commit_command(mode)
 			" when we do commit, it is prefered ot commit the way we prepared it
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
-			let b:magit_current_commit_mode=''
-			let b:magit_current_commit_msg=[]
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
@@ -1099,6 +1125,19 @@ function! magit#jump_hunk(dir)
 			endtry
 		endwhile
 	endif
+endfunction
+
+" magit#get_staged_files: function returning an array with staged files names
+" return: an array with staged files names
+function! magit#get_staged_files()
+	return keys(b:state.dict.staged)
+endfunction
+
+" magit#get_staged_files: function returning an array with unstaged files
+" names
+" return: an array with unstaged files names
+function! magit#get_unstaged_files()
+	return keys(b:state.dict.unstaged)
 endfunction
 
 " magit#jump_to: function to move cursor to the file location of the current

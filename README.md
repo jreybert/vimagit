@@ -225,7 +225,7 @@ E means 'edit'.
 ##### q
  * Close the magit buffer
 
-##### h
+##### ?
  * Toggle help showing in magit buffer
 
 #### Autocommand events
