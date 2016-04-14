@@ -32,7 +32,7 @@ let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            
 let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
 let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
-let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       'h' )
+let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       '?' )
 
 let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
