@@ -372,16 +372,44 @@ function! s:mg_git_commit(mode) abort
 		silent let git_result=magit#utils#system(g:magit_git_cmd .
 					\ " commit --amend -C HEAD")
 	else
-		let commit_msg=s:mg_get_commit_msg()
-		let amend_flag=""
-		if ( a:mode == 'CA' )
-			let amend_flag=" --amend "
+		let commit_flag=""
+		if ( empty( magit#get_staged_files() ) )
+			let choice = confirm(
+				\ "Do you really want to commit without any staged files?",
+				\ "&Yes\n&No", 2)
+			if ( choice != 1 )
+				return
+			else
+				let commit_flag.=" --allow-empty "
+			endif
 		endif
-		silent! let git_result=magit#utils#system(g:magit_git_cmd .
-					\ " commit " . amend_flag . " --file - ", commit_msg)
+
+		let commit_msg=s:mg_get_commit_msg()
+		if ( empty( commit_msg ) )
+			let choice = confirm(
+				\ "Do you really want to commit with an empty message?",
+				\ "&Yes\n&No", 2)
+			if ( choice != 1 )
+				return
+			else
+				let commit_flag.=" --allow-empty-message "
+			endif
+		endif
+
+		if ( a:mode == 'CA' )
+			let commit_flag.=" --amend "
+		endif
+		let commit_cmd=g:magit_git_cmd . " commit " . commit_flag .
+					\ " --file - "
+		silent! let git_result=magit#utils#system(commit_cmd, commit_msg)
+		let b:magit_current_commit_mode=''
+		let b:magit_current_commit_msg=[]
 	endif
 	if ( v:shell_error != 0 )
-		echoerr "Git error: " . git_result
+		echohl ErrorMsg
+		echom "Git error: " . git_result
+		echom "Git cmd: " . commit_cmd
+		echohl None
 	endif
 endfunction
 
@@ -1048,8 +1076,6 @@ function! magit#commit_command(mode)
 			" when we do commit, it is prefered ot commit the way we prepared it
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
-			let b:magit_current_commit_mode=''
-			let b:magit_current_commit_msg=[]
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
