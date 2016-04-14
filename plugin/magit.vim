@@ -1101,6 +1101,19 @@ function! magit#jump_hunk(dir)
 	endif
 endfunction
 
+" magit#get_staged_files: function returning an array with staged files names
+" return: an array with staged files names
+function! magit#get_staged_files()
+	return keys(b:state.dict.staged)
+endfunction
+
+" magit#get_staged_files: function returning an array with unstaged files
+" names
+" return: an array with unstaged files names
+function! magit#get_unstaged_files()
+	return keys(b:state.dict.unstaged)
+endfunction
+
 " magit#jump_to: function to move cursor to the file location of the current
 " hunk
 " if this file is already displayed in a window, jump to the window, if not,
