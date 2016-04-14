@@ -265,9 +265,9 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-g:magit_close_mapping*
   q         close magit buffer.
 
-                                    *vimagit-h*              *magit#toggle_help()*
+                                    *vimagit-?*              *magit#toggle_help()*
                                     *vimagit-g:magit_toggle_help_mapping*
-  h         Toggle help showing in magit buffer
+  ?         Toggle help showing in magit buffer
 
 AUTOCMD                                                        *vimagit-autocmd*
 
