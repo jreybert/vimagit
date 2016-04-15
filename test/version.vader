@@ -1,0 +1,9 @@
+Include: setup.inc
+
+Execute (Jump to hunk):
+    let vimagit_git_version=magit#utils#strip(Git_cmd("git --work-tree=".$VIMAGIT_PATH." --git-dir=".$VIMAGIT_PATH."/.git describe --tags --abbrev=0"))
+    call Git_verbose_log("git version:     '" . vimagit_git_version . "'")
+    call Git_verbose_log("vimagit version: '" . magit#show_version() . "'")
+    Assert(vimagit_git_version == magit#show_version())
+
+Include: cleanup.inc

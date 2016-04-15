@@ -5,6 +5,8 @@ if exists('g:loaded_magit') || !executable('git') || &cp
 endif
 let g:loaded_magit = 1
 
+let g:vimagit_version = [1, 6, 0]
+
 " Initialisation {{{
 
 " FIXME: find if there is a minimum vim version required
@@ -1163,6 +1165,12 @@ function! magit#jump_to()
 	endif
 
 		execute "edit " . "+" . line . " " filename
+endfunction
+
+function! magit#show_version()
+	return g:vimagit_version[0] . "." .
+				\ g:vimagit_version[1] . "." .
+				\ g:vimagit_version[2]
 endfunction
 
 command! Magit call magit#show_magit('v')
