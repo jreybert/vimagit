@@ -21,7 +21,7 @@ hi def link fileEntry String
 execute 'syn region gitTitle start=/^$\n' . g:magit_section_re . '/ end=/^$/ contains=titleEntry'
 
 execute 'syn region gitStash start=/' . g:magit_stash_re . '/ end=/\%(' .
- \ g:magit_stash_re . '\)\@=/ contains=stashEntry fold'
+ \ g:magit_end_diff_re . '\|' . g:magit_stash_re . '\)\@=/ contains=gitHunk,stashEntry,@diff fold'
 
 execute 'syn region gitFile start=/' . g:magit_file_re . '/ end=/\%(' .
 			\ g:magit_end_diff_re . '\)\@=/ contains=gitHunk,fileEntry fold'

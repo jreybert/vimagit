@@ -47,7 +47,7 @@ let g:magit_enabled                = get(g:, 'magit_enabled',                   
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
-let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
+let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged', 'stash'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
 let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         1)
@@ -243,7 +243,8 @@ function! s:mg_get_stashes()
 		for stash in stash_list
 			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
 			silent put =stash
-			silent! execute "read !git stash show -p " . stash_id
+			silent execute "read !git stash show -p " . stash_id
+			silent put =''
 		endfor
 	endif
 endfunction
