@@ -164,7 +164,7 @@ function! s:mg_get_info()
 				\ . g:magit_commit_mode[b:magit_current_commit_mode]
 	endif
 	silent put =''
-	silent put ='Press h to display help'
+	silent put ='Press ? to display help'
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
