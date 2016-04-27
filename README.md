@@ -1,11 +1,11 @@
 # vimagit
 
-This is a new (and hopefully very efficient) way to use git from vim.
+Ease your git worflow within vim.
 
-From a very single vim buffer, you can perform all basic git operations. To name a few:
+From a very single vim buffer, you can perform main git operations in few key press. To name a few:
 * Visualize all diffs in your git repository.
-* Stage files/hunks/parts of hunks with single key S.
-* Write or amend your commit message and commit.
+* Stage file, hunks or even just parts of a hunk using a single key press.
+* Write or amend your commit message and commit in the same buffer.
 
 ![Example of vimagit 1.5.1](../gh-pages/images/vimagit_screenshot_1.5.1.png?raw=true "Example of vimagit 1.5.1")
 
@@ -25,15 +25,15 @@ Take a look at [TL;DR](#tldr) to start using it immediately.
 * [x] Write the commit message in the same buffer.
 * [x] From a hunk in magit buffer, jump to the file at the diff position.
 * [x] Update vim-gitgutter signs when git status is updated.
+* [x] Stable. All features are tested in continuous integration.
 
 More to come:
-* [ ] Make vimagit more efficient for huge repositories, with a lot of diffs.
-* [ ] Add a push function, taking care if needed about the remote repository and branch.
-* [ ] Handle commit fixup! and squash!, with a smart git log popup.
-* [ ] Stage multiple hunks or file by visually selecting them.
+* [ ] Add a push function, taking care if needed about the remote repository and branch #24 .
+* [ ] Handle commit fixup! and squash!, with a smart git log popup #23 .
+* [ ] Handle stash: add, pop, apply, drop #26 .
+* [ ] Stage multiple hunks or file by visually selecting them #83 .
 * [ ] Go through history, cherry-pick changes.
-* [ ] Handle stash: add, pop, apply, drop...
-* [ ] Vizualize and checkout branches.
+* [ ] Make vimagit more efficient for huge repositories, with a lot of diffs.
 * [ ] Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
 
 > Why should I use vimagit, there are already plethora git plugins for vim?
