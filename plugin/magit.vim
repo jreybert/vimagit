@@ -263,9 +263,9 @@ let b:magit_current_commit_msg = []
 function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
 		silent put =''
-		silent put =g:magit_sections.commit_start
+		silent put =g:magit_sections.commit
 		call <SID>mg_section_help('commit')
-		silent put =magit#utils#underline(g:magit_sections.commit_start)
+		silent put =magit#utils#underline(g:magit_sections.commit)
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
@@ -285,7 +285,6 @@ function! s:mg_get_commit_section()
 			silent put =b:magit_current_commit_msg
 		endif
 		silent put =''
-		silent put =g:magit_sections.commit_end
 	endif
 endfunction
 
@@ -302,8 +301,11 @@ endfunction
 " (smallest region search)
 " param[in] upperlimit_pattern: regex of upper limit. If start_pattern line is
 " inferior to upper_limit line, block is discarded
+" param[in]: end_pattern_on_cursor: boolean, if true end pattern is also
+" search on cursor position
 " return: [startline, endline]
-function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
+function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern,
+			\ end_pattern_on_cursor)
 
 	let upper_limit=0
 	if ( a:upper_limit_pattern != "" )
@@ -319,7 +321,7 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern)
 	let end=0
 	let min=line('$')
 	for end_p in a:end_pattern
-		let curr_end=search(end_p[0], "nW")
+		let curr_end=search(end_p[0], a:end_pattern_on_cursor ? "c" : "" . "nW")
 		if ( curr_end != 0 && curr_end <= min )
 			let end=curr_end + end_p[1]
 			let min=curr_end
@@ -337,8 +339,9 @@ endfunction
 " \param[in] out_of_block (optional): if set, will first move the cursor to
 " the commit block before getting content
 function! s:mg_get_commit_msg(...)
-	let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
-	let commit_section_pat_end='^'.g:magit_sections.commit_end.'$'
+	let commit_section_pat_start='^'.g:magit_sections.commit.'$'
+	" Get next section pattern with g:magit_default_sections order
+	let commit_section_pat_end='^'.g:magit_sections[g:magit_default_sections[match(g:magit_default_sections, 'commit')+1]].'$'
 	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
 	let out_of_block = a:0 == 1 ? a:1 : 0
 	if ( out_of_block )
@@ -351,7 +354,7 @@ function! s:mg_get_commit_msg(...)
 	try
 		let [start, end] = <SID>mg_search_block(
 					\ [commit_section_pat_start, commit_jump_line],
-					\ [ [commit_section_pat_end, -1] ], "")
+					\ [ [commit_section_pat_end, -1] ], "", 1)
 	finally
 		if ( out_of_block && commit_pos != 0 )
 			call cursor(old_pos, 0)
@@ -432,7 +435,8 @@ function! s:mg_select_file_block()
 				\   [g:magit_bin_re, 0],
 				\   [g:magit_eof_re, 0 ]
 				\ ],
-				\ "")
+				\ "",
+				\ 0)
 endfunction
 
 " s:mg_select_hunk_block: select a hunk, from the current cursor position
@@ -451,7 +455,8 @@ function! s:mg_select_hunk_block()
 				\   [g:magit_section_re, -2],
 				\   [g:magit_eof_re, 0 ]
 				\ ],
-				\ g:magit_file_re)
+				\ g:magit_file_re,
+				\ 0)
 endfunction
 
 " s:mg_create_diff_from_select: craft the diff to apply from a selection
@@ -656,7 +661,7 @@ function! magit#update_buffer(...)
 	call magit#utils#clear_undo()
 
 	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
-		let commit_section_pat_start='^'.g:magit_sections.commit_start.'$'
+		let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
 		if exists('#User#VimagitEnterCommit')
@@ -1070,7 +1075,7 @@ function! magit#commit_command(mode)
 		call <SID>mg_git_commit(a:mode)
 	else
 		let section=<SID>mg_get_section()
-		if ( section == 'commit_start' )
+		if ( section == 'commit' )
 			if ( b:magit_current_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
