@@ -1131,6 +1131,7 @@ function! magit#jump_hunk(dir)
 				break
 			endtry
 		endwhile
+		silent execute "normal! zt"
 	endif
 endfunction
 
