@@ -188,7 +188,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 ##### E
 If cursor is in a hunk, cursor will move in the file containing this hunk, at
  the line of the beginning of the hunk.
- * if the file is already visible in a |window|, cursor moves to this window at
+ * if the file is already visible in a window, cursor moves to this window at
  the hunk line
  * if there is more than one window open, cursor moves to last accessed window
  and open buffer at the hunk line
@@ -257,7 +257,7 @@ be raised only if the buffer is currently opened in vim.
 
 This event is raised when the commit section opens and the cursor is
 placed in this section. For example, the user may want to go straight into
-insert mode when committing, defining this |autocmd| in its vimrc:
+insert mode when committing, defining this autocmd in its vimrc:
 
 ```
   autocmd User VimagitEnterCommit startinsert
@@ -281,7 +281,7 @@ example to your vimrc.
 
 ### Options
 
-User can define in its prefered |vimrc| some options.
+User can define in its prefered vimrc some options.
 
 #### g:magit_enabled
 
