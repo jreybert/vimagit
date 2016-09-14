@@ -76,7 +76,9 @@ Open magit buffer with [:Magit](#magitshow_magit) command.
 
 #### CC
 
-Once you have stage all the required changes, press **CC**. A new section "Commit message" appears and cursor move to it. Type your commit message, in Insert mode this time. Once it's done, go back in Normal mode, and press **CC**: you created your first commit with vimagit!
+Once you have stage all the required changes, type **CC**. A new section "Commit message" appears and cursor move to it. Type your commit message, in Insert mode this time. Once it's done, write your commit message with :w (or :x, :wq, ZZ).
+
+Voila! you created your first commit with vimagit!
 
 ## Usage
 
@@ -204,11 +206,13 @@ E means 'edit'.
 
 ##### CC
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
- * If in commit section, commit the all staged changes in commit mode previously set.
+ * If in commit section, create the commit with the commit message and all staged changes.
+
+##### :w :x :wq ZZ
+ * If in commit section, create the commit with the commit message and all staged changes.
 
 ##### CA
  * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
- * If in commit section, commit the staged changes in commit mode previously set.
 
 ##### CF
  * Amend the staged changes into the previous commit, without modifying previous commit message.

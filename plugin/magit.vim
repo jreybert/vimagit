@@ -628,6 +628,10 @@ function! magit#update_buffer(...)
 		catch /^out_of_block$/
 			let b:magit_current_commit_msg = []
 		endtry
+		setlocal buftype=acwrite
+	else
+		setlocal buftype=nofile
+		setlocal nomodified
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
 	" help:
@@ -776,7 +780,9 @@ function! magit#show_magit(display, ...)
 	setlocal nobuflisted
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
-	"setlocal readonly
+
+	execute "autocmd BufWriteCmd " . buffer_name . " :call magit#commit_command('CC')"
+
 
 	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
@@ -1086,6 +1092,8 @@ function! magit#commit_command(mode)
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
+			setlocal buftype=acwrite
+			setlocal nomodified
 		endif
 	endif
 	call magit#update_buffer()

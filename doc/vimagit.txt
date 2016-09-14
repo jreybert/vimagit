@@ -65,10 +65,11 @@ If you move the cursor to the file header and press S, the whole file is
 staged.
 
 > CC
-Once you have stage all the required changes, press CC. A new section "Commit
-message" appears and cursor move to it. Type your commit message, in Insert
-mode this time. Once it's done, go back in Normal mode, and press CC: you
-created your first commit with vimagit!
+Once you have stage all the required changes, type CC. A new section "Commit
+message" appears and cursor move to it. Type your commit message, in Insert mode
+this time. Once it's done, write your commit message with :w (or :x, :wq, ZZ).
+
+Voila! you created your first commit with vimagit!
 
 ===============================================================================
 4. USAGE                                                         *vimagit-usage*
@@ -232,9 +233,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-CC*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
   CC        If not in commit section, set commit mode to "New commit" and show 
-           "Commit message" section with brand new commit message.
-            If in commit section, commit the all staged changes in commit mode
-            previously set.
+            "Commit message" section with brand new commit message.
+            If in commit section, create the commit with the commit message and
+            all staged changes.
+
+                                    *vimagit-:w*      *magit#commit_command('CC')*
+  :w :x :wq ZZ
+            If in commit section, create the commit with the commit message and
+            all staged changes.
 
                                     *vimagit-CA*      *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
