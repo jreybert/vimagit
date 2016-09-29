@@ -55,18 +55,22 @@ let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
-let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         1)
+let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
+" Should deprecate the following
+let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         0)
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 
-if ( g:magit_refresh_gitgutter == 1 )
-	autocmd User VimagitUpdateFile
-			\ if ( exists("*gitgutter#process_buffer") ) |
-			\ 	call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
-			\ endif
+if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
+  autocmd User VimagitUpdateFile
+    \ if ( exists("*gitgutter#process_buffer") ) |
+    \   call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
+    \ elseif ( exists("*sy#util#refresh_windows") ) |
+    \   call sy#util#refresh_windows() |
+    \ endif
 endif
 " }}}
 
