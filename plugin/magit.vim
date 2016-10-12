@@ -36,6 +36,9 @@ let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            
 let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
 let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       '?' )
 
+let g:magit_diff_shrink            = get(g:, 'magit_diff_shrink',               '-' )
+let g:magit_diff_enlarge           = get(g:, 'magit_diff_enlarge',              '+' )
+
 let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
 let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
@@ -114,6 +117,8 @@ let s:magit_inline_help = {
 \. '     commit undo, cancel and close current commit message',
 \g:magit_reload_mapping
 \.'      refresh magit buffer',
+\g:magit_diff_shrink.','.g:magit_diff_enlarge
+\.  '    shrink,enlarge diff context',
 \g:magit_close_mapping
 \.'      close magit buffer',
 \g:magit_toggle_help_mapping
@@ -788,6 +793,8 @@ function! magit#show_magit(display, ...)
 	let b:magit_current_commit_mode=''
 	let b:magit_commit_newly_open=0
 
+	let b:magit_diff_context=3
+
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
 
@@ -802,6 +809,8 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
@@ -1171,6 +1180,15 @@ function! magit#jump_to()
 	endif
 
 		execute "edit " . "+" . line . " " filename
+endfunction
+
+function! magit#update_diff(way)
+	if ( a:way == "+" )
+		let b:magit_diff_context+=1
+	elseif ( b:magit_diff_context > 1 )
+		let b:magit_diff_context-=1
+	endif
+  call magit#update_buffer()
 endfunction
 
 function! magit#show_version()

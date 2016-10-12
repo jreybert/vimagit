@@ -117,8 +117,8 @@ function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
 	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
 	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
-				\ " --no-color -p -- " . dev_null . " "
-				\ . a:filename
+				\ " --no-color -p -U" . b:magit_diff_context .
+				\ " -- " . dev_null . " " . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( a:status != '?' && v:shell_error != 0 )
 		echohl WarningMsg

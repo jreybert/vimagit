@@ -265,6 +265,13 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
                                     *vimagit-q*
                                     *vimagit-g:magit_close_mapping*
+
+                                    *vimagit--*              *magit#update_diff()*
+                                    *vimagit-+*
+                                    *vimagit-g:magit_diff_shrink*
+                                    *vimagit-g:magit_diff_enlarge*
+  -,+       Shrink,enlarge diff context
+
   q         close magit buffer.
 
                                     *vimagit-?*              *magit#toggle_help()*
