@@ -227,6 +227,8 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
                                     *vimagit-N*                *magit#jump_hunk()*
                                     *vimagit-P*
+                                    *vimagit-g:magit_jump_next_hunk*
+                                    *vimagit-g:magit_jump_prev_hunk*
   N,P       Move to Next or Previous hunk.
 
                                     *vimagit-CC*      *magit#commit_command('CC')*
