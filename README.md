@@ -227,8 +227,8 @@ E means 'edit'.
 ##### R
  * Refresh magit buffer
 
-##### -,+
- * Shrink,enlarge diff context
+##### -,+,0
+ * Shrink,enlarge,reset diff context
 
 ##### q
  * Close the magit buffer

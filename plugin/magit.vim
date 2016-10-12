@@ -38,6 +38,7 @@ let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       
 
 let g:magit_diff_shrink            = get(g:, 'magit_diff_shrink',               '-' )
 let g:magit_diff_enlarge           = get(g:, 'magit_diff_enlarge',              '+' )
+let g:magit_diff_reset             = get(g:, 'magit_diff_reset',                '0' )
 
 let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
@@ -117,8 +118,8 @@ let s:magit_inline_help = {
 \. '     commit undo, cancel and close current commit message',
 \g:magit_reload_mapping
 \.'      refresh magit buffer',
-\g:magit_diff_shrink.','.g:magit_diff_enlarge
-\.  '    shrink,enlarge diff context',
+\g:magit_diff_shrink.','.g:magit_diff_enlarge.','.g:magit_diff_reset
+\.  '    shrink,enlarge,reset diff context',
 \g:magit_close_mapping
 \.'      close magit buffer',
 \g:magit_toggle_help_mapping
@@ -811,6 +812,7 @@ function! magit#show_magit(display, ...)
 	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
+	execute "nnoremap <buffer> <silent> " . g:magit_diff_reset .           " :call magit#update_diff('0')<cr>"
 	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
 
 	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
@@ -1185,6 +1187,8 @@ endfunction
 function! magit#update_diff(way)
 	if ( a:way == "+" )
 		let b:magit_diff_context+=1
+	elseif ( a:way == "0" )
+		let b:magit_diff_context=3
 	elseif ( b:magit_diff_context > 1 )
 		let b:magit_diff_context-=1
 	endif

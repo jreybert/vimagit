@@ -263,15 +263,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
 
+                                                             *magit#update_diff()*
+                                    *vimagit--* *vimagit-g:magit_diff_shrink*
+                                    *vimagit-+* *vimagit-g:magit_diff_enlarge*
+                                    *vimagit-0* *vimagit-g:magit_diff_reset*
+  -,+,0     Shrink,enlarge,reset diff context
+
                                     *vimagit-q*
                                     *vimagit-g:magit_close_mapping*
-
-                                    *vimagit--*              *magit#update_diff()*
-                                    *vimagit-+*
-                                    *vimagit-g:magit_diff_shrink*
-                                    *vimagit-g:magit_diff_enlarge*
-  -,+       Shrink,enlarge diff context
-
   q         close magit buffer.
 
                                     *vimagit-?*              *magit#toggle_help()*
