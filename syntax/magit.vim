@@ -2,7 +2,8 @@ if exists("b:current_syntax")
   finish
 endif
 
-execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
+let s:vimagit_path = fnameescape(resolve(expand('<sfile>:p:h')))
+execute 'source ' . s:vimagit_path . '/../common/magit_common.vim'
 
 syn case match
 syn sync minlines=50

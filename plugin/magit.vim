@@ -15,7 +15,8 @@ let g:vimagit_version = [1, 6, 0]
 
 " source common file. variables in common file are shared with plugin and
 " syntax files
-execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
+let g:vimagit_path = fnameescape(resolve(expand('<sfile>:p:h')))
+execute 'source ' . g:vimagit_path . '/../common/magit_common.vim'
 
 " these mappings are broadly applied, for all vim buffers
 let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
