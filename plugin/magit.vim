@@ -272,10 +272,10 @@ function! s:mg_get_commit_section()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " commit -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " commit --amend -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=magit#git#get_config("core.commentChar", '#')
