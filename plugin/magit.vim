@@ -184,6 +184,7 @@ function! s:mg_display_files(mode, curdir, depth)
 			continue
 		endif
 		silent put =file.get_filename_header()
+		let file.line_pos = line('.')
 
 		if ( file.dir != 0 )
 			if ( file.visible == 1 )
@@ -615,12 +616,26 @@ let s:mg_display_functions = {
 " 5. restore window state
 " param[in] updated file (optional): this filename is updated to absolute
 " path, set in g:magit_last_updated_buffer and the User autocmd
+" param[in] current section (optional): when params 1 & 2 are set, it means
+" that a stage/unstage action occured. We try to smartly set the cursor
+" position after the refresh
+"  - on current file if still in current section
+"  - else on next file if any
+"  - else on previous file if any
+"  - or cursor stay where it is
 " VimagitUpdateFile event is raised
 function! magit#update_buffer(...)
 	let buffer_name=bufname("%")
 	if ( buffer_name !~ 'magit://.*' )
 		echoerr "Not in magit buffer but in " . buffer_name
 		return
+	endif
+	
+	if ( a:0 >= 1 )
+		let cur_filename = a:1
+	endif
+	if ( a:0 >= 2 )
+		let cur_section = a:2
 	endif
 
 	if ( b:magit_current_commit_mode != '' )
@@ -646,7 +661,16 @@ function! magit#update_buffer(...)
 	
 	" delete buffer
 	silent! execute "silent :%delete _"
-	
+
+	" be smart for the cursor position after refresh, if stage/unstaged
+	" occured
+	if ( a:0 >= 2 )
+		let filenames = b:state.get_filenames(cur_section)
+		let pos = match(filenames, cur_filename)
+		let next_filename = (pos < len(filenames) - 1) ? filenames[pos+1] : ''
+		let prev_filename = (pos > 0) ? filenames[pos-1] : ''
+	endif
+
 	call b:state.update()
 
 	for section in g:magit_default_sections
@@ -678,8 +702,8 @@ function! magit#update_buffer(...)
 	set filetype=magit
 
 	let g:magit_last_updated_buffer = ''
-	if ( a:0 == 1 )
-		let abs_filename = magit#git#top_dir() . a:1
+	if ( a:0 >= 1 )
+		let abs_filename = magit#git#top_dir() . cur_filename
 		if ( bufexists(abs_filename) )
 			let g:magit_last_updated_buffer = abs_filename
 			if exists('#User#VimagitUpdateFile')
@@ -690,6 +714,19 @@ function! magit#update_buffer(...)
 
 	if exists('#User#VimagitRefresh')
 		doautocmd User VimagitRefresh
+	endif
+
+	if ( a:0 >= 2 )
+		" if, in this order, current file, next file, previous file exists in
+		" current section, move cursor to it
+		for fname in [cur_filename, next_filename, prev_filename]
+			try
+				let file = b:state.get_file(cur_section, fname)
+				call cursor(file.line_pos, 0)
+				break
+			catch 'file_doesnt_exists'
+			endtry
+		endfor
 	endif
 
 endfunction
@@ -901,7 +938,8 @@ function! s:mg_stage_closed_file(discard)
 				endif
 			endif
 
-			call magit#update_buffer(filename)
+			call magit#update_buffer(filename, section)
+
 			return
 		endif
 	endif
@@ -951,7 +989,8 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	endif
 
-	call magit#update_buffer(filename)
+	call magit#update_buffer(filename, section)
+
 endfunction
 
 " magit#stage_file: this function (un)stage a whole file, from the current

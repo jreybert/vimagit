@@ -94,6 +94,7 @@ let s:file_template = {
 \	'submodule': 0,
 \	'symlink': '',
 \	'diff': s:diff_template,
+\	'line_pos': 0,
 \	'is_dir': function("magit#state#is_file_dir"),
 \	'is_visible': function("magit#state#is_file_visible"),
 \	'set_visible': function("magit#state#set_file_visible"),
