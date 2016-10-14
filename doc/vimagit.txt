@@ -228,6 +228,8 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
                                     *vimagit-N*                *magit#jump_hunk()*
                                     *vimagit-P*
+                                    *vimagit-g:magit_jump_next_hunk*
+                                    *vimagit-g:magit_jump_prev_hunk*
   N,P       Move to Next or Previous hunk.
 
                                     *vimagit-CC*      *magit#commit_command('CC')*
@@ -266,6 +268,12 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-R*            *magit#update_buffer()*
                                     *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
+
+                                                             *magit#update_diff()*
+                                    *vimagit--* *vimagit-g:magit_diff_shrink*
+                                    *vimagit-+* *vimagit-g:magit_diff_enlarge*
+                                    *vimagit-0* *vimagit-g:magit_diff_reset*
+  -,+,0     Shrink,enlarge,reset diff context
 
                                     *vimagit-q*
                                     *vimagit-g:magit_close_mapping*
