@@ -25,7 +25,7 @@ endfunction
 let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
 " magit#utils#lcd: helper function to lcd. use cd if lcd doesn't exists
 function! magit#utils#lcd(dir)
-	execute s:magit_cd_cmd . a:dir
+	execute s:magit_cd_cmd . fnameescape(a:dir)
 endfunction
 
 " magit#utils#clear_undo: this function clear local undo history.
@@ -55,7 +55,7 @@ endfunction
 function! magit#utils#system(...)
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#git#top_dir()
+		call magit#utils#lcd(magit#git#top_dir())
 		" List as system() input is since v7.4.247, it is safe to check
 		" systemlist, which is sine v7.4.248
 		if exists('*systemlist')
@@ -75,7 +75,7 @@ function! magit#utils#system(...)
 			endif
 		endif
 	finally
-		execute s:magit_cd_cmd . dir
+		call magit#utils#lcd(dir)
 	endtry
 endfunction
 
@@ -88,7 +88,7 @@ endfunction
 function! magit#utils#systemlist(...)
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#git#top_dir()
+		call magit#utils#lcd(magit#git#top_dir())
 		" systemlist since v7.4.248
 		if exists('*systemlist')
 			return call('systemlist', a:000)
@@ -96,7 +96,7 @@ function! magit#utils#systemlist(...)
 			return split(call('magit#utils#system', a:000), '\n')
 		endif
 	finally
-		execute s:magit_cd_cmd . dir
+		call magit#utils#lcd(dir)
 	endtry
 endfunction
 

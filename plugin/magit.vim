@@ -778,7 +778,7 @@ function! magit#show_magit(display, ...)
 		throw 'magit_not_in_git_repo'
 	endif
 
-	let buffer_name='magit://' . git_dir
+	let buffer_name=fnameescape('magit://' . git_dir)
 
 	let magit_win = magit#utils#search_buffer_in_windows(buffer_name)
 
