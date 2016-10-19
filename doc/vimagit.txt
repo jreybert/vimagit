@@ -239,7 +239,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, create the commit with the commit message and
             all staged changes.
 
-                                    *vimagit-:w*      *magit#commit_command('CC')*
+                                    *vimagit-:w*
   :w :x :wq ZZ
             If in commit section, create the commit with the commit message and
             all staged changes.
