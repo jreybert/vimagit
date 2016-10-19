@@ -61,11 +61,11 @@ install:
     fi
 
 before_script:
-  - git clone https://github.com/jreybert/djooks
+  - git clone https://github.com/jreybert/djooks "djooks with spaces"
   - git clone https://github.com/jreybert/vader.vim
 
 script:
-  - ./test/run.sh . vader.vim djooks $VIM_VERSION
+  - ./test/run.sh . vader.vim "djooks with spaces" $VIM_VERSION
 
 after_success:
   - ./test/merge.sh
