@@ -20,12 +20,17 @@ function! magit#utils#is_submodule(dirname)
 	return ( index(s:submodule_list, a:dirname) != -1 )
 endfunction
 
-" s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
-" 'cd' otherwise
-let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
-" magit#utils#lcd: helper function to lcd. use cd if lcd doesn't exists
-function! magit#utils#lcd(dir)
-	execute s:magit_cd_cmd . fnameescape(a:dir)
+" magit#utils#chdir will change the directory respecting
+" local/tab-local/global directory settings.
+function! magit#utils#chdir(dir)
+  " This is a dirty hack to fix tcd breakages on neovim.
+  " Future work should be based on nvim API.
+  if exists(':tcd')
+    let chdir = haslocaldir() ? 'lcd' : haslocaldir(-1, 0) ? 'tcd' : 'cd'
+  else
+    let chdir = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+  endif
+  execute chdir fnameescape(a:dir)
 endfunction
 
 " magit#utils#clear_undo: this function clear local undo history.
@@ -55,7 +60,7 @@ endfunction
 function! magit#utils#system(...)
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(magit#git#top_dir())
+		call magit#utils#chdir(magit#git#top_dir())
 		" List as system() input is since v7.4.247, it is safe to check
 		" systemlist, which is sine v7.4.248
 		if exists('*systemlist')
@@ -75,7 +80,7 @@ function! magit#utils#system(...)
 			endif
 		endif
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
@@ -88,7 +93,7 @@ endfunction
 function! magit#utils#systemlist(...)
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(magit#git#top_dir())
+		call magit#utils#chdir(magit#git#top_dir())
 		" systemlist since v7.4.248
 		if exists('*systemlist')
 			return call('systemlist', a:000)
@@ -96,7 +101,7 @@ function! magit#utils#systemlist(...)
 			return split(call('magit#utils#system', a:000), '\n')
 		endif
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
