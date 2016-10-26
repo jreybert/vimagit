@@ -50,7 +50,7 @@ endfunction
 function! magit#git#is_work_tree(path)
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(a:path)
+		call magit#utils#chdir(a:path)
 		let top_dir=magit#utils#strip(
 					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
@@ -58,7 +58,7 @@ function! magit#git#is_work_tree(path)
 		endif
 		return top_dir
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
@@ -68,7 +68,7 @@ endfunction
 function! magit#git#set_top_dir(path)
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(a:path)
+		call magit#utils#chdir(a:path)
 		let top_dir=magit#utils#strip(
 					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
@@ -81,7 +81,7 @@ function! magit#git#set_top_dir(path)
 		let b:magit_top_dir=top_dir
 		let b:magit_git_dir=git_dir
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
