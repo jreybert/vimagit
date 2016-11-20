@@ -124,15 +124,14 @@ endfunction
 " on both sides)
 " param[in] array: array to strop
 " return: stripped array
-function! magit#utils#strip_array(array)
 function! magit#utils#strip_array(array) abort
 	let array_len = len(a:array)
 	let start = 0
-	while ( start < array_len && a:array[start] == '' )
+	while ( start < array_len && a:array[start] ==# '' )
 		let start += 1
 	endwhile
 	let end = array_len - 1
-	while ( end >= 0 && a:array[end] == '' )
+	while ( end >= 0 && a:array[end] ==# '' )
 		let end -= 1
 	endwhile
 	return a:array[ start : end ]
@@ -225,7 +224,6 @@ function! magit#utils#search_buffer_in_windows(filename) abort
 				\files[buffer_name(a:filename)] : 0
 endfunction
 
-function! magit#utils#start_profile(...)
 function! magit#utils#start_profile(...) abort
 	let prof_file = ( a:0 == 1 ) ? a:1 : "/tmp/vimagit.log"
 	execute "profile start " . prof_file . " | profile pause"

@@ -38,10 +38,9 @@ endfunction
 " there are some conditions where files must be widely added (git add), not
 " 'diff applied' (git apply)
 " return 1 if file must 
-function! magit#state#must_be_added() dict
 function! magit#state#must_be_added() dict abort
 	return ( self.empty == 1 ||
-		\ self.symlink != '' ||
+		\ self.symlink !=# '' ||
 		\ self.dir != 0 ||
 		\ self.binary == 1 ||
 		\ self.submodule == 1 )
@@ -130,21 +129,18 @@ endfunction
 " param[in] mode: can be staged or unstaged
 " param[in] filename: header of filename to access
 " return: List of diff header lines
-function! magit#state#file_get_header() dict
 function! magit#state#file_get_header() dict abort
 	return self.diff.header
 endfunction
 
-function! magit#state#file_get_filename_header() dict
-	if ( self.status == 'L' )
 function! magit#state#file_get_filename_header() dict abort
+	if ( self.status ==# 'L' )
 		return g:magit_git_status_code.L . ': ' . self.filename . ' -> ' . self.symlink
 	else
 		return g:magit_git_status_code[self.status] . ': ' . self.filename
 	endif
 endfunction
 
-function! magit#state#check_max_lines(file) dict
 function! magit#state#check_max_lines(file) dict abort
 	let total_lines = self.nb_diff_lines + a:file.diff.len
 	if ( total_lines > g:magit_warning_max_lines && b:magit_warning_max_lines_answered == 0 )
@@ -177,7 +173,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict abort
 	" discard previous diff
 	let file.diff = deepcopy(s:diff_template)
 
-	if ( a:status == '?' && getftype(a:filename) == 'link' )
+	if ( a:status ==# '?' && getftype(a:filename) ==# 'link' )
 		let file.status = 'L'
 		let file.symlink = resolve(a:filename)
 		let file.diff.hunks[0].header = 'New symbolic link file'
@@ -198,7 +194,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict abort
 		let file.diff.hunks[0].header = ''
 		let file.diff.hunks[0].lines = diff_list
 		let self.nb_diff_lines += file.diff.len
-	elseif ( a:status == '?' && isdirectory(a:filename) == 1 )
+	elseif ( a:status ==# '?' && isdirectory(a:filename) == 1 )
 		let file.status = 'N'
 		let file.dir = 1
 		if ( !file.is_visible() )
@@ -207,7 +203,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict abort
 		for subfile in magit#utils#ls_all(a:filename)
 			call self.add_file(a:mode, a:status, subfile, a:depth + 1)
 		endfor
-	elseif ( a:status == '?' && getfsize(a:filename) == 0 )
+	elseif ( a:status ==# '?' && getfsize(a:filename) == 0 )
 		let file.status = 'E'
 		let file.empty = 1
 		let file.diff.hunks[0].header = 'New empty file'
@@ -236,7 +232,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict abort
 			return
 		endif
 
-		while ( line < file.diff.len && diff_list[line] !~ "^@.*" )
+		while ( line < file.diff.len && diff_list[line] !~# "^@.*" )
 			call add(file.diff.header, diff_list[line])
 			let line += 1
 		endwhile
@@ -246,7 +242,7 @@ function! magit#state#add_file(mode, status, filename, depth) dict abort
 			let hunk.header = diff_list[line]
 
 			for diff_line in diff_list[line+1 : -1]
-				if ( diff_line =~ "^@.*" )
+				if ( diff_line =~# "^@.*" )
 					let hunk = deepcopy(s:hunk_template)
 					call add(file.diff.hunks, hunk)
 					let hunk.header = diff_line
@@ -286,7 +282,7 @@ function! magit#state#update() dict abort
 				let status=file_status[mode]
 
 				" untracked code apperas in staged column, we skip it
-				if ( status == ' ' || ( ( mode == 'staged' ) && status == '?' ) )
+				if ( status ==# ' ' || ( ( mode ==# 'staged' ) && status ==# '?' ) )
 					continue
 				endif
 				call self.add_file(mode, status, file_status.filename, 0)
@@ -328,13 +324,12 @@ endfunction
 " param[in] mode: mode to select, can be 'staged' or 'unstaged'
 " return ordered list of filename strings belonging to mode, modified files
 " first
-function! magit#state#get_filenames(mode) dict
 function! magit#state#get_filenames(mode) dict abort
 	let modified = []
 	let others = []
 	for filename in sort(keys(self.dict[a:mode]))
 		let file = self.get_file(a:mode, filename)
-		if ( file.status == 'M' )
+		if ( file.status ==# 'M' )
 			call add(modified, filename)
 		else
 			call add(others, filename)

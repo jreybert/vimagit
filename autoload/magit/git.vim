@@ -113,15 +113,14 @@ endfunction
 " return: two values
 "        [0]: boolean, if true current file is binary
 "        [1]: string array containing diff output
-function! magit#git#git_diff(filename, status, mode)
-	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
-	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
 function! magit#git#git_diff(filename, status, mode) abort
+	let dev_null = ( a:status ==# '?' ) ? "/dev/null " : ""
+	let staged_flag = ( a:mode ==# 'staged' ) ? "--staged" : ""
 	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
 				\ " --no-color -p -U" . b:magit_diff_context .
 				\ " -- " . dev_null . " " . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
-	if ( a:status != '?' && v:shell_error != 0 )
+	if ( a:status !=# '?' && v:shell_error != 0 )
 		echohl WarningMsg
 		echom "Git error: " . string(diff_list)
 		echom "Git cmd: " . git_cmd
@@ -135,7 +134,7 @@ function! magit#git#git_diff(filename, status, mode) abort
 		throw 'diff error'
 	endif
 	return [
-		\ ( diff_list[-1] =~ "^Binary files .* differ$" && len(diff_list) <= 4 )
+		\ ( diff_list[-1] =~# "^Binary files .* differ$" && len(diff_list) <= 4 )
 		\, diff_list ]
 endfunction
 
@@ -143,9 +142,8 @@ endfunction
 " untracked content
 " param[in] submodule: submodule path
 " param[in] check_level: can be modified or untracked
-function! magit#git#sub_check(submodule, check_level)
-	let ignore_flag = ( a:check_level == 'modified' ) ?
 function! magit#git#sub_check(submodule, check_level) abort
+	let ignore_flag = ( a:check_level ==# 'modified' ) ?
 				\ '--ignore-submodules=untracked' : ''
 	let git_cmd=g:magit_git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
 	return ( !empty(magit#utils#systemlist(git_cmd)) )
@@ -156,14 +154,13 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 " param[in] mode: can be staged or unstaged
-function! magit#git#git_sub_summary(filename, mode)
-	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
 function! magit#git#git_sub_summary(filename, mode) abort
+	let staged_flag = ( a:mode ==# 'staged' ) ? " --cached " : " --files "
 	let git_cmd=g:magit_git_cmd . " submodule summary " . staged_flag . " HEAD "
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
-		if ( a:mode == 'unstaged' )
+		if ( a:mode ==# 'unstaged' )
 			if ( magit#git#sub_check(a:filename, 'modified') )
 				return "modified content"
 			endif
@@ -233,10 +230,9 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! magit#git#git_apply(header, selection)
 function! magit#git#git_apply(header, selection) abort
 	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
+	if ( selection[-1] !~# '^$' )
 		let selection += [ '' ]
 	endif
 	let git_cmd=g:magit_git_cmd . " apply --recount --no-index --cached -"
@@ -258,14 +254,13 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! magit#git#git_unapply(header, selection, mode)
 function! magit#git#git_unapply(header, selection, mode) abort
 	let cached_flag=''
-	if ( a:mode == 'staged' )
+	if ( a:mode ==# 'staged' )
 		let cached_flag=' --cached '
 	endif
 	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
+	if ( selection[-1] !~# '^$' )
 		let selection += [ '' ]
 	endif
 	silent let git_result=magit#utils#system(
