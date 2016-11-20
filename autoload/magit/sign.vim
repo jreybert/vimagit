@@ -12,7 +12,7 @@ let s:dummy_sign_id = s:first_sign_id - 1
 " Remove-all-signs optimisation requires Vim 7.3.596+.
 let s:supports_star = v:version > 703 || (v:version == 703 && has("patch596"))
 
-function! magit#sign#remove_all(...)
+function! magit#sign#remove_all(...) abort
 	if ( a:0 == 1 )
 		let pattern = a:1
 	else
@@ -24,14 +24,14 @@ endfunction
 
 " magit#sign#remove_signs: unplace a list of signs
 " param[in] sign_ids: list of signs dict
-function! magit#sign#remove_signs(sign_ids)
+function! magit#sign#remove_signs(sign_ids) abort
     let bufnr = magit#utils#bufnr()
     for sign in values(a:sign_ids)
         execute "sign unplace" sign.id
     endfor
 endfunction
 
-function! magit#sign#add_sign(line, type, bufnr)
+function! magit#sign#add_sign(line, type, bufnr) abort
 	let id = <SID>get_next_sign_id()
 	execute ":sign place " . id .
 		\ " line=" . a:line . " name=" . s:magit_mark_signs[a:type] .
@@ -39,12 +39,12 @@ function! magit#sign#add_sign(line, type, bufnr)
 	return id
 endfunction
 
-function! magit#sign#remove_sign(id)
+function! magit#sign#remove_sign(id) abort
 	execute ":sign unplace " . a:id
 endfunction
 
 " s:get_next_sign_id: helper function to increment sign ids
-function! s:get_next_sign_id()
+function! s:get_next_sign_id() abort
 	let next_id = s:next_sign_id
 	let s:next_sign_id += 1
 	return next_id
@@ -55,7 +55,7 @@ endfunction
 " param[in] pattern: regex pattern to match
 " param[in] startline,endline: range of lines
 " FIXME: find since which version "sign place" is sorted
-function! magit#sign#find_signs(pattern, startline, endline)
+function! magit#sign#find_signs(pattern, startline, endline) abort
 	let bufnr = magit#utils#bufnr()
 	" <line_number (string)>: {'id': <id (number)>, 'name': <name (string)>}
 	let found_signs = {}
@@ -83,7 +83,7 @@ endfunction
 " magit#sign#find_stage_signs: helper function to get marked lines for stage
 " param[in] startline,endline: range of lines
 " return Dict of marked lines
-function! magit#sign#find_stage_signs(startline, endline)
+function! magit#sign#find_stage_signs(startline, endline) abort
 	return magit#sign#find_signs(s:magit_mark_signs.M, a:startline, a:endline)
 endfunction
 
@@ -91,7 +91,7 @@ endfunction
 let s:magit_mark_signs = {'M': 'MagitTBS', 'S': 'MagitBS', 'E': 'MagitBE'}
 
 " magit#sign#init: initializer function for signs
-function! magit#sign#init()
+function! magit#sign#init() abort
 	execute "sign define " . s:magit_mark_signs.M . " text=S> linehl=Visual"
 	execute "sign define " . s:magit_mark_signs.S
 	execute "sign define " . s:magit_mark_signs.E
@@ -101,7 +101,7 @@ endfunction
 " marked lines are unmarked, non marked are marked
 " param[in] type; type of sign to toggle (see s:magit_mark_signs)
 " param[in] startline,endline: range of lines
-function! magit#sign#toggle_signs(type, startline, endline)
+function! magit#sign#toggle_signs(type, startline, endline) abort
 	let bufnr = magit#utils#bufnr()
 	let current_signs = magit#sign#find_signs(s:magit_mark_signs[a:type], a:startline, a:endline)
 	let line = a:startline

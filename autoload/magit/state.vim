@@ -1,27 +1,27 @@
 " magit#state#is_file_visible: file getter function
 " return if file is visible
-function! magit#state#is_file_visible() dict
+function! magit#state#is_file_visible() dict abort
 	return self.visible
 endfunction
 
 " magit#state#set_file_visible: file setter function
 " param[in] val: visible state to set to file
-function! magit#state#set_file_visible(val) dict
+function! magit#state#set_file_visible(val) dict abort
 	let self.visible = a:val
 endfunction
 
 " magit#state#toggle_file_visible: file setter function, toggle file visible
 " state
-function! magit#state#toggle_file_visible() dict
+function! magit#state#toggle_file_visible() dict abort
 	let self.visible = ( self.visible == 0 ) ? 1 : 0
 endfunction
 
 " magit#state#init_file_visible: init file visible status, among several conditions
-function! magit#state#init_file_visible() dict
+function! magit#state#init_file_visible() dict abort
 	if ( !self.new )
 		return self.is_visible()
 	else
-		if ( self.status == 'M' || b:magit_default_show_all_files > 1 )
+		if ( self.status ==# 'M' || b:magit_default_show_all_files > 1 )
 			call self.set_visible(b:magit_default_show_all_files)
 		endif
 		return self.is_visible()
@@ -30,7 +30,7 @@ endfunction
 
 " magit#state#is_file_dir: file getter function
 " return 1 if current file is a directory, 0 otherwise
-function! magit#state#is_file_dir() dict
+function! magit#state#is_file_dir() dict abort
 	return self.dir != 0
 endfunction
 
@@ -39,6 +39,7 @@ endfunction
 " 'diff applied' (git apply)
 " return 1 if file must 
 function! magit#state#must_be_added() dict
+function! magit#state#must_be_added() dict abort
 	return ( self.empty == 1 ||
 		\ self.symlink != '' ||
 		\ self.dir != 0 ||
@@ -48,13 +49,13 @@ endfunction
 
 " magit#state#file_get_hunks: function accessor for hunks objects
 " return: List of List of hunks lines
-function! magit#state#file_get_hunks() dict
+function! magit#state#file_get_hunks() dict abort
 	return self.diff.hunks
 endfunction
 
 " magit#state#file_get_flat_hunks: function accessor for hunks lines
 " return: all hunks lines of a file, including hunk headers
-function! magit#state#file_get_flat_hunks() dict
+function! magit#state#file_get_flat_hunks() dict abort
 	let hunks = self.diff.hunks
 	let lines = []
 	for hunk in hunks
@@ -113,7 +114,7 @@ let s:file_template = {
 " param[in] create: boolean. If 1, non existing file in Dict will be created.
 " if 0, 'file_doesnt_exists' exception will be thrown
 " return: Dict of file
-function! magit#state#get_file(mode, filename, ...) dict
+function! magit#state#get_file(mode, filename, ...) dict abort
 	let file_exists = has_key(self.dict[a:mode], a:filename)
 	let create = ( a:0 == 1 ) ? a:1 : 0
 	if ( file_exists == 0 && create == 1 )
@@ -130,11 +131,13 @@ endfunction
 " param[in] filename: header of filename to access
 " return: List of diff header lines
 function! magit#state#file_get_header() dict
+function! magit#state#file_get_header() dict abort
 	return self.diff.header
 endfunction
 
 function! magit#state#file_get_filename_header() dict
 	if ( self.status == 'L' )
+function! magit#state#file_get_filename_header() dict abort
 		return g:magit_git_status_code.L . ': ' . self.filename . ' -> ' . self.symlink
 	else
 		return g:magit_git_status_code[self.status] . ': ' . self.filename
@@ -142,6 +145,7 @@ function! magit#state#file_get_filename_header() dict
 endfunction
 
 function! magit#state#check_max_lines(file) dict
+function! magit#state#check_max_lines(file) dict abort
 	let total_lines = self.nb_diff_lines + a:file.diff.len
 	if ( total_lines > g:magit_warning_max_lines && b:magit_warning_max_lines_answered == 0 )
 		echohl WarningMsg
@@ -163,7 +167,7 @@ endfunction
 " param[in] mode: can be staged or unstaged
 " param[in] status: one character status code of the file (AMDRCU?)
 " param[in] filename: filename
-function! magit#state#add_file(mode, status, filename, depth) dict
+function! magit#state#add_file(mode, status, filename, depth) dict abort
 	let file = self.get_file(a:mode, a:filename, 1)
 	let file.exists = 1
 
@@ -261,7 +265,7 @@ endfunction
 " committed, deleted, discarded), it is removed from g:mg_diff_dict
 " else, its diff is discarded and regenrated
 " what is resilient is its 'visible' parameter
-function! magit#state#update() dict
+function! magit#state#update() dict abort
 	let self.nb_diff_lines = 0
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
@@ -305,7 +309,7 @@ endfunction
 " magit#state#set_files_visible: global dict setter function
 " update all files visible state
 " param[in] is_visible: boolean value to set to files
-function! magit#state#set_files_visible(is_visible) dict
+function! magit#state#set_files_visible(is_visible) dict abort
 	for diff_dict_mode in values(self.dict)
 		for file in values(diff_dict_mode)
 			call file.set_visible(a:is_visible)
@@ -316,7 +320,7 @@ endfunction
 " magit#state#get_files: global dict file objects getter function
 " param[in] mode: mode to select, can be 'staged' or 'unstaged'
 " return list of file objects belonging to mode
-function! magit#state#get_files(mode) dict
+function! magit#state#get_files(mode) dict abort
 	return self.dict[a:mode]
 endfunction
 
@@ -325,6 +329,7 @@ endfunction
 " return ordered list of filename strings belonging to mode, modified files
 " first
 function! magit#state#get_filenames(mode) dict
+function! magit#state#get_filenames(mode) dict abort
 	let modified = []
 	let others = []
 	for filename in sort(keys(self.dict[a:mode]))
