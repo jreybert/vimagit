@@ -3,7 +3,7 @@
 [![Join the chat at https://gitter.im/jreybert/vimagit](https://badges.gitter.im/jreybert/vimagit.svg)](https://gitter.im/jreybert/vimagit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 [![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit/branches)
 
-Ease your git worflow within vim.
+Ease your git workflow within vim.
 
 From a very single vim buffer, you can perform main git operations in few key press. To name a few:
 * Visualize all diffs in your git repository.
