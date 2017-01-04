@@ -1,4 +1,4 @@
-function! magit#git#get_version()
+function! magit#git#get_version() abort
 	if ( !exists("s:git_version") )
 		let s:git_version = matchlist(system(g:magit_git_cmd . " --version"),
 		\ 'git version \(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(\d\+\)\.\(g\x\+\)')[1:5]
@@ -6,7 +6,7 @@ function! magit#git#get_version()
 	return s:git_version
 endfunction
 
-function! magit#git#is_version_sup_equal(major, minor, rev)
+function! magit#git#is_version_sup_equal(major, minor, rev) abort
 	let git_ver = magit#git#get_version()
 	return ( ( a:major > git_ver[0] ) ||
 			\ (a:major >= git_ver[0] && a:minor > git_ver[1] ) ||
@@ -17,7 +17,7 @@ endfunction
 " magit#git#get_status: this function returns the git status output formated
 " into a List of Dict as
 " [ {staged', 'unstaged', 'filename'}, ... ]
-function! magit#git#get_status()
+function! magit#git#get_status() abort
 	let file_list = []
 
 	" systemlist v7.4.248 problem again
@@ -33,7 +33,7 @@ function! magit#git#get_status()
 	return file_list
 endfunction
 
-function! magit#git#get_config(conf_name, default)
+function! magit#git#get_config(conf_name, default) abort
 	silent! let git_result=magit#utils#strip(
 				\ magit#utils#system(g:magit_git_cmd . " config --get " . a:conf_name))
 	if ( v:shell_error != 0 )
@@ -47,10 +47,10 @@ endfunction
 " inside a git work tree
 " param[in] path: path to check
 " return: top work tree path if in a work tree, empty string otherwise
-function! magit#git#is_work_tree(path)
+function! magit#git#is_work_tree(path) abort
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(a:path)
+		call magit#utils#chdir(a:path)
 		let top_dir=magit#utils#strip(
 					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
@@ -58,17 +58,17 @@ function! magit#git#is_work_tree(path)
 		endif
 		return top_dir
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
 " magit#git#set_top_dir: this function set b:magit_top_dir and b:magit_git_dir 
 " according to a path
 " param[in] path: path to set. This path must be in a git repository work tree
-function! magit#git#set_top_dir(path)
+function! magit#git#set_top_dir(path) abort
 	let dir = getcwd()
 	try
-		call magit#utils#lcd(a:path)
+		call magit#utils#chdir(a:path)
 		let top_dir=magit#utils#strip(
 					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 		if ( v:shell_error != 0 )
@@ -81,14 +81,14 @@ function! magit#git#set_top_dir(path)
 		let b:magit_top_dir=top_dir
 		let b:magit_git_dir=git_dir
 	finally
-		call magit#utils#lcd(dir)
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
 " magit#git#top_dir: return the absolute path of current git worktree for the
 " current magit buffer
 " return top directory
-function! magit#git#top_dir()
+function! magit#git#top_dir() abort
 	if ( !exists("b:magit_top_dir") )
 		throw 'top_dir_not_set'
 	endif
@@ -97,7 +97,7 @@ endfunction
 
 " magit#git#git_dir: return the absolute path of current git worktree
 " return git directory
-function! magit#git#git_dir()
+function! magit#git#git_dir() abort
 	if ( !exists("b:magit_git_dir") )
 		throw 'git_dir_not_set'
 	endif
@@ -113,14 +113,14 @@ endfunction
 " return: two values
 "        [0]: boolean, if true current file is binary
 "        [1]: string array containing diff output
-function! magit#git#git_diff(filename, status, mode)
-	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
-	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
+function! magit#git#git_diff(filename, status, mode) abort
+	let dev_null = ( a:status ==# '?' ) ? "/dev/null " : ""
+	let staged_flag = ( a:mode ==# 'staged' ) ? "--staged" : ""
 	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
 				\ " --no-color -p -U" . b:magit_diff_context .
 				\ " -- " . dev_null . " " . a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
-	if ( a:status != '?' && v:shell_error != 0 )
+	if ( a:status !=# '?' && v:shell_error != 0 )
 		echohl WarningMsg
 		echom "Git error: " . string(diff_list)
 		echom "Git cmd: " . git_cmd
@@ -134,7 +134,7 @@ function! magit#git#git_diff(filename, status, mode)
 		throw 'diff error'
 	endif
 	return [
-		\ ( diff_list[-1] =~ "^Binary files .* differ$" && len(diff_list) <= 4 )
+		\ ( diff_list[-1] =~# "^Binary files .* differ$" && len(diff_list) <= 4 )
 		\, diff_list ]
 endfunction
 
@@ -142,8 +142,8 @@ endfunction
 " untracked content
 " param[in] submodule: submodule path
 " param[in] check_level: can be modified or untracked
-function! magit#git#sub_check(submodule, check_level)
-	let ignore_flag = ( a:check_level == 'modified' ) ?
+function! magit#git#sub_check(submodule, check_level) abort
+	let ignore_flag = ( a:check_level ==# 'modified' ) ?
 				\ '--ignore-submodules=untracked' : ''
 	let git_cmd=g:magit_git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
 	return ( !empty(magit#utils#systemlist(git_cmd)) )
@@ -154,13 +154,13 @@ endfunction
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
 " param[in] mode: can be staged or unstaged
-function! magit#git#git_sub_summary(filename, mode)
-	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
+function! magit#git#git_sub_summary(filename, mode) abort
+	let staged_flag = ( a:mode ==# 'staged' ) ? " --cached " : " --files "
 	let git_cmd=g:magit_git_cmd . " submodule summary " . staged_flag . " HEAD "
 				\ .a:filename
 	silent let diff_list=magit#utils#systemlist(git_cmd)
 	if ( empty(diff_list) )
-		if ( a:mode == 'unstaged' )
+		if ( a:mode ==# 'unstaged' )
 			if ( magit#git#sub_check(a:filename, 'modified') )
 				return "modified content"
 			endif
@@ -180,7 +180,7 @@ endfunction
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
-function! magit#git#git_add(filename)
+function! magit#git#git_add(filename) abort
 	let git_cmd=g:magit_git_cmd . " add --no-ignore-removal -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
@@ -196,7 +196,7 @@ endfunction
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
-function! magit#git#git_checkout(filename)
+function! magit#git#git_checkout(filename) abort
 	let git_cmd=g:magit_git_cmd . " checkout -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
@@ -212,7 +212,7 @@ endfunction
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.
 " param[in] filemane: it must be quoted if it contains spaces
-function! magit#git#git_reset(filename)
+function! magit#git#git_reset(filename) abort
 	let git_cmd=g:magit_git_cmd . " reset HEAD -- " . a:filename
 	silent let git_result=magit#utils#system(git_cmd)
 	if ( v:shell_error != 0 )
@@ -230,9 +230,9 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! magit#git#git_apply(header, selection)
+function! magit#git#git_apply(header, selection) abort
 	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
+	if ( selection[-1] !~# '^$' )
 		let selection += [ '' ]
 	endif
 	let git_cmd=g:magit_git_cmd . " apply --recount --no-index --cached -"
@@ -254,13 +254,13 @@ endfunction
 " param[in] selection: the text to stage. It must be a patch, i.e. a diff 
 " header plus one or more hunks
 " return: no
-function! magit#git#git_unapply(header, selection, mode)
+function! magit#git#git_unapply(header, selection, mode) abort
 	let cached_flag=''
-	if ( a:mode == 'staged' )
+	if ( a:mode ==# 'staged' )
 		let cached_flag=' --cached '
 	endif
 	let selection = magit#utils#flatten(a:header + a:selection)
-	if ( selection[-1] !~ '^$' )
+	if ( selection[-1] !~# '^$' )
 		let selection += [ '' ]
 	endif
 	silent let git_result=magit#utils#system(
@@ -276,6 +276,6 @@ function! magit#git#git_unapply(header, selection, mode)
 	endif
 endfunction
 
-function! magit#git#submodule_status()
+function! magit#git#submodule_status() abort
 	return system(g:magit_git_cmd . " submodule status")
 endfunction

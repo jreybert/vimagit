@@ -15,7 +15,7 @@ python -c "import os,sys; print(os.path.realpath(os.path.expanduser(sys.argv[1])
 
 export VIMAGIT_PATH=$(prealpath $1)
 export VADER_PATH=$(prealpath $2)
-export TEST_PATH=$(prealpath $3)
+export TEST_PATH=$(prealpath "$3")
 export VIM_VERSION=$4
 
 if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH ) ]]; then
@@ -23,7 +23,7 @@ if [[ ! ( -d $VIMAGIT_PATH && -d $VADER_PATH && -d $TEST_PATH ) ]]; then
 	exit 1
 fi
 
-pushd $TEST_PATH
+pushd "$TEST_PATH"
 git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
 export TEST_HEAD_SHA1='origin/vimagit_test-1.4.1'
@@ -62,7 +62,7 @@ for script in ${!test_scripts[@]}; do
 	for filename in "${filename_array[@]}"; do
 		echo ${_TEST_PATHS[@]}
 		for test_path in ${_TEST_PATHS[@]}; do
-			export TEST_SUB_PATH=$(prealpath $TEST_PATH/$test_path)
+			export TEST_SUB_PATH=$(prealpath "$TEST_PATH"/$test_path)
 			export VIMAGIT_TEST_FILENAME="$filename"
 
 			for i in $EOL_TEST; do

@@ -15,7 +15,8 @@ let g:vimagit_version = [1, 6, 0]
 
 " source common file. variables in common file are shared with plugin and
 " syntax files
-execute 'source ' . resolve(expand('<sfile>:p:h')) . '/../common/magit_common.vim'
+let g:vimagit_path = fnameescape(resolve(expand('<sfile>:p:h')))
+execute 'source ' . g:vimagit_path . '/../common/magit_common.vim'
 
 " these mappings are broadly applied, for all vim buffers
 let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
@@ -54,18 +55,22 @@ let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
-let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         1)
+let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
+" Should deprecate the following
+let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         0)
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
 
 execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
 
-if ( g:magit_refresh_gitgutter == 1 )
-	autocmd User VimagitUpdateFile
-			\ if ( exists("*gitgutter#process_buffer") ) |
-			\ 	call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
-			\ endif
+if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
+  autocmd User VimagitUpdateFile
+    \ if ( exists("*gitgutter#process_buffer") ) |
+    \   call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
+    \ elseif ( exists("*sy#util#refresh_windows") ) |
+    \   call sy#util#refresh_windows() |
+    \ endif
 endif
 " }}}
 
@@ -165,7 +170,7 @@ function! s:mg_get_info()
 	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
 	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
 	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
-	if ( b:magit_current_commit_mode != '' )
+	if ( b:magit_current_commit_mode !=# '' )
 	silent put =g:magit_section_info.commit_mode . ':        '
 				\ . g:magit_commit_mode[b:magit_current_commit_mode]
 	endif
@@ -189,6 +194,7 @@ function! s:mg_display_files(mode, curdir, depth)
 			continue
 		endif
 		silent put =file.get_filename_header()
+		let file.line_pos = line('.')
 
 		if ( file.dir != 0 )
 			if ( file.visible == 1 )
@@ -206,7 +212,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		endif
 		let hunks = file.get_hunks()
 		for hunk in hunks
-			if ( hunk.header != '' )
+			if ( hunk.header !=# '' )
 				silent put =hunk.header
 			endif
 			if ( !empty(hunk.lines) )
@@ -267,7 +273,7 @@ let b:magit_current_commit_msg = []
 "       'CC': prepare a brand new commit message
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
-	if ( b:magit_current_commit_mode != '' )
+	if ( b:magit_current_commit_mode !=# '' )
 		silent put =''
 		silent put =g:magit_sections.commit
 		call <SID>mg_section_help('commit')
@@ -275,12 +281,12 @@ function! s:mg_get_commit_section()
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
-		if ( b:magit_current_commit_mode == 'CC' )
+		if ( b:magit_current_commit_mode ==# 'CC' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " commit -e 2> /dev/null")
-		elseif ( b:magit_current_commit_mode == 'CA' )
+						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
+		elseif ( b:magit_current_commit_mode ==# 'CA' )
 			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " commit --amend -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=magit#git#get_config("core.commentChar", '#')
@@ -314,7 +320,7 @@ function! s:mg_search_block(start_pattern, end_pattern, upper_limit_pattern,
 			\ end_pattern_on_cursor)
 
 	let upper_limit=0
-	if ( a:upper_limit_pattern != "" )
+	if ( a:upper_limit_pattern !=# '' )
 		let upper_limit=search(a:upper_limit_pattern, "cbnW")
 	endif
 
@@ -379,7 +385,7 @@ endfunction
 "       commit
 " return no
 function! s:mg_git_commit(mode) abort
-	if ( a:mode == 'CF' )
+	if ( a:mode ==# 'CF' )
 		silent let git_result=magit#utils#system(g:magit_git_cmd .
 					\ " commit --amend -C HEAD")
 	else
@@ -407,7 +413,7 @@ function! s:mg_git_commit(mode) abort
 			endif
 		endif
 
-		if ( a:mode == 'CA' )
+		if ( a:mode ==# 'CA' )
 			let commit_flag.=" --amend "
 		endif
 		let commit_cmd=g:magit_git_cmd . " commit " . commit_flag .
@@ -495,7 +501,7 @@ function! s:mg_create_diff_from_select(select_lines)
 	" ignored. To do so, + lines are simply ignored, - lines are considered as
 	" untouched.
 	" For unstaging, - lines must be ignored and + lines considered untouched.
-	if ( section == 'unstaged' )
+	if ( section ==# 'unstaged' )
 		let remove_line_char = '+'
 		let replace_line_char = '-'
 	else
@@ -510,7 +516,7 @@ function! s:mg_create_diff_from_select(select_lines)
 		elseif ( hunk_line =~ '^'.replace_line_char.'.*' )
 			call add(selection, substitute(hunk_line,
 						\ '^'.replace_line_char.'\(.*\)$', ' \1', ''))
-		elseif ( hunk_line =~ '^ .*' )
+		elseif ( hunk_line =~# '^ .*' )
 			call add(selection, hunk_line)
 		else
 			throw 'visual selection error: ' . hunk_line
@@ -620,20 +626,38 @@ let s:mg_display_functions = {
 " 5. restore window state
 " param[in] updated file (optional): this filename is updated to absolute
 " path, set in g:magit_last_updated_buffer and the User autocmd
+" param[in] current section (optional): when params 1 & 2 are set, it means
+" that a stage/unstage action occured. We try to smartly set the cursor
+" position after the refresh
+"  - on current file if still in current section
+"  - else on next file if any
+"  - else on previous file if any
+"  - or cursor stay where it is
 " VimagitUpdateFile event is raised
 function! magit#update_buffer(...)
 	let buffer_name=bufname("%")
-	if ( buffer_name !~ 'magit://.*' )
+	if ( buffer_name !~# 'magit://.*' )
 		echoerr "Not in magit buffer but in " . buffer_name
 		return
 	endif
+	
+	if ( a:0 >= 1 )
+		let cur_filename = a:1
+	endif
+	if ( a:0 >= 2 )
+		let cur_section = a:2
+	endif
 
-	if ( b:magit_current_commit_mode != '' )
+	if ( b:magit_current_commit_mode !=# '' )
 		try
 			let b:magit_current_commit_msg = s:mg_get_commit_msg(1)
 		catch /^out_of_block$/
 			let b:magit_current_commit_msg = []
 		endtry
+		setlocal buftype=acwrite
+	else
+		setlocal buftype=nofile
+		setlocal nomodified
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
 	" help:
@@ -647,7 +671,16 @@ function! magit#update_buffer(...)
 	
 	" delete buffer
 	silent! execute "silent :%delete _"
-	
+
+	" be smart for the cursor position after refresh, if stage/unstaged
+	" occured
+	if ( a:0 >= 2 )
+		let filenames = b:state.get_filenames(cur_section)
+		let pos = match(filenames, cur_filename)
+		let next_filename = (pos < len(filenames) - 1) ? filenames[pos+1] : ''
+		let prev_filename = (pos > 0) ? filenames[pos-1] : ''
+	endif
+
 	call b:state.update()
 
 	for section in g:magit_default_sections
@@ -666,7 +699,7 @@ function! magit#update_buffer(...)
 
 	call magit#utils#clear_undo()
 
-	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
+	if ( b:magit_current_commit_mode !=# '' && b:magit_commit_newly_open == 1 )
 		let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
 		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
@@ -679,8 +712,8 @@ function! magit#update_buffer(...)
 	set filetype=magit
 
 	let g:magit_last_updated_buffer = ''
-	if ( a:0 == 1 )
-		let abs_filename = magit#git#top_dir() . a:1
+	if ( a:0 >= 1 )
+		let abs_filename = magit#git#top_dir() . cur_filename
 		if ( bufexists(abs_filename) )
 			let g:magit_last_updated_buffer = abs_filename
 			if exists('#User#VimagitUpdateFile')
@@ -691,6 +724,19 @@ function! magit#update_buffer(...)
 
 	if exists('#User#VimagitRefresh')
 		doautocmd User VimagitRefresh
+	endif
+
+	if ( a:0 >= 2 )
+		" if, in this order, current file, next file, previous file exists in
+		" current section, move cursor to it
+		for fname in [cur_filename, next_filename, prev_filename]
+			try
+				let file = b:state.get_file(cur_section, fname)
+				call cursor(file.line_pos, 0)
+				break
+			catch 'file_doesnt_exists'
+			endtry
+		endfor
 	endif
 
 endfunction
@@ -708,7 +754,7 @@ endfunction
 "     'h': horizontal split
 "     'c': current buffer (should be used when opening vim in vimagit mode
 function! magit#show_magit(display, ...)
-	if ( &filetype == 'netrw' )
+	if ( &filetype ==# 'netrw' )
 		let cur_file_path = b:netrw_curdir
 	else
 		let cur_file = expand("%:p")
@@ -719,12 +765,12 @@ function! magit#show_magit(display, ...)
 	let try_paths = [ cur_file_path, getcwd() ]
 	for path in try_paths
 		let git_dir=magit#git#is_work_tree(path)
-		if ( git_dir != '' )
+		if ( git_dir !=# '' )
 			break
 		endif
 	endfor
 
-	if ( git_dir == '' )
+	if ( git_dir ==# '' )
 		echohl ErrorMsg
 		echom "magit can not find any git repository"
 		echom "make sure that current opened file or vim current directory points to a git repository"
@@ -736,19 +782,19 @@ function! magit#show_magit(display, ...)
 		throw 'magit_not_in_git_repo'
 	endif
 
-	let buffer_name='magit://' . git_dir
+	let buffer_name=fnameescape('magit://' . git_dir)
 
 	let magit_win = magit#utils#search_buffer_in_windows(buffer_name)
 
 	if ( magit_win != 0 )
 		silent execute magit_win."wincmd w"
-	elseif ( a:display == 'v' )
+	elseif ( a:display ==# 'v' )
 		silent execute "vnew " . buffer_name
-	elseif ( a:display == 'h' )
+	elseif ( a:display ==# 'h' )
 		silent execute "new " . buffer_name
-	elseif ( a:display == 'c' )
+	elseif ( a:display ==# 'c' )
 		if ( !bufexists(buffer_name) )
-			if ( bufname("%") == "" )
+			if ( bufname("%") ==# '' )
 				silent keepalt enew
 			else
 				silent enew
@@ -782,7 +828,9 @@ function! magit#show_magit(display, ...)
 	setlocal nobuflisted
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
-	"setlocal readonly
+
+	execute "autocmd BufWriteCmd " . buffer_name . " :call magit#commit_command('CC')"
+
 
 	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
@@ -866,9 +914,9 @@ function! s:mg_stage_closed_file(discard)
 		if ( file.is_visible() == 0 ||
 			\ file.is_dir() == 1 )
 			if ( a:discard == 0 )
-				if ( section == 'unstaged' )
+				if ( section ==# 'unstaged' )
 					call magit#git#git_add(magit#utils#add_quotes(filename))
-				elseif ( section == 'staged' )
+				elseif ( section ==# 'staged' )
 					call magit#git#git_reset(magit#utils#add_quotes(filename))
 				else
 					echoerr "Must be in \"" .
@@ -876,8 +924,8 @@ function! s:mg_stage_closed_file(discard)
 								\ g:magit_sections.unstaged . "\" section"
 				endif
 			else
-				if ( section == 'unstaged' )
-					if ( file.status == '?' )
+				if ( section ==# 'unstaged' )
+					if ( file.status ==# '?' )
 						if ( g:magit_discard_untracked_do_delete == 1 )
 							if ( delete(filename) != 0 )
 								echoerr "Can not delete \"" . filename . "\""
@@ -905,7 +953,8 @@ function! s:mg_stage_closed_file(discard)
 				endif
 			endif
 
-			call magit#update_buffer(filename)
+			call magit#update_buffer(filename, section)
+
 			return
 		endif
 	endif
@@ -925,13 +974,13 @@ function! magit#stage_block(selection, discard) abort
 	
 	let file = b:state.get_file(section, filename, 0)
 	if ( a:discard == 0 )
-		if ( section == 'unstaged' )
+		if ( section ==# 'unstaged' )
 			if ( file.must_be_added() )
 				call magit#git#git_add(magit#utils#add_quotes(filename))
 			else
 				call magit#git#git_apply(header, a:selection)
 			endif
-		elseif ( section == 'staged' )
+		elseif ( section ==# 'staged' )
 			if ( file.must_be_added() )
 				call magit#git#git_reset(magit#utils#add_quotes(filename))
 			else
@@ -943,7 +992,7 @@ function! magit#stage_block(selection, discard) abort
 						\ g:magit_sections.unstaged . "\" section"
 		endif
 	else
-		if ( section == 'unstaged' )
+		if ( section ==# 'unstaged' )
 			if ( file.must_be_added() )
 				call magit#git#git_checkout(magit#utils#add_quotes(filename))
 			else
@@ -955,7 +1004,8 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	endif
 
-	call magit#update_buffer(filename)
+	call magit#update_buffer(filename, section)
+
 endfunction
 
 " magit#stage_file: this function (un)stage a whole file, from the current
@@ -1082,12 +1132,12 @@ endfunction
 "   'CA'/'CF': if in commit section mode, call magit#git_commit, else just set
 "   global state variable b:magit_current_commit_mode,
 function! magit#commit_command(mode)
-	if ( a:mode == 'CF' )
+	if ( a:mode ==# 'CF' )
 		call <SID>mg_git_commit(a:mode)
 	else
 		let section=<SID>mg_get_section()
-		if ( section == 'commit' )
-			if ( b:magit_current_commit_mode == '' )
+		if ( section ==# 'commit' )
+			if ( b:magit_current_commit_mode ==# '' )
 				echoerr "Error, commit section should not be enabled"
 				return
 			endif
@@ -1097,6 +1147,8 @@ function! magit#commit_command(mode)
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
+			setlocal buftype=acwrite
+			setlocal nomodified
 		endif
 	endif
 	call magit#update_buffer()
@@ -1105,7 +1157,7 @@ endfunction
 " magit#close_commit: cancel for commit mode
 " close commit section if opened
 function! magit#close_commit()
-  if ( b:magit_current_commit_mode == '' )
+  if ( b:magit_current_commit_mode ==# '' )
     return
   endif
 
@@ -1125,7 +1177,7 @@ endfunction
 " it closes the current fold (if any), jump to next hunk and unfold it
 " param[in] dir: can be 'N' (for next) or 'P' (for previous)
 function! magit#jump_hunk(dir)
-	let back = ( a:dir == 'P' ) ? 'b' : ''
+	let back = ( a:dir ==# 'P' ) ? 'b' : ''
 	let line = search("^@@ ", back . 'wn')
 	if ( line != 0 )
 		if ( foldlevel(line('.')) == 2 )
@@ -1185,9 +1237,9 @@ function! magit#jump_to()
 endfunction
 
 function! magit#update_diff(way)
-	if ( a:way == "+" )
+	if ( a:way ==# "+" )
 		let b:magit_diff_context+=1
-	elseif ( a:way == "0" )
+	elseif ( a:way ==# "0" )
 		let b:magit_diff_context=3
 	elseif ( b:magit_diff_context > 1 )
 		let b:magit_diff_context-=1

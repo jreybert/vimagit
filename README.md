@@ -61,7 +61,7 @@ To simply test vimagit, modify/add/delete/rename some files in a git repository 
   Once you have stage all the required changes, press `CC`.
   - Section "Commit message" is shown.
   - Type your commit message in this section.
-  - To commit, go back in Normal mode, and press `CC`.
+  - To commit, go back in Normal mode, and press `CC` (or `:w` if you prefer).
   
 You just created your first commit with vimagit!
 
@@ -209,11 +209,13 @@ E means 'edit'.
 
 ##### CC
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
- * If in commit section, commit the all staged changes in commit mode previously set.
+ * If in commit section, create the commit with the commit message and all staged changes.
+
+##### :w :x :wq ZZ
+ * If in commit section, create the commit with the commit message and all staged changes.
 
 ##### CA
  * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
- * If in commit section, commit the staged changes in commit mode previously set.
 
 ##### CF
  * Amend the staged changes into the previous commit, without modifying previous commit message.

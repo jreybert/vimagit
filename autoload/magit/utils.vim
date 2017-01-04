@@ -1,7 +1,7 @@
 
 " magit#utils#ls_all: list all files (including hidden ones) in a given path
 " return : list of filenames
-function! magit#utils#ls_all(path)
+function! magit#utils#ls_all(path) abort
 	return split(globpath(a:path, '.[^.]*', 1) . "\n" .
 				\ globpath(a:path, '*', 1), '\n')
 endfunction
@@ -9,23 +9,28 @@ endfunction
 let s:submodule_list = []
 " magit#utils#refresh_submodule_list: this function refresh the List s:submodule_list
 " magit#utils#is_submodule() is using s:submodule_list
-function! magit#utils#refresh_submodule_list()
+function! magit#utils#refresh_submodule_list() abort
 	let s:submodule_list = map(split(magit#git#submodule_status(), "\n"), 'split(v:val)[1]')
 endfunction
 
 " magit#utils#is_submodule search if dirname is in s:submodule_list 
 " param[in] dirname: must end with /
 " INFO: must be called from top work tree
-function! magit#utils#is_submodule(dirname)
+function! magit#utils#is_submodule(dirname) abort
 	return ( index(s:submodule_list, a:dirname) != -1 )
 endfunction
 
-" s:magit_cd_cmd: plugin variable to choose lcd/cd command, 'lcd' if exists,
-" 'cd' otherwise
-let s:magit_cd_cmd = exists('*haslocaldir') && haslocaldir() ? 'lcd ' : 'cd '
-" magit#utils#lcd: helper function to lcd. use cd if lcd doesn't exists
-function! magit#utils#lcd(dir)
-	execute s:magit_cd_cmd . a:dir
+" magit#utils#chdir will change the directory respecting
+" local/tab-local/global directory settings.
+function! magit#utils#chdir(dir) abort
+  " This is a dirty hack to fix tcd breakages on neovim.
+  " Future work should be based on nvim API.
+  if exists(':tcd')
+    let chdir = haslocaldir() ? 'lcd' : haslocaldir(-1, 0) ? 'tcd' : 'cd'
+  else
+    let chdir = exists('*haslocaldir') && haslocaldir() ? 'lcd' : 'cd'
+  endif
+  execute chdir fnameescape(a:dir)
 endfunction
 
 " magit#utils#clear_undo: this function clear local undo history.
@@ -35,7 +40,7 @@ endfunction
 " with a change. The hack is the line
 " exe "normal a \<BS>\<Esc>"
 " We move on first line to make this trick where it should be no folding
-function! magit#utils#clear_undo()
+function! magit#utils#clear_undo() abort
 	let old_undolevels = &l:undolevels
 	let cur_pos = line('.')
 	setlocal undolevels=-1
@@ -52,10 +57,10 @@ endfunction
 " pwd at the end of function
 " param[in] ...: command + optional args
 " return: command output as a string
-function! magit#utils#system(...)
+function! magit#utils#system(...) abort
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#git#top_dir()
+		call magit#utils#chdir(magit#git#top_dir())
 		" List as system() input is since v7.4.247, it is safe to check
 		" systemlist, which is sine v7.4.248
 		if exists('*systemlist')
@@ -75,7 +80,7 @@ function! magit#utils#system(...)
 			endif
 		endif
 	finally
-		execute s:magit_cd_cmd . dir
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
@@ -85,10 +90,10 @@ endfunction
 " pwd at the end of function
 " param[in] ...: command + optional args to execute, args can be List or String
 " return: command output as a list
-function! magit#utils#systemlist(...)
+function! magit#utils#systemlist(...) abort
 	let dir = getcwd()
 	try
-		execute s:magit_cd_cmd . magit#git#top_dir()
+		call magit#utils#chdir(magit#git#top_dir())
 		" systemlist since v7.4.248
 		if exists('*systemlist')
 			return call('systemlist', a:000)
@@ -96,14 +101,14 @@ function! magit#utils#systemlist(...)
 			return split(call('magit#utils#system', a:000), '\n')
 		endif
 	finally
-		execute s:magit_cd_cmd . dir
+		call magit#utils#chdir(dir)
 	endtry
 endfunction
 
 " magit#utils#underline: helper function to underline a string
 " param[in] title: string to underline
 " return a string composed of strlen(title) '='
-function! magit#utils#underline(title)
+function! magit#utils#underline(title) abort
 	return substitute(a:title, ".", "=", "g")
 endfunction
 
@@ -111,7 +116,7 @@ endfunction
 " WARNING: it only works with monoline string
 " param[in] string: string to strip
 " return: stripped string
-function! magit#utils#strip(string)
+function! magit#utils#strip(string) abort
 	return substitute(a:string, '^\s*\(.\{-}\)\s*\n\=$', '\1', '')
 endfunction
 
@@ -119,14 +124,14 @@ endfunction
 " on both sides)
 " param[in] array: array to strop
 " return: stripped array
-function! magit#utils#strip_array(array)
+function! magit#utils#strip_array(array) abort
 	let array_len = len(a:array)
 	let start = 0
-	while ( start < array_len && a:array[start] == '' )
+	while ( start < array_len && a:array[start] ==# '' )
 		let start += 1
 	endwhile
 	let end = array_len - 1
-	while ( end >= 0 && a:array[end] == '' )
+	while ( end >= 0 && a:array[end] ==# '' )
 		let end -= 1
 	endwhile
 	return a:array[ start : end ]
@@ -135,19 +140,19 @@ endfunction
 " magit#utils#join_list: helper function to concatente a list of strings with newlines
 " param[in] list: List to concat
 " return: concatenated list
-function! magit#utils#join_list(list)
+function! magit#utils#join_list(list) abort
 	return join(a:list, "\n") . "\n"
 endfunction
 
 " magit#utils#add_quotes: helper function to protect filename with quotes
 " return quoted filename
-function! magit#utils#add_quotes(filename)
+function! magit#utils#add_quotes(filename) abort
 	return '"' . a:filename . '"'
 endfunction
 
 " magit#utils#remove_quotes: helper function to remove quotes aroudn filename
 " return unquoted filename
-function! magit#utils#remove_quotes(filename)
+function! magit#utils#remove_quotes(filename) abort
 	let ret=matchlist(a:filename, '"\([^"]*\)"')
 	if ( empty(ret) )
 		throw 'no quotes found: ' . a:filename
@@ -160,7 +165,7 @@ endfunction
 " https://gist.github.com/dahu/3322468
 " param[in] list: a List, can be nested or not
 " return: one dimensional list
-function! magit#utils#flatten(list)
+function! magit#utils#flatten(list) abort
 	let val = []
 	for elem in a:list
 		if type(elem) == type([])
@@ -177,7 +182,7 @@ endfunction
 " Version working with file *possibly* containing trailing newline
 " param[in] file: filename to append
 " param[in] lines: List of lines to append
-function! magit#utils#append_file(file, lines)
+function! magit#utils#append_file(file, lines) abort
 	let fcontents=[]
 	if ( filereadable(a:file) )
 		let fcontents=readfile(a:file, 'b')
@@ -192,13 +197,13 @@ endfunction
 let s:bufnr = 0
 " magit#utils#setbufnr: function to set current magit buffer id
 " param[in] bufnr: current magit buffer id
-function! magit#utils#setbufnr(bufnr)
+function! magit#utils#setbufnr(bufnr) abort
 	let s:bufnr = a:bufnr
 endfunction
 
 " magit#utils#bufnr: function to get current magit buffer id
 " return: current magit buffer id
-function! magit#utils#bufnr()
+function! magit#utils#bufnr() abort
 	return s:bufnr
 endfunction
 
@@ -208,7 +213,7 @@ endfunction
 " calling this function
 " param[in] filename: filename to search
 " return: window id, 0 if not found
-function! magit#utils#search_buffer_in_windows(filename)
+function! magit#utils#search_buffer_in_windows(filename) abort
 	let cur_win = winnr()
 	let last_win = winnr('#')
 	let files={}
@@ -219,7 +224,7 @@ function! magit#utils#search_buffer_in_windows(filename)
 				\files[buffer_name(a:filename)] : 0
 endfunction
 
-function! magit#utils#start_profile(...)
+function! magit#utils#start_profile(...) abort
 	let prof_file = ( a:0 == 1 ) ? a:1 : "/tmp/vimagit.log"
 	execute "profile start " . prof_file . " | profile pause"
 	profile! file */plugin/magit.vim
