@@ -1,7 +1,7 @@
 # vimagit
 
-[![Join the chat at https://gitter.im/jreybert/vimagit](https://badges.gitter.im/jreybert/vimagit.svg)](https://gitter.im/jreybert/vimagit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-[![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit/branches)
+[![Join the chat at https://gitter.im/jreybert/vimagit](https://badges.gitter.im/jreybert/vimagit.svg)][4]
+[![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)][13]
 
 Ease your git workflow within vim.
 
@@ -15,10 +15,10 @@ Take a look at [TL;DR](#tldr) to start using it immediately.
 ![Example of vimagit 1.5.1](../gh-pages/images/vimagit_screenshot_1.5.1.png?raw=true "Example of vimagit 1.5.1")
 
 Some screencasts:
-* A simple [asciicast](https://asciinema.org/a/28761)
-* A [commented video presenting vimagit](https://youtu.be/_3wMmmVi6bU) (thank you [Mike Hartington](https://github.com/mhartington)!)
+* A simple [asciicast][5]
+* A [commented video presenting vimagit][6] (thank you [Mike Hartington][7]!)
 
-This workflow is 100% inspired from magnificent emacs [Magit](https://github.com/magit/magit) plugin.
+This workflow is 100% inspired from magnificent emacs [Magit][1] plugin.
 
 ## Outstanding features
 
@@ -28,7 +28,7 @@ This workflow is 100% inspired from magnificent emacs [Magit](https://github.com
 * [x] Write the commit message in the same buffer.
 * [x] From a hunk in magit buffer, jump to the file at the diff position.
 * [x] 100% VimL plugin, no external dependency (except git of course).
-* [x] Enhanced by external plugins: [vim-gitgutter](https://github.com/airblade/vim-gitgutter) [vim-airline](https://github.com/vim-airline/vim-airline)
+* [x] Enhanced by external plugins: [vim-gitgutter][2] [vim-airline][8]
 * [x] Stable. All features are tested in continuous integration.
 
 More to come:
@@ -38,12 +38,12 @@ More to come:
 * [ ] Stage multiple hunks or file by visually selecting them #83 .
 * [ ] Go through history, cherry-pick changes.
 * [ ] Make vimagit more efficient for huge repositories, with a lot of diffs.
-* [ ] Something is missing? Open an [issue](https://github.com/jreybert/vimagit/issues/new)!
+* [ ] Something is missing? Open an [issue][9]!
 
 > Why should I use vimagit, there are already plethora git plugins for vim?
 
 * fugitive is a very complete plugin, with a lot of functions. I use it for years, and it is a fundamental tool in my workflow. But visualize your changes and staged them in broad number of files is really a pain.
-* vim-gitgutter is very well integrated into vim, but without the ability to commit stages, it stays an informational plugin.
+* [vim-gitgutter][2] is very well integrated into vim, but without the ability to commit stages, it stays an informational plugin.
 
 ## TL;DR
 
@@ -350,7 +350,7 @@ Default value is 0.
 
 #### g:magit_refresh_gitgutter
 
-When set to 1, and if vim-gitgutter plugin is installed, gitgutter signs will
+When set to 1, and if [vim-gitgutter][2] plugin is installed, gitgutter signs will
 be updated each time magit update the git status of a file (i.e. when a file
 or a hunk is staged/unstaged).
 Default value is 1.
@@ -364,15 +364,15 @@ At least, it is tested with vim 7.3.249 and git 1.8.5.6 (see [Integration](#inte
 
 ## Integration
 
-Branches [master](https://github.com/jreybert/vimagit/) and [next](https://github.com/jreybert/vimagit/tree/next) are continuously tested on [travis](https://travis-ci.org/jreybert/vimagit) when published on github.
+Branches [master][10] and [next][11] are continuously tested on [travis][12] when published on github.
 
-vimagit is tested with various versions of vim on linux: vim 7.3.249, vim 7.4.273, and latest neovim version. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue](https://github.com/jreybert/vimagit/issues/new).
+vimagit is tested with various versions of vim on linux: vim 7.3.249, vim 7.4.273, and latest neovim version. It is also tested for macos X: vim, macvim and neovim. Anyway, if you feel that vimagit behaves oddly (slow refresh, weird display order...) please fill an [issue][9].
 
 For the most enthusiastic, you can try the branch [next](https://github.com/jreybert/vimagit/tree/next). It is quite stable, just check its travis status before fetching it.
 
 Travis status:
-* **[master status](https://travis-ci.org/jreybert/vimagit/branches)**: [![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)](https://travis-ci.org/jreybert/vimagit/branches)
-* **[next status](https://travis-ci.org/jreybert/vimagit/branches)**: [![next build status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)](https://travis-ci.org/jreybert/vimagit/branches)
+* **[master status][13]**: [![Master build status](https://travis-ci.org/jreybert/vimagit.svg?branch=master)][13]
+* **[next status][13]**: [![next build status](https://travis-ci.org/jreybert/vimagit.svg?branch=next)][13]
 
 A lot a features are developed in dev/feature_name branches. While it may be asked to users to test these branches (during a bug fix for example), one is warned that these branches may be heavily rebased/deleted.
 
@@ -384,10 +384,24 @@ Pull requests are very welcomed. Some good practice:
 
 ## Credits
 
-* Obviously, big credit to [magit](https://github.com/magit/magit). For the moment, I am only copying their stage workflow, but I won't stop there! They have a lot of other good ideas.
-* Sign handling is based on [gitgutter](https://github.com/airblade/vim-gitgutter) work.
-* Command line completion is based on [hypergit](https://github.com/c9s/hypergit.vim) work.
+* Obviously, big credit to [Magit][1]. For the moment, I am only copying their stage workflow, but I won't stop there! They have a lot of other good ideas.
+* Sign handling is based on [vim-gitgutter][2] work.
+* Command line completion is based on [hypergit][3] work.
 
 ## License
 
 Copyright (c) Jerome Reybert. Distributed under the same terms as Vim itself. See :help license.
+
+[1]: https://github.com/magit/magit
+[2]: https://github.com/airblade/vim-gitgutter
+[3]: https://github.com/c9s/hypergit.vim
+[4]: https://gitter.im/jreybert/vimagit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+[5]: https://asciinema.org/a/28761
+[6]: https://youtu.be/_3wMmmVi6bU
+[7]: https://github.com/mhartington
+[8]: https://github.com/vim-airline/vim-airline
+[9]: https://github.com/jreybert/vimagit/issues/new
+[10]: https://github.com/jreybert/vimagit/
+[11]: https://github.com/jreybert/vimagit/tree/next
+[12]: https://travis-ci.org/jreybert/vimagit
+[13]: https://travis-ci.org/jreybert/vimagit/branches
