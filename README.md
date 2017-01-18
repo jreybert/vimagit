@@ -27,8 +27,8 @@ This workflow is 100% inspired from magnificent emacs [Magit](https://github.com
 * [x] Stage/unstage at file/hunk/line level.
 * [x] Write the commit message in the same buffer.
 * [x] From a hunk in magit buffer, jump to the file at the diff position.
-* [x] Update vim-gitgutter signs when git status is updated.
 * [x] 100% VimL plugin, no external dependency (except git of course).
+* [x] Enhanced by external plugins: [vim-gitgutter](https://github.com/airblade/vim-gitgutter) [vim-airline](https://github.com/vim-airline/vim-airline)
 * [x] Stable. All features are tested in continuous integration.
 
 More to come:

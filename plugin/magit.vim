@@ -693,6 +693,10 @@ function! magit#update_buffer(...)
 		doautocmd User VimagitRefresh
 	endif
 
+	if exists(':AirlineRefresh')
+		execute "AirlineRefresh"
+	endif
+
 endfunction
 
 " magit#toggle_help: toggle inline help showing in magit buffer
