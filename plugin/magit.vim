@@ -739,6 +739,10 @@ function! magit#update_buffer(...)
 		endfor
 	endif
 
+	if exists(':AirlineRefresh')
+		execute "AirlineRefresh"
+	endif
+
 endfunction
 
 " magit#toggle_help: toggle inline help showing in magit buffer
