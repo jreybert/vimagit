@@ -390,7 +390,7 @@ function! s:mg_git_commit(mode) abort
 					\ " commit --amend -C HEAD")
 	else
 		let commit_flag=""
-		if ( empty( magit#get_staged_files() ) )
+		if ( a:mode != 'CA' && empty( magit#get_staged_files() ) )
 			let choice = confirm(
 				\ "Do you really want to commit without any staged files?",
 				\ "&Yes\n&No", 2)
