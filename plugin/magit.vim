@@ -654,10 +654,9 @@ function! magit#update_buffer(...)
 		catch /^out_of_block$/
 			let b:magit_current_commit_msg = []
 		endtry
-		setlocal buftype=acwrite
+		call s:set_mode_write()
 	else
-		setlocal buftype=nofile
-		setlocal nomodified
+		call s:set_mode_read()
 	endif
 	" FIXME: find a way to save folding state. According to help, this won't
 	" help:
@@ -833,8 +832,14 @@ function! magit#show_magit(display, ...)
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 
+	" catch write command
 	execute "autocmd BufWriteCmd " . buffer_name . " :call magit#commit_command('CC')"
 
+	" let magit buffer in read mode when cursor is not in file, to avoid
+	" unfortunate commit with a :wall command out of magit buffer if a commit
+	" message is ongoing
+	execute "autocmd BufEnter " . buffer_name . " :if ( b:magit_current_commit_mode != '' ) | call s:set_mode_write() | endif"
+	execute "autocmd BufLeave " . buffer_name . " :if ( b:magit_current_commit_mode != '' ) | call s:set_mode_read() | endif"
 
 	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
@@ -1129,6 +1134,16 @@ function! magit#ignore_file() abort
 	call magit#update_buffer()
 endfunction
 
+" set magit buffer in write mode
+function! s:set_mode_write()
+	setlocal buftype=acwrite
+endfunction
+
+" set magit buffer in read only mode
+function! s:set_mode_read()
+	setlocal buftype=nofile
+endfunction
+
 " magit#commit_command: entry function for commit mode
 " INFO: it has a different effect if current section is commit section or not
 " param[in] mode: commit mode
@@ -1151,7 +1166,7 @@ function! magit#commit_command(mode)
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
-			setlocal buftype=acwrite
+			call s:set_mode_write()
 			setlocal nomodified
 		endif
 	endif
