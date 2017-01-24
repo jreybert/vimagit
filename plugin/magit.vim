@@ -636,7 +636,8 @@ let s:mg_display_functions = {
 " VimagitUpdateFile event is raised
 function! magit#update_buffer(...)
 	let buffer_name=bufname("%")
-	if ( buffer_name !~ 'magit://.*' )
+	" (//|\\\\) is to handle old vim 7.4-0 fnameescape behavior on Windows
+	if ( buffer_name !~ "\\v^magit:(//|\\\\).*" )
 		echoerr "Not in magit buffer but in " . buffer_name
 		return
 	endif
