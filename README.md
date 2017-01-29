@@ -12,6 +12,8 @@ From a very single vim buffer, you can perform main git operations in few key pr
 
 Take a look at [TL;DR](#tldr) to start using it immediately.
 
+**Important**: some default mapping have changed since version 1.7, see [mapping_update](#here).
+
 ![Example of vimagit 1.5.1](../gh-pages/images/vimagit_screenshot_1.5.1.png?raw=true "Example of vimagit 1.5.1")
 
 Some screencasts:
@@ -53,15 +55,15 @@ To simply test vimagit, modify/add/delete/rename some files in a git repository 
 
 - `:Magit`  
   Open magit buffer with [:Magit](#magitshow_magit) command.
-- `N`  
-  Jump to next hunk with `N`, or move the cursor as you like. The cursor is on a hunk.
-- `S`  
-  While the cursor is on an unstaged hunk, press `S` in Normal mode: the hunk is now staged, and appears in "Staged changes" section (you can also unstage a hunk from "Staged section" with `S`).
-- `CC`  
-  Once you have stage all the required changes, press `CC`.
+- `<C-n>`  
+  Jump to next hunk with `<C-n>`, or move the cursor as you like. The cursor is on a hunk.
+- `s`  
+  While the cursor is on an unstaged hunk, press `s` in Normal mode: the hunk is now staged, and appears in "Staged changes" section (you can also unstage a hunk from "Staged section" with `s`).
+- `cc`  
+  Once you have stage all the required changes, press `cc`.
   - Section "Commit message" is shown.
   - Type your commit message in this section.
-  - To commit, go back in Normal mode, and press `CC` (or `:w` if you prefer).
+  - To commit, go back in Normal mode, and press `cc` (or `:w` if you prefer).
   
 You just created your first commit with vimagit!
 
@@ -104,9 +106,9 @@ There are 5 sections:
 ### Visual selection
 
 It is possible to stage part of hunk, by different ways:
-* By visually selecting some lines, then staging the selection with **S**.
-* By marking some lines "to be staged" with **M**, then staging these selected lines with **S**.
-* Staging individual lines with **L**.
+* By visually selecting some lines, then staging the selection with **s**.
+* By marking some lines "to be staged" with **m**, then staging these selected lines with **s**.
+* Staging individual lines with **l**.
 
 Visual selection and marked lines have some limitations for the moment:
 * It only work for "staging", not for "unstaging".
@@ -164,33 +166,33 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 ##### zc,zC
  * Typing zc on a file will hide its diffs.
 
-##### S
+##### s
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
  * If cursor is in diff header, stage/unstage whole file at cursor position.
  * If some lines in the hunk are selected (using **v**), stage only visual selected lines (only works for staging).
- * If some lines in the hunk are marked (using **M**), stage only marked lines (only works for staging).
+ * If some lines in the hunk are marked (using **m**), stage only marked lines (only works for staging).
  * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
 
-##### F
+##### f
  * Stage/unstage the whole file at cursor position.
  * When cursor is in "Unstaged changes" section, it will stage the file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage file.
 
-##### L
+##### l
  * Stage the line under the cursor.
 
-##### M
+##### m
  * Mark the line under the cursor "to be staged".
  * If some lines in the hunk are selected (using **v**), mark selected lines "to be staged".
- * To staged marked lines in a hunk, move cursor to this hunk and press **S**.
+ * To staged marked lines in a hunk, move cursor to this hunk and press **s**.
 
 ##### DDD
  * If cursor is in a hunk, discard hunk at cursor position.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
 
-##### E
+##### e
 If cursor is in a hunk, cursor will move in the file containing this hunk, at
  the line of the beginning of the hunk.
  * if the file is already visible in a window, cursor moves to this window at
@@ -200,33 +202,33 @@ If cursor is in a hunk, cursor will move in the file containing this hunk, at
  * if there is only magit window opened, split vertically, moves cursor to new
  split and open buffer at the hunk line
 
-E means 'edit'.
+e means 'edit'.
 
 :exclamation: this function is extremely powerful, just give it a try!
 
-##### N,P
+##### <C-n>,<C-p>
  * Move to **N**ext or **P**revious hunk.
 
-##### CC
+##### cc
  * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
  * If in commit section, create the commit with the commit message and all staged changes.
 
 ##### :w :x :wq ZZ
  * If in commit section, create the commit with the commit message and all staged changes.
 
-##### CA
+##### ca
  * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
 
-##### CF
+##### cf
  * Amend the staged changes into the previous commit, without modifying previous commit message.
 
-##### CU
- * Close a commit section (If you need soon after open or editing commit message, pressing 'u' is good enough).
+##### cu
+ * Close a commit section
 
 ##### I
  * Add the file under the cursor in .gitgnore
 
-##### R
+##### r
  * Refresh magit buffer
 
 ##### -,+,0
@@ -237,6 +239,31 @@ E means 'edit'.
 
 ##### ?
  * Toggle help showing in magit buffer
+
+#### Mapping update
+
+Since vimagit 1.7, main mappings have changed. For the majority, it is
+only a case change:
+ *  Stage hunk   : **S**  -> **s**
+ *  Stage file   : **F**  -> **f**
+ *  Stage line   : **L**  -> **l**
+ *  Mark lines   : **M**  -> **m**
+ *  Commit       : **CC** -> **cc**
+ *  Commit amend : **CA** -> **ca**
+ *  Commit fix   : **CF** -> **cf**
+ *  Commit close : **CU** -> **cu**
+ *  Reload       : **R**  -> **r**
+ *  Edit         : **E**  -> **e**
+
+Jump between hunks now uses control
+ *  Jump next hunk : **N** -> **<C-n>**
+ *  Jump prev hunk : **P** -> **<C-p>**
+
+Ignore mapping (I) and discard mapping (DDD) are let unchanged.
+
+You can define your own mapping with the method descried below, or set the
+following variable to keep the old mappings:
+> let g:magit_keep_old_mapping = 1
 
 #### Autocommand events
 

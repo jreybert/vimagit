@@ -53,21 +53,22 @@ repository and open vim.
 > :Magit
 Open magit buffer with :Magit command.
 
-> N
-Jump to next hunk with N. The cursor should be on the header of a hunk.
+> <C-n>
+Jump to next hunk with <C-n>. The cursor should be on the header of a hunk.
 
-> S
-If the hunk is in "Unstage changes" section, press S in Normal mode: the
+> s
+If the hunk is in "Unstage changes" section, press s in Normal mode: the
 hunk is now staged, and appears in "Staged changes" section. The opposite is
 also possible, i.e. unstage a hunk from "Staged section".
 
-If you move the cursor to the file header and press S, the whole file is
+If you move the cursor to the file header and press s, the whole file is
 staged.
 
-> CC
-Once you have stage all the required changes, type CC. A new section "Commit
-message" appears and cursor move to it. Type your commit message, in Insert mode
-this time. Once it's done, write your commit message with :w (or :x, :wq, ZZ).
+> cc
+Once you have stage all the required changes, press `cc`.
+  - Section "Commit message" is shown.
+  - Type your commit message in this section.
+  - To commit, go back in Normal mode, and press `cc` (or `:w` if you prefer).
 
 Voila! you created your first commit with vimagit!
 
@@ -99,10 +100,10 @@ INLINE MODIFICATIONS                               *vimagit-inline-modification*
 VISUAL SELECTION                                      *vimagit-visual-selection*
 
 It is possible to stage part of hunk, by different ways:
-* By visually selecting some lines, then staging the selection with S.
-* By marking some lines "to be staged" with M, then staging these selected
-  lines with S.
-* Staging individual lines with L.
+* By visually selecting some lines, then staging the selection with s.
+* By marking some lines "to be staged" with m, then staging these selected
+  lines with s.
+* Staging individual lines with l.
 
 Visual selection and marked lines have some limitations for the moment:
 * It only work for "staging", not for "unstaging".
@@ -145,7 +146,33 @@ variable is described below as           *vimagit-g:magit_nameofmapping_mapping*
 
 For example, to redefine the <leader>M mapping, user should add this line in
 its |vimrc|:
-let g:magit_show_magit_mapping='itsnewmapping'
+let g:magit_show_magit_mapping='m'
+
+Mapping update                                          *vimagit-mapping-update*
+--------------
+
+Since vimagit 1.7, main mappings have changed. For the majority, it is
+only a case change:
+   Stage hunk   : S  -> s
+   Stage file   : F  -> f
+   Stage line   : L  -> l
+   Mark lines   : M  -> m
+   Commit       : CC -> cc
+   Commit amend : CA -> ca
+   Commit fix   : CF -> cf
+   Commit close : CU -> cu
+   Reload       : R  -> r
+   Edit         : E  -> e
+
+Jump between hunks now uses control
+   Jump next hunk : N -> <C-n>
+   Jump prev hunk : P -> <C-p>
+
+Ignore mapping (I) and discard mapping (DDD) are let unchanged.
+
+You can define your own mapping with the method descried below, or set the
+following variable to keep the old mappings:
+let g:magit_keep_old_mapping = 1
 
 Global mappings
 ---------------
@@ -173,38 +200,38 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                       *vimagit-g:magit_folding_close_mapping*
   zc,zC     Typing zc on a file will hide its diffs.
 
-                                      *vimagit-S*            *magit#stage_hunk(0)*
+                                      *vimagit-s*            *magit#stage_hunk(0)*
                                                            *magit#stage_vselect()*
                                       *vimagit-g:magit_stage_hunk_mapping*
-  S         If cursor is in a hunk, stage/unstage hunk at cursor position.
+  s         If cursor is in a hunk, stage/unstage hunk at cursor position.
             If cursor is in diff header, stage/unstage whole file at cursor
             position.
             If some lines in the hunk are selected (see |visual-use|), stage
             only selected lines (only works for staging).
-            If some lines in the hunk are marked (see |vimagit-M|), stage only
+            If some lines in the hunk are marked (see |vimagit-m|), stage only
             these lines (only works for staging).
             When cursor is in "Unstaged changes" section, it will stage the
             hunk/file.
             On the other side, when cursor is in "Staged changes" section, it
             will unstage hunk/file.
 
-                                      *vimagit-F*             *magit#stage_file()*
+                                      *vimagit-f*             *magit#stage_file()*
                                       *vimagit-g:magit_stage_file_mapping*
-  F         Stage/unstage the whole file at cursor position.
+  f         Stage/unstage the whole file at cursor position.
             When cursor is in "Unstaged changes" section, it will stage the
             file.
             On the other side, when cursor is in "Staged changes" section, it
             will unstage file.
 
-                                      *vimagit-L*
-  L         Stage the line under the cursor (only works for staging)
+                                      *vimagit-l*
+  l         Stage the line under the cursor (only works for staging)
 
-                                      *vimagit-M*
-  M
+                                      *vimagit-m*
+  m
             Mark the current line to be staged.
             If some lines in the hunk are selected (see |visual-use|), mark
             selected lines.
-            To staged marked lines, press S (see |vimagit-S|) in the current
+            To staged marked lines, press s (see |vimagit-s|) in the current
             hunk.
 
                                     *vimagit-DDD*            *magit#stage_hunk(1)*
@@ -226,15 +253,15 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             E means 'edit'.
             NOTE: this function is extremely powerful, just give it a try!
 
-                                    *vimagit-N*                *magit#jump_hunk()*
-                                    *vimagit-P*
+                                    *vimagit-<C-n>*            *magit#jump_hunk()*
+                                    *vimagit-<C-p>*
                                     *vimagit-g:magit_jump_next_hunk*
                                     *vimagit-g:magit_jump_prev_hunk*
-  N,P       Move to Next or Previous hunk.
+  <C-n>,<C-p>  Move to Next or Previous hunk.
 
-                                    *vimagit-CC*      *magit#commit_command('CC')*
+                                    *vimagit-cc*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
-  CC        If not in commit section, set commit mode to "New commit" and show 
+  cc        If not in commit section, set commit mode to "New commit" and show 
             "Commit message" section with brand new commit message.
             If in commit section, create the commit with the commit message and
             all staged changes.
@@ -244,30 +271,29 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             If in commit section, create the commit with the commit message and
             all staged changes.
 
-                                    *vimagit-CA*      *magit#commit_command('CA')*
+                                    *vimagit-ca*      *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
-  CA        If not in commit section, set commit mode to "Amend commit" and
+  ca        If not in commit section, set commit mode to "Amend commit" and
             show "Commit message" section with previous commit message.
             If in commit section, commit the staged changes in commit mode
             previously set.
 
-                                    *vimagit-CF*      *magit#commit_command('CF')*
+                                    *vimagit-cf*      *magit#commit_command('CF')*
                                     *vimagit-g:magit_commit_fixup_mapping*
-  CF        Amend the staged changes into the previous commit, without
+  cf        Amend the staged changes into the previous commit, without
             modifying previous commit message
 
-                                    *vimagit-CU*      *magit#close_commit()*
+                                    *vimagit-cu*      *magit#close_commit()*
                                     *vimagit-g:magit_close_commit_mapping*
-  CU        Close a commit section (If you need soon after open or editing
-            Ucommit message, pressing 'u' is good enough).
+  cu        Close a commit section
 
                                     *vimagit-I*              *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore
 
-                                    *vimagit-R*            *magit#update_buffer()*
+                                    *vimagit-r*            *magit#update_buffer()*
                                     *vimagit-g:magit_reload_mapping*
-  R         Refresh magit buffer.
+  r         Refresh magit buffer.
 
                                                              *magit#update_diff()*
                                     *vimagit--* *vimagit-g:magit_diff_shrink*
