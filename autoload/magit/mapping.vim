@@ -65,40 +65,40 @@ let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     
 
 function! magit#mapping#set_default()
 
-	execute "nnoremap <buffer><silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_edit_mapping .         " :call magit#jump_to()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_diff_reset .           " :call magit#update_diff('0')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_edit_mapping .         " :call magit#jump_to()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_reset .           " :call magit#update_diff('0')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
 
-	execute "nnoremap <buffer><silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
-	execute "xnoremap <buffer><silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
+	execute "xnoremap <buffer><silent><nowait> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
 	
-	execute "nnoremap <buffer><silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
-	execute "xnoremap <buffer><silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
+	execute "xnoremap <buffer><silent><nowait> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
 
-	execute "nnoremap <buffer><silent> " . g:magit_jump_next_hunk .       " :call magit#jump_hunk('N')<cr>"
-	execute "nnoremap <buffer><silent> " . g:magit_jump_prev_hunk .       " :call magit#jump_hunk('P')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_jump_next_hunk .       " :call magit#jump_hunk('N')<cr>"
+	execute "nnoremap <buffer><silent><nowait> " . g:magit_jump_prev_hunk .       " :call magit#jump_hunk('P')<cr>"
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
-		execute "nnoremap <buffer><silent> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<return>"
 	endfor
 	for mapping in g:magit_folding_open_mapping
-		execute "nnoremap <buffer><silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<return>"
 	endfor
 	for mapping in g:magit_folding_close_mapping
-		execute "nnoremap <buffer><silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<return>"
 	endfor
 
 	" s:magit_inline_help: Dict containing inline help for each section
