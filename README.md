@@ -327,6 +327,13 @@ When set to 2, filenames and hunks are unfolded.
 Default value is 1.
 > let g:magit_default_fold_level=[012]
 
+#### g:magit_auto_foldopen
+
+When stage/unstage a hunk, cursor goes to the closest hunk in the same section.
+This option automatically opens the fold of the hunk cursor has jump to.
+Default value is 1.
+> let g:magit_auto_foldopen=[01]
+
 #### g:magit_default_sections
 
 With this variable, the user is able to choose which sections are displayed in magit

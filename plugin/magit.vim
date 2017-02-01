@@ -52,6 +52,7 @@ let g:magit_enabled                = get(g:, 'magit_enabled',                   
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
+let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
@@ -748,6 +749,9 @@ function! magit#update_buffer(...)
 
 				if ( file.is_visible() )
 					call cursor(file.get_hunks()[hunk_id].line_pos, 0)
+					if ( g:magit_auto_foldopen )
+						foldopen
+					endif
 				else
 					call cursor(file.line_pos, 0)
 				endif
