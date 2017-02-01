@@ -68,6 +68,7 @@ endfunction
 " WARNING: this variable must be deepcopy()'ied
 let s:hunk_template = {
 \	'header': '',
+\	'line_pos': 0,
 \	'lines': [],
 \	'marks': [],
 \}

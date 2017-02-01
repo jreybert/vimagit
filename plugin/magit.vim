@@ -214,6 +214,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		for hunk in hunks
 			if ( hunk.header != '' )
 				silent put =hunk.header
+				let hunk.line_pos = line('.')
 			endif
 			if ( !empty(hunk.lines) )
 				silent put =hunk.lines
@@ -626,10 +627,12 @@ let s:mg_display_functions = {
 " 5. restore window state
 " param[in] updated file (optional): this filename is updated to absolute
 " path, set in g:magit_last_updated_buffer and the User autocmd
-" param[in] current section (optional): when params 1 & 2 are set, it means
+" param[in] current section (optional)
+" param[in] current hunk id
+" when params 1 & 2 & 3 are set, it means
 " that a stage/unstage action occured. We try to smartly set the cursor
 " position after the refresh
-"  - on current file if still in current section
+"  - on current file on closest hunk if still contains hunks in current section
 "  - else on next file if any
 "  - else on previous file if any
 "  - or cursor stay where it is
@@ -647,6 +650,9 @@ function! magit#update_buffer(...)
 	endif
 	if ( a:0 >= 2 )
 		let cur_section = a:2
+	endif
+	if ( a:0 >= 3 )
+		let cur_hunk_id = a:3
 	endif
 
 	if ( b:magit_current_commit_mode != '' )
@@ -726,13 +732,25 @@ function! magit#update_buffer(...)
 		doautocmd User VimagitRefresh
 	endif
 
-	if ( a:0 >= 2 )
+	if ( a:0 >= 3 )
 		" if, in this order, current file, next file, previous file exists in
 		" current section, move cursor to it
+		let cur_file = 1
 		for fname in [cur_filename, next_filename, prev_filename]
 			try
 				let file = b:state.get_file(cur_section, fname)
-				call cursor(file.line_pos, 0)
+				if ( cur_file )
+					let hunk_id = max([0, min([len(file.get_hunks())-1, cur_hunk_id])])
+					let cur_file = 0
+				else
+					let hunk_id = 0
+				endif
+
+				if ( file.is_visible() )
+					call cursor(file.get_hunks()[hunk_id].line_pos, 0)
+				else
+					call cursor(file.line_pos, 0)
+				endif
 				break
 			catch 'file_doesnt_exists'
 			endtry
@@ -963,7 +981,7 @@ function! s:mg_stage_closed_file(discard)
 				endif
 			endif
 
-			call magit#update_buffer(filename, section)
+			call magit#update_buffer(filename, section, 0)
 
 			return
 		endif
@@ -980,9 +998,14 @@ endfunction
 function! magit#stage_block(selection, discard) abort
 	let section=<SID>mg_get_section()
 	let filename=<SID>mg_get_filename()
-	let header = b:state.get_file(section, filename).get_header()
-	
+
 	let file = b:state.get_file(section, filename, 0)
+	let header = file.get_header()
+
+	" find current hunk position in file matching against current selection
+	" header
+	let hunk_id = match(map(deepcopy(file.get_hunks()), 'v:val.header'), a:selection[0])
+
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
 			if ( file.must_be_added() )
@@ -1014,7 +1037,7 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	endif
 
-	call magit#update_buffer(filename, section)
+	call magit#update_buffer(filename, section, hunk_id)
 
 endfunction
 
