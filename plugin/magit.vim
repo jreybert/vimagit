@@ -706,6 +706,8 @@ function! magit#update_buffer(...)
 
 	call magit#utils#clear_undo()
 
+	setlocal filetype=magit
+
 	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
 		let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
@@ -715,8 +717,6 @@ function! magit#update_buffer(...)
 		endif
 		let b:magit_commit_newly_open = 0
 	endif
-
-	set filetype=magit
 
 	let g:magit_last_updated_buffer = ''
 	if ( a:0 >= 1 )
