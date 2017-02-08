@@ -13,13 +13,16 @@ syn include @diff syntax/diff.vim
 execute 'syn match titleEntry "' . g:magit_section_re . '\n=\+"'
 hi def link titleEntry Comment
 
+execute 'syn match commitMsgExceed "\(=\+\n.\{50}\)\@<=.*$"'
+hi def link commitMsgExceed Comment
+
 execute 'syn match stashEntry "' . g:magit_stash_re . '"'
 hi def link stashEntry String
 
 execute 'syn match fileEntry "' . g:magit_file_re . '"'
 hi def link fileEntry String
 
-execute 'syn region gitTitle start=/^$\n' . g:magit_section_re . '/ end=/^$/ contains=titleEntry'
+execute 'syn region gitTitle start=/^$\n' . g:magit_section_re . '/ end=/^$/ contains=titleEntry,commitMsgExceed'
 
 execute 'syn region gitStash start=/' . g:magit_stash_re . '/ end=/\%(' .
  \ g:magit_stash_re . '\)\@=/ contains=stashEntry fold'
