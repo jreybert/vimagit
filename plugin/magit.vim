@@ -59,6 +59,9 @@ let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_de
 let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
 " Should deprecate the following
 let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         0)
+
+let g:magit_commit_title_limit     = get(g:, 'magit_commit_title_limit',        50)
+
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")

@@ -13,7 +13,7 @@ syn include @diff syntax/diff.vim
 execute 'syn match titleEntry "' . g:magit_section_re . '\n=\+"'
 hi def link titleEntry Comment
 
-execute 'syn match commitMsgExceed "\(=\+\n.\{50}\)\@<=.*$"'
+execute 'syn match commitMsgExceed "\(=\+\n.\{' . g:magit_commit_title_limit . '}\)\@<=.*$"'
 hi def link commitMsgExceed Comment
 
 execute 'syn match stashEntry "' . g:magit_stash_re . '"'

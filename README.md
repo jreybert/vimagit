@@ -309,6 +309,12 @@ Git command, may be simply simply "git" if git is in your path. Defualt is "git"
 To disable chatty inline help in magit buffer (default 1)
 > let g:magit_show_help=[01]
 
+#### g:magit_commit_title_limit
+
+Text is grayed if first line of commit message exceed this number of character (default 50)
+
+> let g:magit_commit_title_limit=[0..300]
+
 #### g:magit_default_show_all_files
 
 When this variable is set to 0, all diff files are hidden by default.
