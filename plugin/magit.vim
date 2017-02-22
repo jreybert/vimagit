@@ -21,32 +21,6 @@ execute 'source ' . g:vimagit_path . '/../common/magit_common.vim'
 " these mappings are broadly applied, for all vim buffers
 let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
 
-" these mapping are applied locally, for magit buffer only
-let g:magit_stage_file_mapping     = get(g:, 'magit_stage_file_mapping',        'F' )
-let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        'S' )
-let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
-let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
-let g:magit_discard_hunk_mapping   = get(g:, 'magit_discard_hunk_mapping',      'DDD' )
-let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
-let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
-let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
-let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
-let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
-let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
-let g:magit_ignore_mapping         = get(g:, 'magit_ignore_mapping',            'I' )
-let g:magit_close_mapping          = get(g:, 'magit_close_mapping',             'q' )
-let g:magit_toggle_help_mapping    = get(g:, 'magit_toggle_help_mapping',       '?' )
-
-let g:magit_diff_shrink            = get(g:, 'magit_diff_shrink',               '-' )
-let g:magit_diff_enlarge           = get(g:, 'magit_diff_enlarge',              '+' )
-let g:magit_diff_reset             = get(g:, 'magit_diff_reset',                '0' )
-
-let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    [ '<CR>' ])
-let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
-let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
-
-let g:magit_jump_next_hunk         = get(g:, 'magit_jump_next_hunk',            'N')
-let g:magit_jump_prev_hunk         = get(g:, 'magit_jump_prev_hunk',            'P')
 " user options
 let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
@@ -78,88 +52,6 @@ if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
 endif
 " }}}
 
-" {{{ Internal functions
-
-" s:magit_inline_help: Dict containing inline help for each section
-let s:magit_inline_help = {
-			\ 'staged': [
-\g:magit_stage_hunk_mapping
-\.'      if cursor on filename header, unstage file',
-\'       if cursor in hunk, unstage hunk',
-\g:magit_stage_file_mapping
-\.'      if cursor on filename header or hunk, unstage whole file',
-\],
-			\ 'unstaged': [
-\g:magit_stage_hunk_mapping
-\.'      if cursor on filename header, stage file',
-\'       if cursor in hunk, stage hunk',
-\'       if visual selection in hunk (with v), stage selection',
-\'       if lines marked in hunk (with M), stage marked lines',
-\g:magit_stage_line_mapping
-\.'      stage the line under the cursor',
-\g:magit_mark_line_mapping
-\.'      if cursor in hunk, mark line under cursor "to be staged"',
-\'       if visual selection in hunk (with v), mark selected lines "to be'
-\'       staged"',
-\g:magit_stage_file_mapping
-\.'      if cursor on filename header or hunk, stage whole file',
-\g:magit_edit_mapping
-\.'      edit, jump cursor to file containing this hunk',
-\g:magit_jump_next_hunk.','.g:magit_jump_prev_hunk
-\.  '    move to Next/Previous hunk in magit buffer',
-\g:magit_discard_hunk_mapping
-\.  '    discard file changes (warning, changes will be lost)',
-\g:magit_ignore_mapping
-\.'      add file in .gitgnore',
-\],
-			\ 'global': [
-\g:magit_folding_toggle_mapping[0]
-\.   '   if cursor on filename header line, unhide diffs for this file',
-\g:magit_commit_mapping
-\. '     set commit mode to normal, and show "Commit message" section',
-\g:magit_commit_amend_mapping
-\. '     set commit mode amend, and show "Commit message" section with previous',
-\'       commit message',
-\g:magit_commit_fixup_mapping
-\. '     amend staged changes to previous commit without modifying the previous',
-\'       commit message',
-\g:magit_close_commit_mapping
-\. '     commit undo, cancel and close current commit message',
-\g:magit_reload_mapping
-\.'      refresh magit buffer',
-\g:magit_diff_shrink.','.g:magit_diff_enlarge.','.g:magit_diff_reset
-\.  '    shrink,enlarge,reset diff context',
-\g:magit_close_mapping
-\.'      close magit buffer',
-\g:magit_toggle_help_mapping
-\.'      toggle help showing in magit buffer',
-\],
-			\ 'commit': [
-\g:magit_commit_mapping
-\. '     commit all staged changes with commit mode previously set (normal or',
-\'       amend) with message written in this section',
-\],
-\}
-
-" s:mg_get_inline_help_line_nb: this function returns the number of lines of
-" a given section, or 0 if help is disabled.
-" param[in] section: section identifier
-" return number of lines
-function! s:mg_get_inline_help_line_nb(section)
-	return ( g:magit_show_help == 1 ) ?
-		\ len(s:magit_inline_help[a:section]) : 0
-endfunction
-
-" s:mg_section_help: this function writes in current buffer the inline help
-" for a given section, it does nothing if inline help is disabled.
-" WARNING: this function writes in file, it should only be called through
-" protected functions like magit#update_buffer
-" param[in] section: section identifier
-function! s:mg_section_help(section)
-	if ( g:magit_show_help == 1 )
-		silent put =s:magit_inline_help[a:section]
-	endif
-endfunction
 
 " s:mg_get_info: this function writes in current buffer current git state
 " WARNING: this function writes in file, it should only be called through
@@ -236,7 +128,7 @@ endfunction
 function! s:mg_get_staged_section(mode)
 	silent put =''
 	silent put =g:magit_sections[a:mode]
-	call <SID>mg_section_help(a:mode)
+	call magit#mapping#get_section_help(a:mode)
 	silent put =magit#utils#underline(g:magit_sections[a:mode])
 	silent put =''
 	call s:mg_display_files(a:mode, '', 0)
@@ -281,7 +173,7 @@ function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
 		silent put =''
 		silent put =g:magit_sections.commit
-		call <SID>mg_section_help('commit')
+		call magit#mapping#get_section_help('commit')
 		silent put =magit#utils#underline(g:magit_sections.commit)
 
 		let git_dir=magit#git#git_dir()
@@ -359,7 +251,7 @@ function! s:mg_get_commit_msg(...)
 	let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 	" Get next section pattern with g:magit_default_sections order
 	let commit_section_pat_end='^'.g:magit_sections[g:magit_default_sections[match(g:magit_default_sections, 'commit')+1]].'$'
-	let commit_jump_line = 2 + <SID>mg_get_inline_help_line_nb('commit')
+	let commit_jump_line = 2 + magit#mapping#get_section_help_line_nb('commit')
 	let out_of_block = a:0 == 1 ? a:1 : 0
 	if ( out_of_block )
 		let old_pos=line('.')
@@ -616,7 +508,7 @@ let g:magit_last_updated_buffer = ''
 " This Dict should be accessed through g:magit_default_sections
 let s:mg_display_functions = {
 	\ 'info':        { 'fn': function("s:mg_get_info"), 'arg': []},
-	\ 'global_help': { 'fn': function("s:mg_section_help"), 'arg': ['global']},
+	\ 'global_help': { 'fn': function("magit#mapping#get_section_help"), 'arg': ['global']},
 	\ 'commit':      { 'fn': function("s:mg_get_commit_section"), 'arg': []},
 	\ 'staged':      { 'fn': function("s:mg_get_staged_section"), 'arg': ['staged']},
 	\ 'unstaged':    { 'fn': function("s:mg_get_staged_section"), 'arg': ['unstaged']},
@@ -714,7 +606,7 @@ function! magit#update_buffer(...)
 	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
 		let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 		silent! let section_line=search(commit_section_pat_start, "w")
-		silent! call cursor(section_line+2+<SID>mg_get_inline_help_line_nb('commit'), 0)
+		silent! call cursor(section_line+2+magit#mapping#get_section_help_line_nb('commit'), 0)
 		if exists('#User#VimagitEnterCommit')
 			doautocmd User VimagitEnterCommit
 		endif
@@ -885,42 +777,7 @@ function! magit#show_magit(display, ...)
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
 
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_edit_mapping .         " :call magit#jump_to()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_diff_reset .           " :call magit#update_diff('0')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
-
-	execute "nnoremap <buffer> <silent> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
-	execute "xnoremap <buffer> <silent> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
-	
-	execute "nnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
-	execute "xnoremap <buffer> <silent> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
-
-	execute "nnoremap <buffer> <silent> " . g:magit_jump_next_hunk .       " :call magit#jump_hunk('N')<cr>"
-	execute "nnoremap <buffer> <silent> " . g:magit_jump_prev_hunk .       " :call magit#jump_hunk('P')<cr>"
-
-	for mapping in g:magit_folding_toggle_mapping
-		" trick to pass '<cr>' in a mapping command without being interpreted
-		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
-		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<cr>"
-	endfor
-	for mapping in g:magit_folding_open_mapping
-		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<cr>"
-	endfor
-	for mapping in g:magit_folding_close_mapping
-		execute "nnoremap <buffer> <silent> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<cr>"
-	endfor
+	call magit#mapping#set_default()
 
 	if exists('#User#VimagitBufferInit')
 		doautocmd User VimagitBufferInit

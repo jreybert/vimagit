@@ -53,8 +53,8 @@ To simply test vimagit, modify/add/delete/rename some files in a git repository 
 
 - `:Magit`  
   Open magit buffer with [:Magit](#magitshow_magit) command.
-- `N`  
-  Jump to next hunk with `N`, or move the cursor as you like. The cursor is on a hunk.
+- `<C-n>`  
+  Jump to next hunk with `<C-n>`, or move the cursor as you like. The cursor is on a hunk.
 - `S`  
   While the cursor is on an unstaged hunk, press `S` in Normal mode: the hunk is now staged, and appears in "Staged changes" section (you can also unstage a hunk from "Staged section" with `S`).
 - `CC`  
@@ -204,7 +204,7 @@ E means 'edit'.
 
 :exclamation: this function is extremely powerful, just give it a try!
 
-##### N,P
+##### <C-n>,<C-p>
  * Move to **N**ext or **P**revious hunk.
 
 ##### CC
@@ -237,6 +237,12 @@ E means 'edit'.
 
 ##### ?
  * Toggle help showing in magit buffer
+
+#### Mapping update
+
+Since vimagit 1.7, jump mappings have changed:
+ *  Jump next hunk : **N** -> **<C-n>**
+ *  Jump prev hunk : **P** -> **<C-p>**
 
 #### Autocommand events
 

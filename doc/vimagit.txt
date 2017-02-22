@@ -53,8 +53,8 @@ repository and open vim.
 > :Magit
 Open magit buffer with :Magit command.
 
-> N
-Jump to next hunk with N. The cursor should be on the header of a hunk.
+> <C-n>
+Jump to next hunk with <C-n>. The cursor should be on the header of a hunk.
 
 > S
 If the hunk is in "Unstage changes" section, press S in Normal mode: the
@@ -145,7 +145,14 @@ variable is described below as           *vimagit-g:magit_nameofmapping_mapping*
 
 For example, to redefine the <leader>M mapping, user should add this line in
 its |vimrc|:
-let g:magit_show_magit_mapping='itsnewmapping'
+let g:magit_show_magit_mapping='m'
+
+Mapping update                                          *vimagit-mapping-update*
+--------------
+
+Since vimagit 1.7, jump mappings have changed:
+   Jump next hunk : N -> <C-n>
+   Jump prev hunk : P -> <C-p>
 
 Global mappings
 ---------------
@@ -226,11 +233,11 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             E means 'edit'.
             NOTE: this function is extremely powerful, just give it a try!
 
-                                    *vimagit-N*                *magit#jump_hunk()*
-                                    *vimagit-P*
+                                    *vimagit-<C-n>*            *magit#jump_hunk()*
+                                    *vimagit-<C-p>*
                                     *vimagit-g:magit_jump_next_hunk*
                                     *vimagit-g:magit_jump_prev_hunk*
-  N,P       Move to Next or Previous hunk.
+  <C-n>,<C-p>  Move to Next or Previous hunk.
 
                                     *vimagit-CC*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
