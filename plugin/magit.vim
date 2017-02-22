@@ -1014,7 +1014,7 @@ function! magit#stage_block(selection, discard) abort
 
 	" find current hunk position in file matching against current selection
 	" header
-	let hunk_id = match(map(deepcopy(file.get_hunks()), 'v:val.header'), a:selection[0])
+	let hunk_id = match(map(deepcopy(file.get_hunks()), 'v:val.header'), escape(a:selection[0], '*'))
 
 	if ( a:discard == 0 )
 		if ( section == 'unstaged' )
