@@ -1,3 +1,51 @@
+Release 1.7.0
+=============
+
+With the new cursor behavior, commit a serie of hunk has never been so
+delightful! Stage one hunk and have a natural look to the next hunk in one
+move. 
+
+Also, think to enable vimagit support in vim-airline with:
+:let g:airline#extensions#vimagit#enabled = 1
+
+Major features
+--------------
+
+* Smart cursor position when staging #96 #115
+* Check user's commit message length #86 #116
+* New mappings `<C-n>` `<C-p>` to jump to hunks #101
+* Jump through closed files too #99
+* Enlarge or shrink hunks #97
+* Commit message with standard write commands :w :x :wq ZZ #91
+* Add support for Vim-Signify #93
+
+Minor features
+--------------
+
+* Change inline help toggling mapping from 'h' to '?' #80
+* Add magit#show_version() and g:magit_version #69
+* Remove ugly 'End commit message' from vimagit buffer #84
+* Add `<nowait>` to buffer mappings #85
+* Fix inline help bug with commit section #110
+
+Bug fixes
+---------
+
+* Handle empty commit (without staged file) and empty commit message #79
+* Escape vimagit path to solve space issue #89
+* Support commit.verbose=yes #98
+* Escape dirs while chdir #89
+* Avoid breaking tab-local directory settings #95
+* Handle old vim ~ 7.4-0 fnameescape behavior on Windows #108
+* Fix E871 error when staging #117
+* Show custom mapping in inline help #103
+
+Contributors
+------------
+
+Thanks to @hkupty @scps950707 @Alok @aschrab @thirtythreeforty @olshevskiy87
+@poohzrn
+
 Release 1.6.0
 =============
 
