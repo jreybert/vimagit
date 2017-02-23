@@ -1087,7 +1087,7 @@ endfunction
 " param[in] dir: can be 'N' (for next) or 'P' (for previous)
 function! magit#jump_hunk(dir)
 	let back = ( a:dir == 'P' ) ? 'b' : ''
-	let line = search("^@@ ", back . 'wn')
+	let line = search('\%(^@@ \|' . g:magit_file_re . '\)', back . 'wn')
 	if ( line != 0 )
 		if ( foldlevel(line('.')) == 2 )
 			try
@@ -1096,6 +1096,15 @@ function! magit#jump_hunk(dir)
 			endtry
 		endif
 		call cursor(line, 0)
+
+		if ( foldlevel(line('.')) == 0 )
+			return
+		endif
+		" if current line if an header file of an open file, go next
+		if ( foldlevel(line('.')) == 1 )
+			let line = search('\%(^@@ \|' . g:magit_file_re . '\)', back . 'wn')
+			call cursor(line, 0)
+		endif
 		while ( foldclosed(line) != -1 )
 			try
 				foldopen
