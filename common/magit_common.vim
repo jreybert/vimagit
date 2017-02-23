@@ -3,6 +3,7 @@
 " selection
 let g:magit_sections = {
  \ 'info':           'Info',
+ \ 'help':           'Help',
  \ 'staged':         'Staged changes',
  \ 'unstaged':       'Unstaged changes',
  \ 'commit':         'Commit message',

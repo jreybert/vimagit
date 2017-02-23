@@ -10,7 +10,7 @@ syn sync minlines=50
 
 syn include @diff syntax/diff.vim
 
-execute 'syn match titleEntry "' . g:magit_section_re . '\n=\+"'
+execute 'syn match titleEntry "' . g:magit_section_re . '\n\%(.*\n\)\{-}=\+"'
 hi def link titleEntry Comment
 
 execute 'syn region commitMsg start=/' . g:magit_sections.commit . '/ end=/\%(' . g:magit_section_re . '\)\@=/ contains=titleEntry'

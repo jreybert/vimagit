@@ -108,10 +108,13 @@ function! magit#mapping#set_default()
 \.'      add file in .gitgnore',
 \],
 			\ 'global': [
+\g:magit_sections['help'],
 \g:magit_folding_toggle_mapping[0]
 \.   '   if cursor on filename header line, unhide diffs for this file',
 \g:magit_commit_mapping
 \. '     set commit mode to normal, and show "Commit message" section',
+\'       In commit mode, commit all staged changes with commit mode previously',
+\'       set (normal or amend) with message written in this section',
 \g:magit_commit_amend_mapping
 \. '     set commit mode amend, and show "Commit message" section with previous',
 \'       commit message',
@@ -123,16 +126,12 @@ function! magit#mapping#set_default()
 \g:magit_reload_mapping
 \.'      refresh magit buffer',
 \g:magit_diff_shrink.','.g:magit_diff_enlarge.','.g:magit_diff_reset
-\.  '    shrink,enlarge,reset diff context',
+\.    '  shrink,enlarge,reset diff context',
 \g:magit_close_mapping
 \.'      close magit buffer',
 \g:magit_toggle_help_mapping
 \.'      toggle help showing in magit buffer',
-\],
-			\ 'commit': [
-\g:magit_commit_mapping
-\. '     commit all staged changes with commit mode previously set (normal or',
-\'       amend) with message written in this section',
+\'======='
 \],
 \}
 endfunction

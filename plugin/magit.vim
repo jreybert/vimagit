@@ -173,7 +173,6 @@ function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
 		silent put =''
 		silent put =g:magit_sections.commit
-		call magit#mapping#get_section_help('commit')
 		silent put =magit#utils#underline(g:magit_sections.commit)
 
 		let git_dir=magit#git#git_dir()
@@ -251,7 +250,7 @@ function! s:mg_get_commit_msg(...)
 	let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 	" Get next section pattern with g:magit_default_sections order
 	let commit_section_pat_end='^'.g:magit_sections[g:magit_default_sections[match(g:magit_default_sections, 'commit')+1]].'$'
-	let commit_jump_line = 2 + magit#mapping#get_section_help_line_nb('commit')
+	let commit_jump_line = 2
 	let out_of_block = a:0 == 1 ? a:1 : 0
 	if ( out_of_block )
 		let old_pos=line('.')
