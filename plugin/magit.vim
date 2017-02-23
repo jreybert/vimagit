@@ -475,6 +475,12 @@ endfunction
 function! magit#open_close_folding_wrapper(mapping, ...)
 	if ( getline(".") =~ g:magit_file_re )
 		return call('magit#open_close_folding', a:000)
+	elseif ( foldlevel(line(".")) == 2 )
+		if ( foldclosed(line('.')) == -1 )
+			foldclose
+		else
+			foldopen
+		endif
 	else
 		silent! execute "silent! normal! " . a:mapping
 	endif
