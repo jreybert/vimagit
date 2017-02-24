@@ -746,6 +746,7 @@ function! magit#show_magit(display, ...)
 	setlocal foldmethod=syntax
 	setlocal foldnestmax=20
 	setlocal nobuflisted
+	setlocal nomodeline
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 
