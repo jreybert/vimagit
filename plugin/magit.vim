@@ -667,7 +667,6 @@ function! magit#toggle_help()
 	call magit#update_buffer()
 endfunction
 
-let g:magit_windows = {}
 " magit#show_magit: prepare and show magit buffer
 " it also set local mappings to magit buffer
 " param[in] display:
@@ -705,8 +704,7 @@ function! magit#show_magit(display, ...)
 
 	let buffer_name=fnameescape('magit://' . git_dir)
 
-	let magit_win = has_key(g:magit_windows, buffer_name) ?
-				\ g:magit_windows[buffer_name] : 0
+	let magit_win = magit#utils#search_buffer_in_windows(buffer_name)
 
 	if ( magit_win != 0 )
 		silent execute magit_win."wincmd w"
@@ -726,7 +724,6 @@ function! magit#show_magit(display, ...)
 	else
 		throw 'parameter_error'
 	endif
-	let g:magit_windows[buffer_name] = winnr()
 
 	silent execute "buffer " . buffer_name
 
