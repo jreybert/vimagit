@@ -57,7 +57,6 @@ endif
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_info()
-	silent put =''
 	silent put =g:magit_sections.info
 	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
@@ -72,6 +71,8 @@ function! s:mg_get_info()
 	endif
 	silent put =''
 	silent put ='Press ? to display help'
+	silent put =''
+	silent put =''
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
@@ -126,12 +127,12 @@ endfunction
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
 function! s:mg_get_staged_section(mode)
-	silent put =''
 	silent put =g:magit_sections[a:mode]
 	call magit#mapping#get_section_help(a:mode)
 	silent put =magit#utils#underline(g:magit_sections[a:mode])
 	silent put =''
 	call s:mg_display_files(a:mode, '', 0)
+	silent put =''
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -144,7 +145,6 @@ function! s:mg_get_stashes()
 	endif
 
 	if (!empty(stash_list))
-		silent put =''
 		silent put =g:magit_sections.stash
 		silent put =magit#utils#underline(g:magit_sections.stash)
 		silent put =''
@@ -154,6 +154,8 @@ function! s:mg_get_stashes()
 			silent put =stash
 			silent! execute "read !git stash show -p " . stash_id
 		endfor
+		silent put =''
+		silent put =''
 	endif
 endfunction
 
@@ -171,7 +173,6 @@ let b:magit_current_commit_msg = []
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
-		silent put =''
 		silent put =g:magit_sections.commit
 		silent put =magit#utils#underline(g:magit_sections.commit)
 
@@ -192,6 +193,7 @@ function! s:mg_get_commit_section()
 		if ( !empty(b:magit_current_commit_msg) )
 			silent put =b:magit_current_commit_msg
 		endif
+		silent put =''
 		silent put =''
 	endif
 endfunction
