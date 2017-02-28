@@ -1081,7 +1081,8 @@ function! magit#commit_command(mode)
 		call <SID>mg_git_commit(a:mode)
 	else
 		let section=<SID>mg_get_section()
-		if ( section == 'commit' )
+		if ( section == 'commit' &&
+\			!(b:magit_current_commit_mode == 'CC' && a:mode == 'CA' ) )
 			if ( b:magit_current_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return
