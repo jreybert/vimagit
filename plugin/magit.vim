@@ -683,6 +683,7 @@ endfunction
 "     'c': current buffer (should be used when opening vim in vimagit mode
 function! magit#show_magit(display, ...)
 	if ( &filetype == 'netrw' )
+		let cur_file = ""
 		let cur_file_path = b:netrw_curdir
 	else
 		let cur_file = expand("%:p")
@@ -789,7 +790,36 @@ function! magit#show_magit(display, ...)
 	endif
 
 	call magit#update_buffer()
-	execute "normal! gg"
+
+	" move cursor to (in priority order if not found):
+	"  - current file unstaged
+	"  - current file staged
+	"  - first unstaged file
+	"  - first stage file
+	let cur_filename = matchlist(cur_file, git_dir . '\(.*\)')
+	if ( !empty(cur_filename) )
+		let cur_file = cur_filename[1]
+		try
+			let file = b:state.get_file('unstaged', cur_file, 0)
+			call cursor(file.line_pos, 0)
+		catch 'file_doesnt_exists'
+			try
+				let file = b:state.get_file('staged', cur_file, 0)
+				call cursor(file.line_pos, 0)
+			catch 'file_doesnt_exists'
+				let unstaged_files = b:state.get_files_ordered('unstaged')
+				if ( !empty(unstaged_files) )
+					call cursor(unstaged_files[0].line_pos, 0)
+				else
+					let staged_files = b:state.get_files_ordered('staged')
+					if ( !empty(staged_files) )
+						call cursor(staged_files[0].line_pos, 0)
+					endif
+				endif
+			endtry
+		endtry
+	endif
+
 endfunction
 
 function! magit#close_magit()
