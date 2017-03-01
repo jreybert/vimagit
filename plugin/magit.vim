@@ -52,27 +52,35 @@ if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
 endif
 " }}}
 
+function! s:print(str)
+	let lines = ( type(a:str) == type([]) ) ? len(a:str) : 1
+	let curline = line('.')
+	call setline(curline, a:str)
+	call append(curline + lines - 1, '')
+	call cursor(curline + lines, 0)
+	return curline
+endfunction
 
 " s:mg_get_info: this function writes in current buffer current git state
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_info()
-	silent put =g:magit_sections.info
-	silent put =magit#utils#underline(g:magit_sections.info)
-	silent put =''
 	let branch=magit#utils#system(g:magit_git_cmd . " rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system(g:magit_git_cmd . " show -s --oneline")
-	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
-	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
-	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
+	call s:print(g:magit_sections.info)
+	call s:print(magit#utils#underline(g:magit_sections.info))
+	call s:print('')
+	call s:print(g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir())
+	call s:print(g:magit_section_info.cur_branch  . ':     ' . magit#utils#strip(branch))
+	call s:print(g:magit_section_info.cur_commit  . ':        ' . magit#utils#strip(commit))
 	if ( b:magit_current_commit_mode != '' )
-	silent put =g:magit_section_info.commit_mode . ':        '
-				\ . g:magit_commit_mode[b:magit_current_commit_mode]
+	call s:print(g:magit_section_info.commit_mode . ':        '
+				\ . g:magit_commit_mode[b:magit_current_commit_mode])
 	endif
-	silent put =''
-	silent put ='Press ? to display help'
-	silent put =''
-	silent put =''
+	call s:print('')
+	call s:print('Press ? to display help')
+	call s:print('')
+	call s:print('')
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
@@ -90,8 +98,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		if ( file.depth != a:depth || filename !~ a:curdir . '.*' )
 			continue
 		endif
-		silent put =file.get_filename_header()
-		let file.line_pos = line('.')
+		let file.line_pos = s:print(file.get_filename_header())
 
 		if ( file.dir != 0 )
 			if ( file.visible == 1 )
@@ -101,7 +108,7 @@ function! s:mg_display_files(mode, curdir, depth)
 		endif
 
 		if ( file.visible == 0 )
-			silent put =''
+			call s:print('')
 			continue
 		endif
 		if ( file.exists == 0 )
@@ -110,14 +117,13 @@ function! s:mg_display_files(mode, curdir, depth)
 		let hunks = file.get_hunks()
 		for hunk in hunks
 			if ( hunk.header != '' )
-				silent put =hunk.header
-				let hunk.line_pos = line('.')
+				let hunk.line_pos = s:print(hunk.header)
 			endif
 			if ( !empty(hunk.lines) )
-				silent put =hunk.lines
+				call s:print(hunk.lines)
 			endif
 		endfor
-		silent put =''
+		call s:print('')
 	endfor
 endfunction
 
@@ -127,12 +133,12 @@ endfunction
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
 function! s:mg_get_staged_section(mode)
-	silent put =g:magit_sections[a:mode]
+	call s:print(g:magit_sections[a:mode])
 	call magit#mapping#get_section_help(a:mode)
-	silent put =magit#utils#underline(g:magit_sections[a:mode])
-	silent put =''
+	call s:print(magit#utils#underline(g:magit_sections[a:mode]))
+	call s:print('')
 	call s:mg_display_files(a:mode, '', 0)
-	silent put =''
+	call s:print('')
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -145,17 +151,17 @@ function! s:mg_get_stashes()
 	endif
 
 	if (!empty(stash_list))
-		silent put =g:magit_sections.stash
-		silent put =magit#utils#underline(g:magit_sections.stash)
-		silent put =''
+		call s:print(g:magit_sections.stash)
+		call s:print(magit#utils#underline(g:magit_sections.stash))
+		call s:print('')
 
 		for stash in stash_list
 			let stash_id=substitute(stash, '^\(stash@{\d\+}\):.*$', '\1', '')
-			silent put =stash
+			call s:print(stash)
 			silent! execute "read !git stash show -p " . stash_id
 		endfor
-		silent put =''
-		silent put =''
+		call s:print('')
+		call s:print('')
 	endif
 endfunction
 
@@ -173,8 +179,8 @@ let b:magit_current_commit_msg = []
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
-		silent put =g:magit_sections.commit
-		silent put =magit#utils#underline(g:magit_sections.commit)
+		call s:print(g:magit_sections.commit)
+		call s:print(magit#utils#underline(g:magit_sections.commit))
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
@@ -187,14 +193,14 @@ function! s:mg_get_commit_section()
 		endif
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=magit#git#get_config("core.commentChar", '#')
-			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
-			silent put =commit_msg
+			let commit_msg=filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"')
+			call s:print(commit_msg)
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
-			silent put =b:magit_current_commit_msg
+			call s:print(b:magit_current_commit_msg)
 		endif
-		silent put =''
-		silent put =''
+		call s:print('')
+		call s:print('')
 	endif
 endfunction
 
