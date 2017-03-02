@@ -202,7 +202,7 @@ function! s:mg_get_commit_section()
 			let output += commit_msg
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
-			let output += [b:magit_current_commit_msg]
+			let output += b:magit_current_commit_msg
 		endif
 		let output += ['', '']
 	endif
