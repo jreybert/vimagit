@@ -67,20 +67,24 @@ endfunction
 function! s:mg_get_info()
 	let branch=magit#utils#system(g:magit_git_cmd . " rev-parse --abbrev-ref HEAD")
 	let commit=magit#utils#system(g:magit_git_cmd . " show -s --oneline")
-	call s:print(g:magit_sections.info)
-	call s:print(magit#utils#underline(g:magit_sections.info))
-	call s:print('')
-	call s:print(g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir())
-	call s:print(g:magit_section_info.cur_branch  . ':     ' . magit#utils#strip(branch))
-	call s:print(g:magit_section_info.cur_commit  . ':        ' . magit#utils#strip(commit))
-	if ( b:magit_current_commit_mode != '' )
-	call s:print(g:magit_section_info.commit_mode . ':        '
-				\ . g:magit_commit_mode[b:magit_current_commit_mode])
-	endif
-	call s:print('')
-	call s:print('Press ? to display help')
-	call s:print('')
-	call s:print('')
+
+	let output = [
+		  \ g:magit_sections.info,
+		  \ magit#utils#underline(g:magit_sections.info),
+		  \ '',
+		  \ g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir(),
+		  \ g:magit_section_info.cur_branch  . ':     ' . magit#utils#strip(branch),
+		  \ g:magit_section_info.cur_commit  . ':        ' . magit#utils#strip(commit)
+		  \ ]
+
+	"if ( b:magit_current_commit_mode != '' )
+	"call add(output, g:magit_section_info.commit_mode . ':        '
+				"\ . g:magit_commit_mode[b:magit_current_commit_mode])
+	"endif
+
+	let output += ['', 'Press ? to display help', '', '']
+
+	call s:print(output)
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
@@ -178,9 +182,10 @@ let b:magit_current_commit_msg = []
 "       'CC': prepare a brand new commit message
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
+	let output = []
+
 	if ( b:magit_current_commit_mode != '' )
-		call s:print(g:magit_sections.commit)
-		call s:print(magit#utils#underline(g:magit_sections.commit))
+		let output += [g:magit_sections.commit, magit#utils#underline(g:magit_sections.commit)]
 
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
@@ -194,14 +199,15 @@ function! s:mg_get_commit_section()
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=magit#git#get_config("core.commentChar", '#')
 			let commit_msg=filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"')
-			call s:print(commit_msg)
+			let output += [commit_msg]
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
-			call s:print(b:magit_current_commit_msg)
+			let output += [b:magit_current_commit_msg]
 		endif
-		call s:print('')
-		call s:print('')
+		let output += ['', '']
 	endif
+
+	call s:print(output)
 endfunction
 
 " s:mg_search_block: helper function, to get start and end line of a block,
