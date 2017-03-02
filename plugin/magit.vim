@@ -77,10 +77,10 @@ function! s:mg_get_info()
 		  \ g:magit_section_info.cur_commit  . ':        ' . magit#utils#strip(commit)
 		  \ ]
 
-	"if ( b:magit_current_commit_mode != '' )
-	"call add(output, g:magit_section_info.commit_mode . ':        '
-				"\ . g:magit_commit_mode[b:magit_current_commit_mode])
-	"endif
+	if ( b:magit_current_commit_mode != '' )
+		let output += [g:magit_section_info.commit_mode . ':        '
+		  \ . g:magit_commit_mode[b:magit_current_commit_mode]]
+	endif
 
 	let output += ['', 'Press ? to display help', '', '']
 
@@ -199,7 +199,7 @@ function! s:mg_get_commit_section()
 		if ( filereadable(git_dir . 'COMMIT_EDITMSG') )
 			let comment_char=magit#git#get_config("core.commentChar", '#')
 			let commit_msg=filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"')
-			let output += [commit_msg]
+			let output += commit_msg
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
 			let output += [b:magit_current_commit_msg]
