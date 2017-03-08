@@ -1187,7 +1187,15 @@ function! magit#jump_to()
 		execute buf_win."wincmd w"
 	endif
 
+	try
 		execute "edit " . "+" . line . " " filename
+	catch
+		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
+			close
+		elseif ( v:exception != 'Vim(edit):E325: ATTENTION' )
+			throw v:exception
+		endif
+	endtry
 endfunction
 
 function! magit#update_diff(way)
