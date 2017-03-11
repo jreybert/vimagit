@@ -85,13 +85,38 @@ This plugin follows the standard runtime path structure, and as such it can be i
 
 ## Usage
 
+### Modes
+
+vimagit buffer has modes. Mappings may have different behavior, depending on current mode and curosr position.
+
+For the moment, vimagit counts only two modes.
+
+#### Stage mode
+
+This is the default mode. In this mode, you can stage and unstage hunks, refresh vimagit buffer...
+
+#### Commit mode
+
+In this mode, "Commit message" section is open, you can write your commit message and validate your commit.
+
+Commit mode has two flavors.
+
+##### Commit mode flavors
+
+* *Normal*: current commit will be a new commit.
+* *Amend*: current commit will be meld with previous commit.
+  * Previous commit message is shown in "Commit message" section.
+  * Use this flavor if you forgot something in the previous commit.
+
+By the way, you can also perform all [stage mode](stage_mode) actions in [commit mode](commit_mode).
+
 ### Sections
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
 
 There are 5 sections:
 * Info: this section display some information about the git repository, like the current branch and the HEAD commit.
-* Commit message: this section appears in commit mode (see below). It contains the message to be committed.
+* Commit message: this section appears in [commit mode](commit_mode). It contains the message to be committed.
 * Staged changes: this sections contains all staged files/hunks, ready to commit.
 * Unstaged changes: this section contains all unstaged and untracked files/hunks.
 * Stash list: this section contains all stahes.
@@ -208,20 +233,20 @@ E means 'edit'.
  * Move to **N**ext or **P**revious hunk.
 
 ##### CC
- * If not in commit section, set commit mode to "New commit" and show "Commit message" section with brand new commit message.
- * If in commit section, create the commit with the commit message and all staged changes.
+ * From [stage mode](stage_mode), set [commit mode](commit_mode) in [normal flavor](commit_mode_flavors) and show empty "Commit message" section.
+ * From [commit mode](commit_mode), commit all staged changes with [commit flavor](commit_mode_flavors) (*normal* or *amend*) with message in "Commit message" section.
 
 ##### :w :x :wq ZZ
- * If in commit section, create the commit with the commit message and all staged changes.
+ * From [commit mode](commit_mode), commit all staged changes with [commit flavor](commit_mode_flavors) (*normal* or *amend*) with message in "Commit message" section.
 
 ##### CA
- * If not in commit section, set commit mode to "Amend commit" and show "Commit message" section with previous commit message.
+ * From [stage mode](stage_mode) or [commit mode](commit_mode): set [commit mode](commit_mode) in [amend flavor](commit_mode_flavors), and display "Commit message" section with previous commit message. Commit will be meld with previous commit.
 
 ##### CF
- * Amend the staged changes into the previous commit, without modifying previous commit message.
+ * From [stage mode](stage_mode): amend the staged changes into the previous commit, without modifying previous commit message.
 
 ##### CU
- * Close a commit section (If you need soon after open or editing commit message, pressing 'u' is good enough).
+ * From [commit mode](commit_mode): go back to stage mode (current commit message will be lost).
 
 ##### I
  * Add the file under the cursor in .gitgnore
