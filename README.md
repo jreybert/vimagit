@@ -204,7 +204,7 @@ E means 'edit'.
 
 :exclamation: this function is extremely powerful, just give it a try!
 
-##### <C-n>,<C-p>
+##### \<C-n>,\<C-p>
  * Move to **N**ext or **P**revious hunk.
 
 ##### CC
@@ -241,8 +241,8 @@ E means 'edit'.
 #### Mapping update
 
 Since vimagit 1.7, jump mappings have changed:
- *  Jump next hunk : **N** -> **<C-n>**
- *  Jump prev hunk : **P** -> **<C-p>**
+ *  Jump next hunk : **N** -> **\<C-n>**
+ *  Jump prev hunk : **P** -> **\<C-p>**
 
 #### Autocommand events
 
