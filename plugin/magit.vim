@@ -791,6 +791,17 @@ function! magit#show_magit(display, ...)
 
 	call magit#update_buffer()
 
+	function! s:jump_first_file()
+		let unstaged_files = b:state.get_files_ordered('unstaged')
+		if ( !empty(unstaged_files) )
+			call cursor(unstaged_files[0].line_pos, 0)
+		else
+			let staged_files = b:state.get_files_ordered('staged')
+			if ( !empty(staged_files) )
+				call cursor(staged_files[0].line_pos, 0)
+			endif
+		endif
+	endfunction
 	" move cursor to (in priority order if not found):
 	"  - current file unstaged
 	"  - current file staged
@@ -807,17 +818,11 @@ function! magit#show_magit(display, ...)
 				let file = b:state.get_file('staged', cur_file, 0)
 				call cursor(file.line_pos, 0)
 			catch 'file_doesnt_exists'
-				let unstaged_files = b:state.get_files_ordered('unstaged')
-				if ( !empty(unstaged_files) )
-					call cursor(unstaged_files[0].line_pos, 0)
-				else
-					let staged_files = b:state.get_files_ordered('staged')
-					if ( !empty(staged_files) )
-						call cursor(staged_files[0].line_pos, 0)
-					endif
-				endif
+				call s:jump_first_file()
 			endtry
 		endtry
+	else
+		call s:jump_first_file()
 	endif
 
 endfunction
