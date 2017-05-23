@@ -756,8 +756,16 @@ function! magit#show_magit(display, ...)
 	" let magit buffer in read mode when cursor is not in file, to avoid
 	" unfortunate commit with a :wall command out of magit buffer if a commit
 	" message is ongoing
-	execute "autocmd BufEnter " . buffer_name . " :if ( b:magit_current_commit_mode != '' ) | call s:set_mode_write() | endif"
-	execute "autocmd BufLeave " . buffer_name . " :if ( b:magit_current_commit_mode != '' ) | call s:set_mode_read() | endif"
+	execute "autocmd BufEnter " . buffer_name . "
+	      \ :if ( exists('b:magit_current_commit_mode') &&
+	      \ b:magit_current_commit_mode != '' ) |
+	      \   call s:set_mode_write() |
+	      \ endif"
+	execute "autocmd BufLeave " . buffer_name . "
+	      \ :if ( exists('b:magit_current_commit_mode') &&
+	      \ b:magit_current_commit_mode != '' ) |
+	      \   call s:set_mode_read() |
+	      \ endif"
 
 	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
