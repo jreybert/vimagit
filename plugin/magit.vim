@@ -717,9 +717,9 @@ function! magit#show_magit(display, ...)
 	if ( magit_win != 0 )
 		silent execute magit_win."wincmd w"
 	elseif ( a:display == 'v' )
-		silent execute "vnew " . buffer_name
+		silent execute "keepalt vnew " . buffer_name
 	elseif ( a:display == 'h' )
-		silent execute "new " . buffer_name
+		silent execute "keepalt new " . buffer_name
 	elseif ( a:display == 'c' )
 		if ( !bufexists(buffer_name) )
 			if ( bufname("%") == "" )
@@ -836,11 +836,11 @@ endfunction
 
 function! magit#close_magit()
 	try
-		close
-	catch /^Vim\%((\a\+)\)\=:E444/
+		edit #
+	catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
 		try
-			edit #
-		catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
+			close
+		catch /^Vim\%((\a\+)\)\=:E444/
 			quit
 		endtry
 	endtry
