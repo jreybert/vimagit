@@ -27,6 +27,26 @@ let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
 let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
 
+" magit#open_close_folding_wrapper: wrapper function to
+" magit#open_close_folding. If line under cursor is not a cursor, execute
+" normal behavior
+" param[in] mapping: which has been set
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! s:mg_open_close_folding_wrapper(mapping, ...)
+	if ( getline(".") =~ g:magit_file_re )
+		return call('magit#open_close_folding', a:000)
+	elseif ( foldlevel(line(".")) == 2 )
+		if ( foldclosed(line('.')) == -1 )
+			foldclose
+		else
+			foldopen
+		endif
+	else
+		silent! execute "silent! normal! " . a:mapping
+	endif
+endfunction
+
 function! magit#mapping#set_default()
 
 	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
@@ -56,13 +76,13 @@ function! magit#mapping#set_default()
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . func_arg . "')<return>"
 	endfor
 	for mapping in g:magit_folding_open_mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . mapping . "', 1)<return>"
 	endfor
 	for mapping in g:magit_folding_close_mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . mapping . "', 0)<return>"
 	endfor
 
 	" s:magit_inline_help: Dict containing inline help for each section
