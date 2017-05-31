@@ -424,8 +424,8 @@ function! s:mg_create_diff_from_select(select_lines)
 	if ( start_select_line < starthunk || end_select_line > endhunk )
 		throw 'out of hunk selection'
 	endif
-	let section=<SID>mg_get_section()
-	let filename=<SID>mg_get_filename()
+	let section=magit#helper#get_section()
+	let filename=magit#helper#get_filename()
 	let hunks = b:state.get_file(section, filename).get_hunks()
 	for hunk in hunks
 		if ( hunk.header == getline(starthunk) )
@@ -479,56 +479,9 @@ function! s:mg_mark_lines_in_hunk(start_select_line, end_select_line)
 	return magit#sign#toggle_signs('M', a:start_select_line, a:end_select_line)
 endfunction
 
-" s:mg_get_section: helper function to get the current section, according to
-" cursor position
-" return: section id, empty string if no section found
-function! s:mg_get_section()
-	let section_line=getline(search(g:magit_section_re, "bnW"))
-	for [section_name, section_str] in items(g:magit_sections)
-		if ( section_line == section_str )
-			return section_name
-		endif
-	endfor
-	return ''
-endfunction
-
-" s:mg_get_filename: helper function to get the current filename, according to
-" cursor position
-" return: filename
-function! s:mg_get_filename()
-	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
-endfunction
-
-" s:mg_get_hunkheader: helper function to get the current hunk header,
-" according to cursor position
-" return: hunk header
-function! s:mg_get_hunkheader()
-	return getline(search(g:magit_hunk_re, "cbnW"))
-endfunction
-
 " }}}
 
 " {{{ User functions and commands
-
-" magit#open_close_folding_wrapper: wrapper function to
-" magit#open_close_folding. If line under cursor is not a cursor, execute
-" normal behavior
-" param[in] mapping: which has been set
-" param[in] visible : boolean, force visible value. If not set, toggle
-" visibility
-function! magit#open_close_folding_wrapper(mapping, ...)
-	if ( getline(".") =~ g:magit_file_re )
-		return call('magit#open_close_folding', a:000)
-	elseif ( foldlevel(line(".")) == 2 )
-		if ( foldclosed(line('.')) == -1 )
-			foldclose
-		else
-			foldopen
-		endif
-	else
-		silent! execute "silent! normal! " . a:mapping
-	endif
-endfunction
 
 " magit#open_close_folding()
 " param[in] visible : boolean, force visible value. If not set, toggle
@@ -539,7 +492,7 @@ function! magit#open_close_folding(...)
 		throw 'non file header line: ' . getline(".")
 	endif
 	let filename = list[2]
-	let section=<SID>mg_get_section()
+	let section=magit#helper#get_section()
 	" if first param is set, force visible to this value
 	" else, toggle value
 	let file = b:state.get_file(section, filename, 0)
@@ -903,7 +856,7 @@ function! s:mg_stage_closed_file(discard)
 	if ( getline(".") =~ g:magit_file_re )
 		let list = matchlist(getline("."), g:magit_file_re)
 		let filename = list[2]
-		let section=<SID>mg_get_section()
+		let section=magit#helper#get_section()
 		
 		let file = b:state.get_file(section, filename)
 		if ( file.is_visible() == 0 ||
@@ -963,8 +916,8 @@ endfunction
 " param[in] discard: boolean, if true, discard instead of (un)stage
 " return: no
 function! magit#stage_block(selection, discard) abort
-	let section=<SID>mg_get_section()
-	let filename=<SID>mg_get_filename()
+	let section=magit#helper#get_section()
+	let filename=magit#helper#get_filename()
 
 	let file = b:state.get_file(section, filename, 0)
 	let header = file.get_header()
@@ -1119,7 +1072,7 @@ endfunction
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
-	let ignore_file=<SID>mg_get_filename()
+	let ignore_file=magit#helper#get_filename()
 	call magit#utils#append_file(magit#git#top_dir() . ".gitignore",
 			\ [ ignore_file ] )
 	call magit#update_buffer()
@@ -1145,7 +1098,7 @@ function! magit#commit_command(mode)
 	if ( a:mode == 'CF' )
 		call <SID>mg_git_commit(a:mode)
 	else
-		let section=<SID>mg_get_section()
+		let section=magit#helper#get_section()
 		if ( section == 'commit' &&
 \			!(b:magit_current_commit_mode == 'CC' && a:mode == 'CA' ) )
 			if ( b:magit_current_commit_mode == '' )
@@ -1242,9 +1195,9 @@ endfunction
 " if this file is already displayed in a window, jump to the window, if not,
 " jump to last window and open buffer, at the beginning of the hunk
 function! magit#jump_to()
-	let section=<SID>mg_get_section()
-	let filename=fnameescape(magit#git#top_dir() . <SID>mg_get_filename())
-	let line=substitute(s:mg_get_hunkheader(),
+	let section=magit#helper#get_section()
+	let filename=fnameescape(magit#git#top_dir() . magit#helper#get_filename())
+	let line=substitute(magit#helper#get_hunkheader(),
 				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
 	let context = magit#git#get_config("diff.context", 3)
 	let line += context
