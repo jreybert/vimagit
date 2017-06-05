@@ -180,16 +180,75 @@ Open Magit buffer
 
 Following mappings are set locally, for magit buffer only, in normal mode.
 
-##### Enter,\<CR\>
+Some mappings are set for the whole magit buffer, others are set for specific section only.
+
+##### Whole buffer mappings
+
+-----------------------------------
+
+<kbd>CC</kbd>, <kbd>:w</kbd> <kbd>:x</kbd> <kbd>:wq</kbd> <kbd>ZZ</kbd>
+
+ * From [stage mode](stage_mode), set [commit mode](commit_mode) in [normal flavor](commit_mode_flavors) and show empty "Commit message" section.
+
+<kbd>CA</kbd>
+
+ * From [stage mode](stage_mode) or [commit mode](commit_mode): set [commit mode](commit_mode) in [amend flavor](commit_mode_flavors), and display "Commit message" section with previous commit message. Commit will be meld with previous commit.
+
+<kbd>CF</kbd>
+
+ * From [stage mode](stage_mode): amend the staged changes into the previous commit, without modifying previous commit message.
+
+-----------------------------------
+
+<kbd>Ctrl</kbd>+<kbd>n</kbd>,<kbd>Ctrl</kbd>+<kbd>p</kbd>
+
+ * Move to **N**ext or **P**revious hunk.
+
+-----------------------------------
+
+<kbd>Enter</kbd>
  * All files are folded by default. To see the changes in a file, move cursor to the filename line, and press Enter. You can close the changes display retyping Enter.
 
-##### zo,zO
- * Typing zo on a file will unhide its diffs.
+<kbd>zo</kbd>,<kbd>zO</kbd>
 
-##### zc,zC
+ * Typing <kbd>zo</kbd> on a file will unhide its diffs.
+
+<kbd>zc</kbd>,<kbd>zC</kbd>
+
  * Typing zc on a file will hide its diffs.
 
-##### S
+-----------------------------------
+
+<kbd>R</kbd>
+
+ * Refresh magit buffer
+
+-----------------------------------
+
+<kbd>-</kbd> , <kbd>+</kbd> , <kbd>0</kbd>
+
+ * Shrink,enlarge,reset diff context
+
+-----------------------------------
+
+<kbd>q</kbd>
+
+ * Close the magit buffer
+
+-----------------------------------
+
+<kbd>?</kbd>
+
+ * Toggle help showing in magit buffer
+
+-----------------------------------
+
+##### Stage / unstage sections mappings
+
+-----------------------------------
+
+<kbd>S</kbd>
+
  * If cursor is in a hunk, stage/unstage hunk at cursor position.
  * If cursor is in diff header, stage/unstage whole file at cursor position.
  * If some lines in the hunk are selected (using **v**), stage only visual selected lines (only works for staging).
@@ -197,25 +256,45 @@ Following mappings are set locally, for magit buffer only, in normal mode.
  * When cursor is in "Unstaged changes" section, it will stage the hunk/file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage hunk/file.
 
-##### F
+-----------------------------------
+
+<kbd>F</kbd>
+
  * Stage/unstage the whole file at cursor position.
  * When cursor is in "Unstaged changes" section, it will stage the file.
  * On the other side, when cursor is in "Staged changes" section, it will unstage file.
 
-##### L
+-----------------------------------
+
+<kbd>L</kbd>
+
  * Stage the line under the cursor.
 
-##### M
+-----------------------------------
+
+<kbd>M</kbd>
+
  * Mark the line under the cursor "to be staged".
  * If some lines in the hunk are selected (using **v**), mark selected lines "to be staged".
  * To staged marked lines in a hunk, move cursor to this hunk and press **S**.
 
-##### DDD
+-----------------------------------
+
+<kbd>DDD</kbd>
  * If cursor is in a hunk, discard hunk at cursor position.
  * If cursor is in diff header, discard whole file at cursor position.
  * Only works in "Unstaged changes" section.
 
-##### E
+-----------------------------------
+
+<kbd>I</kbd>
+
+ * Add the file under the cursor in .gitgnore
+
+-----------------------------------
+
+<kbd>E</kbd>
+
 If cursor is in a hunk, cursor will move in the file containing this hunk, at
  the line of the beginning of the hunk.
  * if the file is already visible in a window, cursor moves to this window at
@@ -229,39 +308,26 @@ E means 'edit'.
 
 :exclamation: this function is extremely powerful, just give it a try!
 
-##### \<C-n>,\<C-p>
- * Move to **N**ext or **P**revious hunk.
+-----------------------------------
 
-##### CC
- * From [stage mode](stage_mode), set [commit mode](commit_mode) in [normal flavor](commit_mode_flavors) and show empty "Commit message" section.
+##### Commit section mappings
+
+-----------------------------------
+
+<kbd>CC</kbd>, <kbd>:w</kbd> <kbd>:x</kbd> <kbd>:wq</kbd> <kbd>ZZ</kbd>
+
  * From [commit mode](commit_mode), commit all staged changes with [commit flavor](commit_mode_flavors) (*normal* or *amend*) with message in "Commit message" section.
 
-##### :w :x :wq ZZ
- * From [commit mode](commit_mode), commit all staged changes with [commit flavor](commit_mode_flavors) (*normal* or *amend*) with message in "Commit message" section.
+<kbd>CA</kbd>
 
-##### CA
  * From [stage mode](stage_mode) or [commit mode](commit_mode): set [commit mode](commit_mode) in [amend flavor](commit_mode_flavors), and display "Commit message" section with previous commit message. Commit will be meld with previous commit.
 
-##### CF
- * From [stage mode](stage_mode): amend the staged changes into the previous commit, without modifying previous commit message.
 
-##### CU
+<kbd>CU</kbd>
+
  * From [commit mode](commit_mode): go back to stage mode (current commit message will be lost).
 
-##### I
- * Add the file under the cursor in .gitgnore
-
-##### R
- * Refresh magit buffer
-
-##### -,+,0
- * Shrink,enlarge,reset diff context
-
-##### q
- * Close the magit buffer
-
-##### ?
- * Toggle help showing in magit buffer
+-----------------------------------
 
 #### Mapping update
 
