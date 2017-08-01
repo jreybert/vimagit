@@ -321,22 +321,30 @@ function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
 
-" magit#state#get_filenames: global dict filenames getter function
+" magit#state#get_files: global dict file objects (copy) getter function
 " param[in] mode: mode to select, can be 'staged' or 'unstaged'
-" return ordered list of filename strings belonging to mode, modified files
-" first
-function! magit#state#get_filenames(mode) dict
+" return ordered list of file objects belonging to mode
+function! magit#state#get_files_ordered(mode) dict
 	let modified = []
 	let others = []
 	for filename in sort(keys(self.dict[a:mode]))
 		let file = self.get_file(a:mode, filename)
 		if ( file.status == 'M' )
-			call add(modified, filename)
+			call add(modified, file)
 		else
-			call add(others, filename)
+			call add(others, file)
 		endif
 	endfor
 	return modified + others
+endfunction
+
+" magit#state#get_filenames: global dict filenames getter function
+" param[in] mode: mode to select, can be 'staged' or 'unstaged'
+" return ordered list of filename strings belonging to mode, modified files
+" first
+function! magit#state#get_filenames(mode) dict
+	let files = self.get_files_ordered(a:mode)
+	return map(copy(files), 'v:val.filename')
 endfunction
 
 
@@ -358,6 +366,7 @@ let magit#state#state = {
 			\ 'nb_diff_lines': 0,
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
+			\ 'get_files_ordered': function("magit#state#get_files_ordered"),
 			\ 'get_filenames': function("magit#state#get_filenames"),
 			\ 'add_file': function("magit#state#add_file"),
 			\ 'set_files_visible': function("magit#state#set_files_visible"),

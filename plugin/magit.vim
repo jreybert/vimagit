@@ -57,7 +57,6 @@ endif
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_info()
-	silent put =''
 	silent put =g:magit_sections.info
 	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
@@ -72,6 +71,8 @@ function! s:mg_get_info()
 	endif
 	silent put =''
 	silent put ='Press ? to display help'
+	silent put =''
+	silent put =''
 endfunction
 
 " s:mg_display_files: display in current buffer files, filtered by some
@@ -126,12 +127,12 @@ endfunction
 " protected functions like magit#update_buffer
 " param[in] mode: 'staged' or 'unstaged'
 function! s:mg_get_staged_section(mode)
-	silent put =''
 	silent put =g:magit_sections[a:mode]
 	call magit#mapping#get_section_help(a:mode)
 	silent put =magit#utils#underline(g:magit_sections[a:mode])
 	silent put =''
 	call s:mg_display_files(a:mode, '', 0)
+	silent put =''
 endfunction
 
 " s:mg_get_stashes: this function write in current buffer all stashes
@@ -144,7 +145,6 @@ function! s:mg_get_stashes()
 	endif
 
 	if (!empty(stash_list))
-		silent put =''
 		silent put =g:magit_sections.stash
 		silent put =magit#utils#underline(g:magit_sections.stash)
 		silent put =''
@@ -154,6 +154,8 @@ function! s:mg_get_stashes()
 			silent put =stash
 			silent! execute "read !git stash show -p " . stash_id
 		endfor
+		silent put =''
+		silent put =''
 	endif
 endfunction
 
@@ -171,7 +173,6 @@ let b:magit_current_commit_msg = []
 "       'CA': get the last commit message
 function! s:mg_get_commit_section()
 	if ( b:magit_current_commit_mode != '' )
-		silent put =''
 		silent put =g:magit_sections.commit
 		silent put =magit#utils#underline(g:magit_sections.commit)
 
@@ -191,6 +192,7 @@ function! s:mg_get_commit_section()
 			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
 			silent put =commit_msg
 		endif
+		silent put =''
 		silent put =''
 	endif
 endfunction
@@ -474,6 +476,12 @@ endfunction
 function! magit#open_close_folding_wrapper(mapping, ...)
 	if ( getline(".") =~ g:magit_file_re )
 		return call('magit#open_close_folding', a:000)
+	elseif ( foldlevel(line(".")) == 2 )
+		if ( foldclosed(line('.')) == -1 )
+			foldclose
+		else
+			foldopen
+		endif
 	else
 		silent! execute "silent! normal! " . a:mapping
 	endif
@@ -674,6 +682,7 @@ endfunction
 "     'c': current buffer (should be used when opening vim in vimagit mode
 function! magit#show_magit(display, ...)
 	if ( &filetype == 'netrw' )
+		let cur_file = ""
 		let cur_file_path = b:netrw_curdir
 	else
 		let cur_file = expand("%:p")
@@ -709,8 +718,10 @@ function! magit#show_magit(display, ...)
 		silent execute magit_win."wincmd w"
 	elseif ( a:display == 'v' )
 		silent execute "vnew " . buffer_name
+		let b:magit_only = 0
 	elseif ( a:display == 'h' )
 		silent execute "new " . buffer_name
+		let b:magit_only = 0
 	elseif ( a:display == 'c' )
 		if ( !bufexists(buffer_name) )
 			if ( bufname("%") == "" )
@@ -719,12 +730,13 @@ function! magit#show_magit(display, ...)
 				silent enew
 			endif
 			silent execute "file " . buffer_name
+		else
+			silent execute "buffer " . buffer_name
 		endif
+		let b:magit_only = 1
 	else
 		throw 'parameter_error'
 	endif
-
-	silent execute "buffer " . buffer_name
 
 	call magit#git#set_top_dir(git_dir)
 
@@ -788,19 +800,57 @@ function! magit#show_magit(display, ...)
 	endif
 
 	call magit#update_buffer()
-	execute "normal! gg"
+
+	function! s:jump_first_file()
+		let unstaged_files = b:state.get_files_ordered('unstaged')
+		if ( !empty(unstaged_files) )
+			call cursor(unstaged_files[0].line_pos, 0)
+		else
+			let staged_files = b:state.get_files_ordered('staged')
+			if ( !empty(staged_files) )
+				call cursor(staged_files[0].line_pos, 0)
+			endif
+		endif
+	endfunction
+	" move cursor to (in priority order if not found):
+	"  - current file unstaged
+	"  - current file staged
+	"  - first unstaged file
+	"  - first stage file
+	let cur_filename = matchlist(cur_file, git_dir . '\(.*\)')
+	if ( !empty(cur_filename) )
+		let cur_file = cur_filename[1]
+		try
+			let file = b:state.get_file('unstaged', cur_file, 0)
+			call cursor(file.line_pos, 0)
+		catch 'file_doesnt_exists'
+			try
+				let file = b:state.get_file('staged', cur_file, 0)
+				call cursor(file.line_pos, 0)
+			catch 'file_doesnt_exists'
+				call s:jump_first_file()
+			endtry
+		endtry
+	else
+		call s:jump_first_file()
+	endif
+
 endfunction
 
 function! magit#close_magit()
-	try
+	if ( b:magit_only == 0 )
 		close
-	catch /^Vim\%((\a\+)\)\=:E444/
+	else
 		try
 			edit #
 		catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
-			quit
+			try
+				close
+			catch /^Vim\%((\a\+)\)\=:E444/
+				quit
+			endtry
 		endtry
-	endtry
+	endif
 endfunction
 
 function! s:mg_stage_closed_file(discard)
@@ -1050,7 +1100,8 @@ function! magit#commit_command(mode)
 		call <SID>mg_git_commit(a:mode)
 	else
 		let section=<SID>mg_get_section()
-		if ( section == 'commit' )
+		if ( section == 'commit' &&
+\			!(b:magit_current_commit_mode == 'CC' && a:mode == 'CA' ) )
 			if ( b:magit_current_commit_mode == '' )
 				echoerr "Error, commit section should not be enabled"
 				return

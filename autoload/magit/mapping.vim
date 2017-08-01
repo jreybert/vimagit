@@ -112,15 +112,15 @@ function! magit#mapping#set_default()
 \g:magit_folding_toggle_mapping[0]
 \.   '   if cursor on filename header line, unhide diffs for this file',
 \g:magit_commit_mapping
-\. '     set commit mode to normal, and show "Commit message" section',
-\'       In commit mode, commit all staged changes with commit mode previously',
-\'       set (normal or amend) with message written in this section',
+\. '     From stage mode: set commit mode in normal flavor',
+\'       From commit mode: commit all staged changes with commit flavor',
+\'       (normal or amend) with message in "Commit message" section',
 \g:magit_commit_amend_mapping
-\. '     set commit mode amend, and show "Commit message" section with previous',
-\'       commit message',
+\. '     From stage or commit mode: set commit mode in amend flavor, and',
+\'       display "Commit message" section with previous commit message.',
 \g:magit_commit_fixup_mapping
-\. '     amend staged changes to previous commit without modifying the previous',
-\'       commit message',
+\. '     From stage mode: amend staged changes to previous commit without',
+\'       modifying the previous commit message',
 \g:magit_close_commit_mapping
 \. '     commit undo, cancel and close current commit message',
 \g:magit_reload_mapping

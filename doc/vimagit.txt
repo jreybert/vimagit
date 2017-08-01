@@ -65,14 +65,40 @@ If you move the cursor to the file header and press S, the whole file is
 staged.
 
 > CC
-Once you have stage all the required changes, type CC. A new section "Commit
-message" appears and cursor move to it. Type your commit message, in Insert mode
-this time. Once it's done, write your commit message with :w (or :x, :wq, ZZ).
+Once you have stage all the required changes, type CC. A new section
+`Commit message` appears and cursor move to it. Type your commit message, in
+Insert mode this time. Once it's done, write your commit message with :w (or
+:x, :wq, ZZ).
 
 Voila! you created your first commit with vimagit!
 
 ===============================================================================
 4. USAGE                                                         *vimagit-usage*
+
+MODES                                                            *vimagit-modes*
+
+vimagit buffer has modes. Mappings may have different behavior, depending on
+current mode and curosr position.
+
+For the moment, vimagit counts only two modes.
+
+STAGE MODE                                                  *vimagit-stage-mode*
+
+This is the default mode. In this mode, you can stage and unstage hunks,
+refresh vimagit buffer...
+
+COMMIT MODE                                                *vimagit-commit-mode*
+
+In this mode, `Commit message` section is open, you can write your commit
+message and validate your commit.
+Commit mode has two flavors.
+
+* `normal`: current commit will be a new commit.
+* `amend`: current commit will be meld with previous commit.
+  * Previous commit message is shown in `Commit message` section.
+  * Use this flavor if you forgot something in the previous commit.
+
+By the way, you can also perform all stage mode actions in commit mode.
 
 SECTIONS                                                      *vimagit-sections*
 
@@ -241,32 +267,32 @@ Following mappings are set locally, for magit buffer only, in normal mode.
 
                                     *vimagit-CC*      *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
-  CC        If not in commit section, set commit mode to "New commit" and show 
-            "Commit message" section with brand new commit message.
-            If in commit section, create the commit with the commit message and
-            all staged changes.
+  CC        From `stage mode`, set commit mode in `normal` flavor and show empty
+            "Commit message" section.
+            From `commit mode`, commit all staged changes with commit flavor
+            (`normal` or `amend`) with message in "Commit message" section.
 
                                     *vimagit-:w*
   :w :x :wq ZZ
-            If in commit section, create the commit with the commit message and
-            all staged changes.
+            From `commit mode`, commit all staged changes with commit flavor
+            (`normal` or `amend`) with message in "Commit message" section.
 
                                     *vimagit-CA*      *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
-  CA        If not in commit section, set commit mode to "Amend commit" and
-            show "Commit message" section with previous commit message.
-            If in commit section, commit the staged changes in commit mode
-            previously set.
+  CA        From `stage mode` or `commit mode`: set commit mode in amend
+            flavor, and display "Commit message" section with previous commit
+            message.
+            Commit will be meld with previous commit.
 
                                     *vimagit-CF*      *magit#commit_command('CF')*
                                     *vimagit-g:magit_commit_fixup_mapping*
-  CF        Amend the staged changes into the previous commit, without
-            modifying previous commit message
+  CF        From `stage mode`: amend the staged changes into the previous
+            commit, without modifying previous commit message.
 
                                     *vimagit-CU*      *magit#close_commit()*
                                     *vimagit-g:magit_close_commit_mapping*
-  CU        Close a commit section (If you need soon after open or editing
-            Ucommit message, pressing 'u' is good enough).
+  CU        From `commit mode`: go back to stage mode (current commit message
+            will be lost).
 
                                     *vimagit-I*              *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*

@@ -37,7 +37,7 @@ execute 'syn match gitInfoRepo   "\%(' . g:magit_section_info.cur_repo .    ':\)
 execute 'syn match gitInfoBranch "\%(' . g:magit_section_info.cur_branch .  ':\)\@<=.*$" oneline'
 execute 'syn match gitCommitMode "\%(' . g:magit_section_info.commit_mode . ':\)\@<=.*$" oneline'
 execute 'syn match gitInfoCommit "\%(' . g:magit_section_info.cur_commit .  ':\)\@<=.*$" contains=infoSha1 oneline'
-syntax match infoSha1 containedin=gitInfoCommit "\x\{7}"
+syntax match infoSha1 containedin=gitInfoCommit "\x\{7,}"
 
 highlight default link gitInfoRepo Directory
 highlight default link gitInfoBranch Identifier
