@@ -717,9 +717,11 @@ function! magit#show_magit(display, ...)
 	if ( magit_win != 0 )
 		silent execute magit_win."wincmd w"
 	elseif ( a:display == 'v' )
-		silent execute "keepalt vnew " . buffer_name
+		silent execute "vnew " . buffer_name
+		let b:magit_only = 0
 	elseif ( a:display == 'h' )
-		silent execute "keepalt new " . buffer_name
+		silent execute "new " . buffer_name
+		let b:magit_only = 0
 	elseif ( a:display == 'c' )
 		if ( !bufexists(buffer_name) )
 			if ( bufname("%") == "" )
@@ -728,12 +730,13 @@ function! magit#show_magit(display, ...)
 				silent enew
 			endif
 			silent execute "file " . buffer_name
+		else
+			silent execute "buffer " . buffer_name
 		endif
+		let b:magit_only = 1
 	else
 		throw 'parameter_error'
 	endif
-
-	silent execute "buffer " . buffer_name
 
 	call magit#git#set_top_dir(git_dir)
 
@@ -835,15 +838,19 @@ function! magit#show_magit(display, ...)
 endfunction
 
 function! magit#close_magit()
-	try
-		edit #
-	catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
+	if ( b:magit_only == 0 )
+		close
+	else
 		try
-			close
-		catch /^Vim\%((\a\+)\)\=:E444/
-			quit
+			edit #
+		catch /^Vim\%((\a\+)\)\=:E\%(194\|499\)/
+			try
+				close
+			catch /^Vim\%((\a\+)\)\=:E444/
+				quit
+			endtry
 		endtry
-	endtry
+	endif
 endfunction
 
 function! s:mg_stage_closed_file(discard)
