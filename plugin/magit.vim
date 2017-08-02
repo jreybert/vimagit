@@ -718,6 +718,9 @@ function! magit#show_magit(display, ...)
 		silent execute magit_win."wincmd w"
 	elseif ( a:display == 'v' )
 		silent execute "vnew " . buffer_name
+		" next is a workaround for vader, revert as soon as vader bug is fixed
+		" https://github.com/junegunn/vader.vim/issues/135
+		silent execute "buffer " . buffer_name
 		let b:magit_only = 0
 	elseif ( a:display == 'h' )
 		silent execute "new " . buffer_name
