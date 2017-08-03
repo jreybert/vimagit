@@ -11,10 +11,11 @@ let g:magit_sections = {
  \ }
 
 let g:magit_section_info = {
- \ 'cur_repo':       'Current repository',
- \ 'cur_branch':     'Current branch',
- \ 'cur_commit':     'Last commit',
- \ 'commit_mode':    'Commit mode',
+ \ 'cur_repo':       'Repository:',
+ \ 'cur_head':       'Head:',
+ \ 'cur_upstream':   'Upstream:',
+ \ 'cur_push':       'Push:',
+ \ 'commit_mode':    'Commit mode:',
  \ }
 
 let g:magit_git_status_code = {

@@ -52,22 +52,61 @@ if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
 endif
 " }}}
 
+" s:mg_cut_str cut a string given a limit size
+" param[in] str string to cut
+" param[in] limit maximum number of column
+" return string cut on limit
+function! s:mg_cut_str(str, limit)
+	if ( len(a:str) < a:limit )
+		return a:str
+	elseif ( ( a:limit - 3 ) < 0 )
+		return ""
+	else
+		return printf("%.*S...", a:limit - 3, a:str)
+	endif
+endfunction
 
 " s:mg_get_info: this function writes in current buffer current git state
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_info()
+	let align_w=12
+
+	let repo_line=printf("%-".align_w."S %s",
+				\ g:magit_section_info.cur_repo,
+				\ magit#git#top_dir()
+				\ )
+
+	let head_br=magit#git#get_branch_name("HEAD")
+	let upstream_br=magit#git#get_remote_branch("HEAD", "upstream")
+	let push_br=magit#git#get_remote_branch("HEAD", "push")
+	let max_br_w = max([len(head_br), len(upstream_br), len(push_br)])
+
+	let limit=winwidth(0)-align_w-max_br_w-3
+	let head_msg=s:mg_cut_str(magit#git#get_commit_subject("HEAD"), limit)
+	let upstream_msg=s:mg_cut_str(magit#git#get_commit_subject(upstream_br), limit)
+	let push_msg=s:mg_cut_str(magit#git#get_commit_subject(push_br), limit)
+
+	let head_line=printf("%-".align_w."S %-".max_br_w."S %s",
+				\ g:magit_section_info.cur_head, head_br, head_msg)
+	let upstream_line=printf("%-".align_w."S %-".max_br_w."S %s",
+				\ g:magit_section_info.cur_upstream, upstream_br, upstream_msg)
+	let push_line=printf("%-".align_w."S %-".max_br_w."S %s",
+				\ g:magit_section_info.cur_push, push_br, push_msg)
+
+
 	silent put =g:magit_sections.info
 	silent put =magit#utils#underline(g:magit_sections.info)
 	silent put =''
-	let branch=magit#utils#system(g:magit_git_cmd . " rev-parse --abbrev-ref HEAD")
-	let commit=magit#utils#system(g:magit_git_cmd . " show -s --oneline")
-	silent put =g:magit_section_info.cur_repo    . ': ' . magit#git#top_dir()
-	silent put =g:magit_section_info.cur_branch  . ':     ' . branch
-	silent put =g:magit_section_info.cur_commit  . ':        ' . commit
+	silent put =repo_line
+	silent put =head_line
+	silent put =upstream_line
+	silent put =push_line
+
 	if ( b:magit_current_commit_mode != '' )
-	silent put =g:magit_section_info.commit_mode . ':        '
-				\ . g:magit_commit_mode[b:magit_current_commit_mode]
+		let commit_mode_line=printf("%-".align_w."S %s", g:magit_section_info.commit_mode,
+				\ g:magit_commit_mode[b:magit_current_commit_mode])
+		silent put =commit_mode_line
 	endif
 	silent put =''
 	silent put ='Press ? to display help'
