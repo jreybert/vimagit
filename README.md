@@ -294,7 +294,7 @@ absolute path.
 *Note:* `g:magit_last_updated_buffer` will be updated and VimagitUpdateFile event will
 be raised only if the buffer is currently opened in vim.
 
-##### VimagitCommitEnter
+##### VimagitEnterCommit
 
 This event is raised when the commit section opens and the cursor is
 placed in this section. For example, the user may want to go straight into
@@ -302,6 +302,17 @@ insert mode when committing, defining this autocmd in its vimrc:
 
 ```
   autocmd User VimagitEnterCommit startinsert
+```
+
+##### VimagitLeaveCommit
+
+This event is raised when the commit section is closed, because the user
+finished to write its commit message or canceled it. For example, the user wants
+to set the |textwidth| of the vimagit buffer while editing a commit message,
+   defining these |autocmd| in vimrc:
+```
+  autocmd User VimagitEnterCommit setlocal textwidth=72
+  autocmd User VimagitLeaveCommit setlocal textwidth=0
 ```
 
 #### Autocmd example

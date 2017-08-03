@@ -1112,6 +1112,9 @@ function! magit#commit_command(mode)
 			" when we do commit, it is prefered ot commit the way we prepared it
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
+			if exists('#User#VimagitLeaveCommit')
+				doautocmd User VimagitLeaveCommit
+			endif
 		else
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
@@ -1138,6 +1141,9 @@ function! magit#close_commit()
 
   let b:magit_current_commit_mode=''
   let b:magit_current_commit_msg=[]
+  if exists('#User#VimagitLeaveCommit')
+	  doautocmd User VimagitLeaveCommit
+  endif
   call magit#update_buffer()
 endfunction
 
