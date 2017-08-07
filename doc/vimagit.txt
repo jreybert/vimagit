@@ -240,14 +240,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             To staged marked lines, press S (see |vimagit-S|) in the current
             hunk.
 
-                                    *vimagit-DDD*            *magit#stage_hunk(1)*
+                                    *vimagit-DDD*           magit#stage_hunk(1)*
                                     *vimagit-g:magit_discard_hunk_mapping*
   DDD       If cursor is in a hunk, discard hunk at cursor position.
             If cursor is in diff header, discard whole file at cursor
             position.
             Only works in "Unstaged changes" section.
 
-                                    *vimagit-E*                  *magit#jump_to()*
+                                    *vimagit-E*                *magit#jump_to()*
   E         If cursor is in a hunk, cursor will move in the file containing
             this hunk, at the line of the beginning of the hunk.
              - if the file is already visible in a |window|, cursor moves to
@@ -259,13 +259,13 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             E means 'edit'.
             NOTE: this function is extremely powerful, just give it a try!
 
-                                    *vimagit-<C-n>*            *magit#jump_hunk()*
+                                    *vimagit-<C-n>*          *magit#jump_hunk()*
                                     *vimagit-<C-p>*
                                     *vimagit-g:magit_jump_next_hunk*
                                     *vimagit-g:magit_jump_prev_hunk*
   <C-n>,<C-p>  Move to Next or Previous hunk.
 
-                                    *vimagit-CC*      *magit#commit_command('CC')*
+                                    *vimagit-CC*    *magit#commit_command('CC')*
                                     *vimagit-g:magit_commit_mapping*
   CC        From `stage mode`, set commit mode in `normal` flavor and show empty
             "Commit message" section.
@@ -277,14 +277,14 @@ Following mappings are set locally, for magit buffer only, in normal mode.
             From `commit mode`, commit all staged changes with commit flavor
             (`normal` or `amend`) with message in "Commit message" section.
 
-                                    *vimagit-CA*      *magit#commit_command('CA')*
+                                    *vimagit-CA*    *magit#commit_command('CA')*
                                     *vimagit-g:magit_commit_amend_mapping*
   CA        From `stage mode` or `commit mode`: set commit mode in amend
             flavor, and display "Commit message" section with previous commit
             message.
             Commit will be meld with previous commit.
 
-                                    *vimagit-CF*      *magit#commit_command('CF')*
+                                    *vimagit-CF*    *magit#commit_command('CF')*
                                     *vimagit-g:magit_commit_fixup_mapping*
   CF        From `stage mode`: amend the staged changes into the previous
             commit, without modifying previous commit message.
@@ -294,15 +294,15 @@ Following mappings are set locally, for magit buffer only, in normal mode.
   CU        From `commit mode`: go back to stage mode (current commit message
             will be lost).
 
-                                    *vimagit-I*              *magit#ignore_file()*
+                                    *vimagit-I*            *magit#ignore_file()*
                                     *vimagit-g:magit_ignore_mapping*
   I         Add the file under the cursor in .gitgnore
 
-                                    *vimagit-R*            *magit#update_buffer()*
+                                    *vimagit-R*          *magit#update_buffer()*
                                     *vimagit-g:magit_reload_mapping*
   R         Refresh magit buffer.
 
-                                                             *magit#update_diff()*
+                                                           *magit#update_diff()*
                                     *vimagit--* *vimagit-g:magit_diff_shrink*
                                     *vimagit-+* *vimagit-g:magit_diff_enlarge*
                                     *vimagit-0* *vimagit-g:magit_diff_reset*
@@ -312,7 +312,7 @@ Following mappings are set locally, for magit buffer only, in normal mode.
                                     *vimagit-g:magit_close_mapping*
   q         close magit buffer.
 
-                                    *vimagit-?*              *magit#toggle_help()*
+                                    *vimagit-?*            *magit#toggle_help()*
                                     *vimagit-g:magit_toggle_help_mapping*
   ?         Toggle help showing in magit buffer
 
@@ -338,16 +338,27 @@ This event is raised each time a file status is updated in magit buffer
 |g:magit_last_updated_buffer| is set to the last updated file, with its
 absolute path.
 
-Note: |g:magit_last_updated_buffer| will be updated and VimagitUpdateFile event will
-be raised only if the buffer is currently opened in vim.
+Note: |g:magit_last_updated_buffer| will be updated and VimagitUpdateFile event
+will be raised only if the buffer is currently opened in vim.
 
-VimagitCommitEnter                                  *vimagit-VimagitCommitEnter*
+VimagitEnterCommit                                  *vimagit-VimagitEnterCommit*
 
 This event is raised when the commit section opens and the cursor is
 placed in this section. For example, the user may want to go straight into
-insert mode when committing, defining this |autocmd| in its vimrc:
+insert mode when committing, defining this |autocmd| in vimrc:
 >
   autocmd User VimagitEnterCommit startinsert
+<
+
+VimagitLeaveCommit                                  *vimagit-VimagitLeaveCommit*
+
+This event is raised when the commit section is closed, because the user
+finished to write its commit message or canceled it. For example, the user
+wants to set the |textwidth| of the vimagit buffer while editing a commit
+message, defining these |autocmd| in vimrc:
+>
+  autocmd User VimagitEnterCommit setlocal textwidth=72
+  autocmd User VimagitLeaveCommit setlocal textwidth=0
 <
 
 Autocmd example                                        *vimagit-autocmd_example*
