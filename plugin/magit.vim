@@ -62,7 +62,7 @@ function! s:mg_cut_str(str, limit)
 	elseif ( ( a:limit - 3 ) < 0 )
 		return ""
 	else
-		return printf("%.*S...", a:limit - 3, a:str)
+		return printf("%.*s...", a:limit - 3, a:str)
 	endif
 endfunction
 
@@ -72,10 +72,10 @@ endfunction
 function! s:mg_get_info()
 	let align_w=12
 
-	let repo_line=printf("%-".align_w."S %s",
+	let repo_line=printf("%-*s %s",
+				\ align_w,
 				\ g:magit_section_info.cur_repo,
-				\ magit#git#top_dir()
-				\ )
+				\ magit#git#top_dir())
 
 	let head_br=magit#git#get_branch_name("HEAD")
 	let upstream_br=magit#git#get_remote_branch("HEAD", "upstream")
@@ -87,12 +87,15 @@ function! s:mg_get_info()
 	let upstream_msg=s:mg_cut_str(magit#git#get_commit_subject(upstream_br), limit)
 	let push_msg=s:mg_cut_str(magit#git#get_commit_subject(push_br), limit)
 
-	let head_line=printf("%-".align_w."S %-".max_br_w."S %s",
-				\ g:magit_section_info.cur_head, head_br, head_msg)
-	let upstream_line=printf("%-".align_w."S %-".max_br_w."S %s",
-				\ g:magit_section_info.cur_upstream, upstream_br, upstream_msg)
-	let push_line=printf("%-".align_w."S %-".max_br_w."S %s",
-				\ g:magit_section_info.cur_push, push_br, push_msg)
+	let head_line=printf("%-*s %-*s %s", 
+				\ align_w, g:magit_section_info.cur_head,
+				\ max_br_w, head_br, head_msg)
+	let upstream_line=printf("%-*s %-*s %s",
+				\ align_w, g:magit_section_info.cur_upstream,
+				\ max_br_w, upstream_br, upstream_msg)
+	let push_line=printf("%-*s %-*s %s",
+				\ align_w, g:magit_section_info.cur_push,
+				\ max_br_w, push_br, push_msg)
 
 
 	silent put =g:magit_sections.info
@@ -104,7 +107,8 @@ function! s:mg_get_info()
 	silent put =push_line
 
 	if ( b:magit_current_commit_mode != '' )
-		let commit_mode_line=printf("%-".align_w."S %s", g:magit_section_info.commit_mode,
+		let commit_mode_line=printf("%-*s %s",
+				\ align_w, g:magit_section_info.commit_mode,
 				\ g:magit_commit_mode[b:magit_current_commit_mode])
 		silent put =commit_mode_line
 	endif
