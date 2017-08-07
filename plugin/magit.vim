@@ -87,15 +87,15 @@ function! s:mg_get_info()
 	let upstream_msg=s:mg_cut_str(magit#git#get_commit_subject(upstream_br), limit)
 	let push_msg=s:mg_cut_str(magit#git#get_commit_subject(push_br), limit)
 
-	let head_line=printf("%-*s %-*s %s", 
+	let head_line=magit#utils#strip(printf("%-*s %-*s %s", 
 				\ align_w, g:magit_section_info.cur_head,
-				\ max_br_w, head_br, head_msg)
-	let upstream_line=printf("%-*s %-*s %s",
+				\ max_br_w, head_br, head_msg))
+	let upstream_line=magit#utils#strip(printf("%-*s %-*s %s",
 				\ align_w, g:magit_section_info.cur_upstream,
-				\ max_br_w, upstream_br, upstream_msg)
-	let push_line=printf("%-*s %-*s %s",
+				\ max_br_w, upstream_br, upstream_msg))
+	let push_line=magit#utils#strip(printf("%-*s %-*s %s",
 				\ align_w, g:magit_section_info.cur_push,
-				\ max_br_w, push_br, push_msg)
+				\ max_br_w, push_br, push_msg))
 
 
 	silent put =g:magit_sections.info
