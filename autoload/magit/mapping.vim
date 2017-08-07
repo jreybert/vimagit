@@ -73,14 +73,20 @@ endfunction
 " param[in] function the function to call (rhs)
 " param[in] ... : optional, section, the regex of the section(s)
 function! s:mg_set_mapping(mode, mapping, function, ...)
-	execute a:mode . "noremap <buffer><silent><nowait> "
-				\ . a:mapping .
-				\ " :call <SID>mapping_wrapper(\"" .
-				\ a:mapping . "\", \"" .
-				\ a:function . "\"" .
-				\ ( ( a:0 == 1 ) ?
-				\ ", \'" . a:1 . "\'" : '' )
-				\ . ")<cr>"
+	if ( a:0 == 1 )
+		execute a:mode . "noremap <buffer><silent><nowait> "
+					\ . a:mapping .
+					\ " :call <SID>mapping_wrapper(\"" .
+					\ a:mapping . "\", \"" .
+					\ a:function . "\"" .
+					\ ", \'" . a:1 . "\'" .
+					\ ")<cr>"
+	else
+		execute a:mode . "noremap <buffer><silent><nowait> "
+					\ . a:mapping .
+					\ " :call  " .
+					\ a:function . "<cr>"
+	endif
 endfunction
 
 function! magit#mapping#set_default()
