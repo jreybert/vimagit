@@ -339,19 +339,12 @@ section only.
             NOTE: this function is extremely powerful, just give it a try!
 
 
-                                    *vimagit-<C-n>*          *magit#jump_hunk()*
-                                    *vimagit-<C-p>*
-                                    *vimagit-g:magit_jump_next_hunk*
-                                    *vimagit-g:magit_jump_prev_hunk*
-  <C-n>,<C-p>  Move to Next or Previous hunk.
-
-
 --------    Commit section mappings                                   --------
 
 
-                                    *vimagit-CC*    *magit#commit_command('CC')*
-                                    *vimagit-:w*
-                                    *vimagit-g:magit_commit_mapping*
+                                    *vimagit-CC *  *magit#commit_command('CC') *
+                                    *vimagit-:w *
+                                    *vimagit-g:magit_commit_mapping *
   :w :x :wq ZZ
   <CC>      From `commit mode`, commit all staged changes with commit flavor
             (`normal` or `amend`) with message in "Commit message" section.
@@ -359,15 +352,15 @@ section only.
             From `commit mode`, commit all staged changes with commit flavor
             (`normal` or `amend`) with message in "Commit message" section.
 
-                                    *vimagit-CA*    *magit#commit_command('CA')*
-                                    *vimagit-g:magit_commit_amend_mapping*
+                                    *vimagit-CA *  *magit#commit_command('CA') *
+                                    *vimagit-g:magit_commit_amend_mapping *
   <CA>      From `stage mode` or `commit mode`: set commit mode in amend
             flavor, and display "Commit message" section with previous commit
             message.
             Commit will be meld with previous commit.
 
-                                    *vimagit-CU*      *magit#close_commit()*
-                                    *vimagit-g:magit_close_commit_mapping*
+                                    *vimagit-CU *        *magit#close_commit() *
+                                    *vimagit-g:magit_close_commit_mapping *
   <CU>      From `commit mode`: go back to stage mode (current commit message
             will be lost).
 
