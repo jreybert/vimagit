@@ -1,3 +1,62 @@
+Release 1.7.2
+=============
+
+This is a *not so minor* vimagit update at the end.
+
+It adds a nice feature, setting the cursor position on magit buffer opening at
+a smart position: if you are editing a file, and your cursor is in the middle
+of a modification, magit will open with he cursor on this hunk.
+
+User will also notice that standard mappings (`L` or `E` to cite a few) are no
+longer broken in commit mode. This may a be a first step to introduce default
+mappings without `Shift` (see #101)
+
+It also fixes some minor bugs (meaning these bugs were not break anything).
+
+New features
+------------
+
+* Open magit buffer with a smart cursor position. When opening magit buffer,
+  cursor is set to current file file hunk, if any #125 
+* Disable most of the mappings in commit mode (i.e. when user is editing). For
+  example, user can now use 'L' or 'E' when editing its commit message #101
+  #106
+* Magit now shows more information on top: it shows the current remote
+  upstream branch and remote push branch. This is a first step to the git push
+  feature!
+* Add VimagitLeaveCommit User autocmd. WithVimagitEnterCommit and
+  VimagitLeaveCommit, you can now set the textwidth when you are editing your
+  commit message (see VimagitLeaveCommit section in vimagit help) #140 
+* You can now use Enter to fold/unfold a file #71
+
+Bug fixes
+---------
+
+* Fix 'quit' behavior to something consistent: if opened with Magit (i.e.
+  splitting the window) 'q' close the magit buffer; if opened with MagitOnly
+  , i.e. using the current buffer, 'q' switch to the previous buffer. If magit
+  is the last opened window, and it does not have an alternate buffer, it
+  quits vim #137 
+* Fix jump to "file already open" abort #128
+* Fix warning when magit is closed with bdelete #130
+* Fix .gitmessage template commit duplicate on refresh #135
+
+Contributors
+------------
+
+Users who have contributed to this release:
+* @argshook 
+
+Release 1.7.1
+=============
+
+Some bugs have been reported right after the release 1.7.0
+
+Fixes
+-----
+* when info section is last section, commit title like "vim: " can be intertpreted as a modeline #120 
+* vimagit opens in location list #119 
+
 Release 1.7.0
 =============
 
