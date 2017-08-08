@@ -12,7 +12,7 @@ From a very single vim buffer, you can perform main git operations in few key pr
 
 Take a look at [TL;DR](#tldr) to start using it immediately.
 
-![Example of vimagit 1.5.1](../gh-pages/images/vimagit_screenshot_1.5.1.png?raw=true "Example of vimagit 1.5.1")
+![Example of vimagit 1.7.2](https://user-images.githubusercontent.com/533068/28827790-ee0ec640-76ce-11e7-840b-10a4f5e4eae4.gif "Example of vimagit 1.7.2")
 
 Some screencasts:
 * A simple [asciicast][5]
