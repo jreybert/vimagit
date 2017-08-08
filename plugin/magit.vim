@@ -5,7 +5,7 @@ if exists('g:loaded_magit') || !executable('git') || &cp
 endif
 let g:loaded_magit = 1
 
-let g:vimagit_version = [1, 7, 1]
+let g:vimagit_version = [1, 7, 2]
 
 " Initialisation {{{
 
