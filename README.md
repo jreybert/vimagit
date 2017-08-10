@@ -65,6 +65,23 @@ To simply test vimagit, modify/add/delete/rename some files in a git repository 
   
 You just created your first commit with vimagit!
 
+## Contribute
+
+Any contribution is welcomed. Contribution can be bug fix, new feature, but also feedback or even tutorial! Check contribution rules [here](CONTRIBUTING.md).
+
+### Release 1.8
+
+Now that stage feature is quite mature, I would like to introduce more commands to vimagit. For this, user feedback is very important to me, to ensure that UI is appropriate for the most of users and that vimagit fits most of git workflows (by UI, I mean default mapping, user prompt, etc.).
+
+Proper way to discuss is on [gitter](https://gitter.im/jreybert/vimagit) and on issues opened for the new features.
+
+The next major release of vimagit will see 3 new important features. Interested users are encouraged to discuss the best way to design these new features:
+* **git push**: push from magit buffer with `<CP>`. magit will detect the default push branch; if there is not default, or if the user used another mapping, magit will provide a way to select remote branch to push #24 
+* **git checkout**: checkout a branch with `<CH>`. Like for push, a UI must be designed to select the branch, with completion of course #141 
+* **git stash**: stage what you want (files, hunks, lines, exactly the same way as for a commit), and stash them #142 
+
+Thanks for your time.
+
 ## Installation
 
 This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers:
