@@ -807,6 +807,8 @@ function! magit#show_magit(display, ...)
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
 
+	augroup vimagit_buffer
+	autocmd!
 	" catch write command
 	execute "autocmd BufWriteCmd " . buffer_name . " :call magit#commit_command('CC')"
 
@@ -823,6 +825,7 @@ function! magit#show_magit(display, ...)
 	      \ b:magit_current_commit_mode != '' ) |
 	      \   call s:set_mode_read() |
 	      \ endif"
+	augroup END
 
 	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
