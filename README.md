@@ -266,7 +266,7 @@ E means 'edit'.
  * From [commit mode](commit_mode): go back to stage mode (current commit message will be lost).
 
 ##### I
- * Add the file under the cursor in .gitgnore
+ * Add the file under the cursor in .gitignore
 
 ##### R
  * Refresh magit buffer
