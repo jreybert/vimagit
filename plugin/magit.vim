@@ -182,10 +182,12 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_stashes()
-	silent! let stash_list=magit#utils#systemlist(g:magit_git_cmd . " stash list")
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . stash_list
-	endif
+	try
+		silent! let stash_list=magit#sys#systemlist(g:magit_git_cmd . " stash list")
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
+		return
+	endtry
 
 	if (!empty(stash_list))
 		silent put =g:magit_sections.stash
@@ -222,10 +224,10 @@ function! s:mg_get_commit_section()
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
 						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
 						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
@@ -326,8 +328,13 @@ endfunction
 " return no
 function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
-		silent let git_result=magit#utils#system(g:magit_git_cmd .
-					\ " commit --amend -C HEAD")
+		try
+			silent let git_result=magit#sys#system(g:magit_git_cmd .
+						\ " commit --amend -C HEAD")
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			echoerr "Commit fix failed"
+		endtry
 	else
 		let commit_flag=""
 		if ( a:mode != 'CA' && empty( magit#get_staged_files() ) )
@@ -358,15 +365,14 @@ function! s:mg_git_commit(mode) abort
 		endif
 		let commit_cmd=g:magit_git_cmd . " commit " . commit_flag .
 					\ " --file - "
-		silent! let git_result=magit#utils#system(commit_cmd, commit_msg)
+		try
+			silent! let git_result=magit#sys#system(commit_cmd, commit_msg)
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			echoerr "Commit failed"
+		endtry
 		let b:magit_current_commit_mode=''
 		let b:magit_current_commit_msg=[]
-	endif
-	if ( v:shell_error != 0 )
-		echohl ErrorMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . commit_cmd
-		echohl None
 	endif
 endfunction
 
