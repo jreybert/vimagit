@@ -293,7 +293,13 @@ endfunction
 function! s:mg_get_commit_msg(...)
 	let commit_section_pat_start='^'.g:magit_sections.commit.'$'
 	" Get next section pattern with g:magit_default_sections order
-	let commit_section_pat_end='^'.g:magit_sections[g:magit_default_sections[match(g:magit_default_sections, 'commit')+1]].'$'
+	let commit_position = match(g:magit_default_sections, 'commit')
+	if ( commit_position + 1 == len(g:magit_default_sections) )
+	  let commit_section_pat_end='\%$'
+	else
+	  let commit_section_pat_end='^'.g:magit_sections[g:magit_default_sections[commit_position+1]].'$'
+	endif
+
 	let commit_jump_line = 2
 	let out_of_block = a:0 == 1 ? a:1 : 0
 	if ( out_of_block )
