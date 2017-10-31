@@ -47,7 +47,7 @@ function! s:mg_open_close_folding_wrapper(mapping, ...)
 	endif
 endfunction
 
-" s:mapping_wrapper: wrapper for mapping commands
+" s:nmapping_wrapper: wrapper for normal mapping commands
 " it needs a wrapper because some mappings must only be enabled in some
 " sections. For example, wa want that 'S' mapping to be enabled in staged and
 " unstaged sections, but not in commit section.
@@ -57,7 +57,7 @@ endfunction
 " mapping. If there is no section parameter or if the section parameter regex
 " match the current section, the rhs is called. Otherwise, the mapping is
 " applied to its original meaning.
-function! s:mapping_wrapper(mapping, function, ...)
+function! s:nmapping_wrapper(mapping, function, ...)
 	if ( a:0 == 0 || magit#helper#get_section() =~ a:1 )
 		execute "call " . a:function
 	else
@@ -67,6 +67,25 @@ function! s:mapping_wrapper(mapping, function, ...)
 	endif
 endfunction
 
+" s:xmapping_wrapper: wrapper for visual mapping commands
+" it needs a wrapper because some mappings must only be enabled in some
+" sections. For example, wa want that 'S' mapping to be enabled in staged and
+" unstaged sections, but not in commit section.
+" param[in] mapping the key for the mapping (lhs)
+" param[in] function the function to call (rhs)
+" param[in] ... : optional, section, the regex of the sections where to enable the
+" mapping. If there is no section parameter or if the section parameter regex
+" match the current section, the rhs is called. Otherwise, the mapping is
+" applied to its original meaning.
+function! s:xmapping_wrapper(mapping, function, ...) range
+	if ( a:0 == 0 || magit#helper#get_section() =~ a:1 )
+		execute a:firstline . "," . a:lastline . "call " . a:function
+	else
+		" feedkeys(..., 'n') is prefered over execute normal!
+		" normal! does not enter in insert mode
+		call feedkeys(a:mapping, 'n')
+	endif
+endfunction
 " s:mg_set_mapping: helper function to setup the mapping
 " param[in] mode the mapping mode, one letter. Can be 'n', 'x', 'i', ...
 " param[in] mapping the key for the mapping (lhs)
@@ -76,7 +95,7 @@ function! s:mg_set_mapping(mode, mapping, function, ...)
 	if ( a:0 == 1 )
 		execute a:mode . "noremap <buffer><silent><nowait> "
 					\ . a:mapping .
-					\ " :call <SID>mapping_wrapper(\"" .
+					\ " :call <SID>" . a:mode . "mapping_wrapper(\"" .
 					\ a:mapping . "\", \"" .
 					\ a:function . "\"" .
 					\ ", \'" . a:1 . "\'" .
