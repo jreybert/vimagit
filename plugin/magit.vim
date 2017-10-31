@@ -1042,7 +1042,7 @@ endfunction
 " INFO: in unstaged section, it stages the file, and in staged section, it
 " unstages the file
 " return: no
-function! magit#stage_vselect() range
+function! magit#stage_vselect(discard) range
 	" func-range a:firstline a:lastline seems to work at least from vim 7.2
 	let lines = []
 	let curline = a:firstline
@@ -1063,7 +1063,7 @@ function! magit#stage_vselect() range
 		echomsg "https://github.com/jreybert/vimagit/issues/new"
 		return
 	endtry
-	return magit#stage_block(selection, 0)
+	return magit#stage_block(selection, a:discard)
 endfunction
 
 " magit#mark_vselect: wrapper function to mark selected lines (see

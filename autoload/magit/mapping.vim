@@ -117,9 +117,11 @@ function! magit#mapping#set_default()
 	call s:mg_set_mapping('n', g:magit_discard_hunk_mapping,
 				\ "magit#stage_hunk(1)", '\<\%(un\)\?staged\>')
 	call s:mg_set_mapping('n', g:magit_stage_line_mapping,
-				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#stage_vselect(0)", '\<\%(un\)\?staged\>')
 	call s:mg_set_mapping('x', g:magit_stage_hunk_mapping,
-				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#stage_vselect(0)", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('x', g:magit_discard_hunk_mapping,
+				\ "magit#stage_vselect(1)", '\<\%(un\)\?staged\>')
 	call s:mg_set_mapping('n', g:magit_mark_line_mapping,
 				\ "magit#mark_vselect()", '\<\%(un\)\?staged\>')
 	call s:mg_set_mapping('x', g:magit_mark_line_mapping,
