@@ -27,42 +27,146 @@ let g:magit_folding_toggle_mapping = get(g:, 'magit_folding_toggle_mapping',    
 let g:magit_folding_open_mapping   = get(g:, 'magit_folding_open_mapping',      [ 'zo', 'zO' ])
 let g:magit_folding_close_mapping  = get(g:, 'magit_folding_close_mapping',     [ 'zc', 'zC' ])
 
+" magit#open_close_folding_wrapper: wrapper function to
+" magit#open_close_folding. If line under cursor is not a cursor, execute
+" normal behavior
+" param[in] mapping: which has been set
+" param[in] visible : boolean, force visible value. If not set, toggle
+" visibility
+function! s:mg_open_close_folding_wrapper(mapping, ...)
+	if ( getline(".") =~ g:magit_file_re )
+		return call('magit#open_close_folding', a:000)
+	elseif ( foldlevel(line(".")) == 2 )
+		if ( foldclosed(line('.')) == -1 )
+			foldclose
+		else
+			foldopen
+		endif
+	else
+		silent! execute "silent! normal! " . a:mapping
+	endif
+endfunction
+
+" s:nmapping_wrapper: wrapper for normal mapping commands
+" it needs a wrapper because some mappings must only be enabled in some
+" sections. For example, wa want that 'S' mapping to be enabled in staged and
+" unstaged sections, but not in commit section.
+" param[in] mapping the key for the mapping (lhs)
+" param[in] function the function to call (rhs)
+" param[in] ... : optional, section, the regex of the sections where to enable the
+" mapping. If there is no section parameter or if the section parameter regex
+" match the current section, the rhs is called. Otherwise, the mapping is
+" applied to its original meaning.
+function! s:nmapping_wrapper(mapping, function, ...)
+	if ( a:0 == 0 || magit#helper#get_section() =~ a:1 )
+		execute "call " . a:function
+	else
+		" feedkeys(..., 'n') is prefered over execute normal!
+		" normal! does not enter in insert mode
+		call feedkeys(a:mapping, 'n')
+	endif
+endfunction
+
+" s:xmapping_wrapper: wrapper for visual mapping commands
+" it needs a wrapper because some mappings must only be enabled in some
+" sections. For example, wa want that 'S' mapping to be enabled in staged and
+" unstaged sections, but not in commit section.
+" param[in] mapping the key for the mapping (lhs)
+" param[in] function the function to call (rhs)
+" param[in] ... : optional, section, the regex of the sections where to enable the
+" mapping. If there is no section parameter or if the section parameter regex
+" match the current section, the rhs is called. Otherwise, the mapping is
+" applied to its original meaning.
+function! s:xmapping_wrapper(mapping, function, ...) range
+	if ( a:0 == 0 || magit#helper#get_section() =~ a:1 )
+		execute a:firstline . "," . a:lastline . "call " . a:function
+	else
+		" feedkeys(..., 'n') is prefered over execute normal!
+		" normal! does not enter in insert mode
+		call feedkeys(a:mapping, 'n')
+	endif
+endfunction
+" s:mg_set_mapping: helper function to setup the mapping
+" param[in] mode the mapping mode, one letter. Can be 'n', 'x', 'i', ...
+" param[in] mapping the key for the mapping (lhs)
+" param[in] function the function to call (rhs)
+" param[in] ... : optional, section, the regex of the section(s)
+function! s:mg_set_mapping(mode, mapping, function, ...)
+	if ( a:0 == 1 )
+		execute a:mode . "noremap <buffer><silent><nowait> "
+					\ . a:mapping .
+					\ " :call <SID>" . a:mode . "mapping_wrapper(\"" .
+					\ a:mapping . "\", \"" .
+					\ a:function . "\"" .
+					\ ", \'" . a:1 . "\'" .
+					\ ")<cr>"
+	else
+		execute a:mode . "noremap <buffer><silent><nowait> "
+					\ . a:mapping .
+					\ " :call  " .
+					\ a:function . "<cr>"
+	endif
+endfunction
+
 function! magit#mapping#set_default()
 
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_file_mapping .   " :call magit#stage_file()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_hunk_mapping .   " :call magit#stage_hunk(0)<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_discard_hunk_mapping . " :call magit#stage_hunk(1)<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_reload_mapping .       " :call magit#update_buffer()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_edit_mapping .         " :call magit#jump_to()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_mapping .       " :call magit#commit_command('CC')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_amend_mapping . " :call magit#commit_command('CA')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_commit_fixup_mapping . " :call magit#commit_command('CF')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_close_commit_mapping . " :call magit#close_commit()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_ignore_mapping .       " :call magit#ignore_file()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_close_mapping .        " :call magit#close_magit()<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_shrink .          " :call magit#update_diff('-')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_enlarge .         " :call magit#update_diff('+')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_diff_reset .           " :call magit#update_diff('0')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_toggle_help_mapping .  " :call magit#toggle_help()<cr>"
+	call s:mg_set_mapping('n', g:magit_stage_hunk_mapping,
+				\"magit#stage_hunk(0)", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', g:magit_stage_file_mapping,
+				\ "magit#stage_file()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', g:magit_discard_hunk_mapping,
+				\ "magit#stage_hunk(1)", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', g:magit_stage_line_mapping,
+				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('x', g:magit_stage_hunk_mapping,
+				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', g:magit_mark_line_mapping,
+				\ "magit#mark_vselect()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('x', g:magit_mark_line_mapping,
+				\ "magit#mark_vselect()", '\<\%(un\)\?staged\>')
 
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_stage_line_mapping .   " :call magit#stage_vselect()<cr>"
-	execute "xnoremap <buffer><silent><nowait> " . g:magit_stage_hunk_mapping .   " :call magit#stage_vselect()<cr>"
-	
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
-	execute "xnoremap <buffer><silent><nowait> " . g:magit_mark_line_mapping .    " :call magit#mark_vselect()<cr>"
+	call s:mg_set_mapping('n', g:magit_ignore_mapping,
+				\ "magit#ignore_file()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', g:magit_edit_mapping,
+				\ "magit#jump_to()", '\<\%(un\)\?staged\>')
 
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_jump_next_hunk .       " :call magit#jump_hunk('N')<cr>"
-	execute "nnoremap <buffer><silent><nowait> " . g:magit_jump_prev_hunk .       " :call magit#jump_hunk('P')<cr>"
+	call s:mg_set_mapping('n', g:magit_reload_mapping,
+				\ "magit#update_buffer()")
+	call s:mg_set_mapping('n', g:magit_close_mapping,
+				\ "magit#close_magit()")
+	call s:mg_set_mapping('n', g:magit_diff_shrink,
+				\ "magit#update_diff('-')")
+	call s:mg_set_mapping('n', g:magit_diff_enlarge,
+				\ "magit#update_diff('+')")
+	call s:mg_set_mapping('n', g:magit_diff_reset,
+				\ "magit#update_diff('0')")
+	call s:mg_set_mapping('n', g:magit_toggle_help_mapping,
+				\ "magit#toggle_help()")
+
+	call s:mg_set_mapping('n', g:magit_commit_mapping,
+				\ "magit#commit_command('CC')")
+	call s:mg_set_mapping('n', g:magit_commit_amend_mapping,
+				\ "magit#commit_command('CA')")
+	call s:mg_set_mapping('n', g:magit_commit_fixup_mapping,
+				\ "magit#commit_command('CF')")
+	call s:mg_set_mapping('n', g:magit_close_commit_mapping,
+				\ "magit#close_commit()")
+
+	call s:mg_set_mapping('n', g:magit_jump_next_hunk,
+				\ "magit#jump_hunk('N')")
+	call s:mg_set_mapping('n', g:magit_jump_prev_hunk,
+				\ "magit#jump_hunk('P')")
+
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . func_arg . "')<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . func_arg . "')<return>"
 	endfor
 	for mapping in g:magit_folding_open_mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 1)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . mapping . "', 1)<return>"
 	endfor
 	for mapping in g:magit_folding_close_mapping
-		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call magit#open_close_folding_wrapper('" . mapping . "', 0)<return>"
+		execute "nnoremap <buffer><silent><nowait> " . mapping . " :call <SID>mg_open_close_folding_wrapper('" . mapping . "', 0)<return>"
 	endfor
 
 	" s:magit_inline_help: Dict containing inline help for each section
