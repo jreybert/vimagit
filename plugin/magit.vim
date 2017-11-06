@@ -26,6 +26,7 @@ let g:magit_enabled                = get(g:, 'magit_enabled',                   
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
+let g:magit_auto_close             = get(g:, 'magit_auto_close',                0)
 let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
@@ -374,6 +375,7 @@ function! s:mg_git_commit(mode) abort
 		let b:magit_current_commit_mode=''
 		let b:magit_current_commit_msg=[]
 	endif
+	let b:magit_just_commited = 1
 endfunction
 
 " s:mg_select_file_block: select the whole diff file, relative to the current
@@ -593,6 +595,15 @@ function! magit#update_buffer(...)
 
 	call b:state.update()
 
+	if ( g:magit_auto_close == 1 &&
+				\ b:magit_just_commited == 1 &&
+				\ empty(b:state.get_filenames('staged')) &&
+				\ empty(b:state.get_filenames('unstaged')) )
+		let b:magit_just_commited = 0
+		call magit#close_magit()
+		return
+	endif
+
 	for section in g:magit_default_sections
 		try
 			let func = s:mg_display_functions[section]
@@ -797,6 +808,8 @@ function! magit#show_magit(display, ...)
 	let b:magit_commit_newly_open=0
 
 	let b:magit_diff_context=3
+
+	let b:magit_just_commited = 0
 
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
