@@ -293,7 +293,7 @@ Some mappings are set for the whole magit buffer, others are set for specific se
 
 -----------------------------------
 
-<kbd>E</kbd>
+<kbd>J</kbd>, <kbd>Ctrl</kbd>+<kbd>]</kbd>
 
 If cursor is in a hunk, cursor will move in the file containing this hunk, at
  the line of the beginning of the hunk.
@@ -304,7 +304,7 @@ If cursor is in a hunk, cursor will move in the file containing this hunk, at
  * if there is only magit window opened, split vertically, moves cursor to new
  split and open buffer at the hunk line
 
-E means 'edit'.
+J means 'jump'.
 
 :exclamation: this function is extremely powerful, just give it a try!
 

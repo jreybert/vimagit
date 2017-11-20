@@ -8,7 +8,7 @@ let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      
 let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      'CF' )
 let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
 let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
-let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
+let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'J' )
 
 let g:magit_jump_next_hunk         = get(g:, 'magit_jump_next_hunk',            '<C-N>')
 let g:magit_jump_prev_hunk         = get(g:, 'magit_jump_prev_hunk',            '<C-P>')
@@ -128,6 +128,8 @@ function! magit#mapping#set_default()
 	call s:mg_set_mapping('n', g:magit_ignore_mapping,
 				\ "magit#ignore_file()", '\<\%(un\)\?staged\>')
 	call s:mg_set_mapping('n', g:magit_edit_mapping,
+				\ "magit#jump_to()", '\<\%(un\)\?staged\>')
+	call s:mg_set_mapping('n', '<C-]>',
 				\ "magit#jump_to()", '\<\%(un\)\?staged\>')
 
 	call s:mg_set_mapping('n', g:magit_reload_mapping,
