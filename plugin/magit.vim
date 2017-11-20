@@ -1249,6 +1249,16 @@ function! magit#show_version()
 				\ g:vimagit_version[2]
 endfunction
 
+function! magit#get_current_mode()
+	if ( b:magit_current_commit_mode == '' )
+		return "STAGING"
+	elseif ( b:magit_current_commit_mode == 'CC' )
+		return "COMMIT"
+	elseif ( b:magit_current_commit_mode == 'CA' )
+		return "AMEND"
+	endif
+endfunction
+
 command! Magit call magit#show_magit('v')
 command! MagitOnly call magit#show_magit('c')
 
