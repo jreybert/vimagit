@@ -117,10 +117,56 @@ There are 5 sections:
 
 INLINE MODIFICATIONS                               *vimagit-inline-modification*
 
-* It is possible to modify the content to be staged or unstaged in magit
-  buffer, with some limitations:
+* It is possible to modify the content of a hunk to be staged or unstaged,
+  with some limitations:
   * only lines starting with a + sign can be modified
-  * no line can be deleted
+  * no lines can be deleted
+
+Let's imagine we have the following hunk: >
+ -int main() {
+ -       printf("Hello world\n");
+ -       return 0;
+ +int main(int argc, const char *argv[]) {
+ +       int ret = printf("Hello world: %s\n", argv[0]);
+ +       return (ret > 0);
+<
+
+Ideally, we would like two commits here: one adding the argv parameter, and
+one checking the printf return value.
+
+One way to do so is to edit the file, deleting the return value code, stage,
+commit the argv feature; then, go back to source file, undo previous deletion,
+stage, and commit the return value feature.
+
+Another way is to edit the hunk from the magit buffer!
+
+Enter in edition mode with the mapping <kbd>E</kbd>, and start to edit the
+hunk, to remove the return value feature. After edition, you should have this
+result: >
+ -int main() {
+ -	printf("Hello world\n");
+ -	return 0;
+ +int main(int argc, const char *argv[]) {
+ +	printf("Hello world: %s\n", argv[0]);
+ +	return 0;
+<
+
+Stage the hunk, as is. Now you can see that you have the argv feature in
+staged section: >
+ -int main() {
+ -	printf("Hello world\n");
+ +int main(int argc, const char *argv[]) {
+ +	printf("Hello world: %s\n", argv[0]);
+<
+
+And that you have the return value feature in unstaged section: >
+ -	printf("Hello world: %s\n", argv[0]);
+ -	return 0;
+ +	int ret = printf("Hello world: %s\n", argv[0]);
+ +	return (ret > 0);
+<
+
+Voilà, you just did your first partial line staging!
 
 VISUAL SELECTION                                      *vimagit-visual-selection*
 
@@ -325,6 +371,13 @@ section only.
   <I>       Add the file under the cursor in .gitgnore
 
 
+                                    *vimagit-E*                *magit#edit_hunk*
+  <E>       Set the magit buffer in edit mode, allowing to edit a hunk before
+            staging it.
+            Edit mode is left after stage/unstage command, or a refresh
+            command.
+            See |vimagit-inline-modification| to learn how to use this
+            feature.
 
                                     *vimagit-J*                *magit#jump_to()*
                                     *vimagit-<C-]>*

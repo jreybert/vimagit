@@ -122,9 +122,52 @@ There are 5 sections:
 * Stash list: this section contains all stahes.
 
 ### Inline modifications
-* It is possible to modify the content to be staged or unstaged in magit buffer, with some limitations:
+* It is possible to modify the content of a hunk to be staged or unstaged, with some limitations:
   * only lines starting with a + sign can be modified
-  * no line can be deleted
+  * no lines can be deleted
+
+Let's imagine we have the following hunk:
+```diff
+-int main() {
+-       printf("Hello world\n");
+-       return 0;
++int main(int argc, const char *argv[]) {
++       int ret = printf("Hello world: %s\n", argv[0]);
++       return (ret > 0);
+```
+Ideally, we would like two commits here: one adding the argv parameter, and one checking the printf return value.
+
+One way to do so is to edit the file, deleting the return value code, stage, commit the argv feature; then, go back to source file, undo previous deletion, stage, and commit the return value feature.
+
+Another way is to edit the hunk from the magit buffer!
+
+Enter in edition mode with the mapping <kbd>E</kbd>, and start to edit the
+hunk, to remove the return value feature. After edition, you should have this
+result:
+```diff
+-int main() {
+-	printf("Hello world\n");
+-	return 0;
++int main(int argc, const char *argv[]) {
++	printf("Hello world: %s\n", argv[0]);
++	return 0;
+```
+Stage the hunk, as is. Now you can see that you have the argv feature in staged section:
+```diff
+-int main() {
+-	printf("Hello world\n");
++int main(int argc, const char *argv[]) {
++	printf("Hello world: %s\n", argv[0]);
+```
+And that you have the return value feature in unstaged section:
+```diff
+-	printf("Hello world: %s\n", argv[0]);
+-	return 0;
++	int ret = printf("Hello world: %s\n", argv[0]);
++	return (ret > 0);
+```
+
+Voilà, you just did your first partial line staging!
 
 ### Visual selection
 
@@ -290,6 +333,13 @@ Some mappings are set for the whole magit buffer, others are set for specific se
 <kbd>I</kbd>
 
  * Add the file under the cursor in .gitgnore
+
+<kbd>E</kbd>
+
+* Set the magit buffer in edit mode, allowing to edit a hunk before staging it.
+* Edit mode is left after stage/unstage command, or a refresh command.
+
+See [inline modifications](inline_modifications)  to learn how to use this feature.
 
 -----------------------------------
 

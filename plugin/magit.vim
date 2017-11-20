@@ -30,6 +30,7 @@ let g:magit_auto_close             = get(g:, 'magit_auto_close',                
 let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
+let g:magit_default_editable       = get(g:, 'magit_default_editable',          0)
 
 let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
 " Should deprecate the following
@@ -571,18 +572,6 @@ function! magit#update_buffer(...)
 	else
 		call s:set_mode_read()
 	endif
-	" FIXME: find a way to save folding state. According to help, this won't
-	" help:
-	" > This does not save fold information.
-	" Playing with foldenable around does not help.
-	" mkview does not help either.
-	let l:winview = winsaveview()
-
-	" remove all signs (needed as long as we wipe buffer)
-	call magit#sign#remove_all()
-	
-	" delete buffer
-	silent! execute "silent :%delete _"
 
 	" be smart for the cursor position after refresh, if stage/unstaged
 	" occured
@@ -604,6 +593,21 @@ function! magit#update_buffer(...)
 		return
 	endif
 
+	setlocal modifiable
+
+	" FIXME: find a way to save folding state. According to help, this won't
+	" help:
+	" > This does not save fold information.
+	" Playing with foldenable around does not help.
+	" mkview does not help either.
+	let l:winview = winsaveview()
+
+	" remove all signs (needed as long as we wipe buffer)
+	call magit#sign#remove_all()
+	
+	" delete buffer
+	silent! execute "silent :%delete _"
+
 	for section in g:magit_default_sections
 		try
 			let func = s:mg_display_functions[section]
@@ -619,6 +623,12 @@ function! magit#update_buffer(...)
 	call winrestview(l:winview)
 
 	call magit#utils#clear_undo()
+
+	if ( b:magit_editable )
+		setlocal modifiable
+	else
+		setlocal nomodifiable
+	endif
 
 	setlocal filetype=magit
 
@@ -766,6 +776,8 @@ function! magit#show_magit(display, ...)
 	if ( a:0 > 1 )
 		let b:magit_default_fold_level = a:2
 	endif
+
+	let b:magit_editable = g:magit_default_editable
 
 	setlocal buftype=nofile
 	setlocal bufhidden=hide
@@ -1091,6 +1103,15 @@ function! magit#mark_vselect() range
 	return <SID>mg_mark_lines_in_hunk(a:firstline, a:lastline)
 endfunction
 
+
+function! magit#edit_hunk()
+	let b:magit_editable = 1
+	setlocal modifiable
+	if exists(':AirlineRefresh')
+		execute "AirlineRefresh"
+	endif
+endfunction
+
 " magit#ignore_file: this function add the file under cursor to .gitignore
 " FIXME: git diff adds some strange characters to end of line
 function! magit#ignore_file() abort
@@ -1130,6 +1151,7 @@ function! magit#commit_command(mode)
 			" when we do commit, it is prefered ot commit the way we prepared it
 			" (.i.e normal or amend), whatever we commit with CC or CA.
 			call <SID>mg_git_commit(b:magit_current_commit_mode)
+			let b:magit_editable = 0
 			if exists('#User#VimagitLeaveCommit')
 				doautocmd User VimagitLeaveCommit
 			endif
@@ -1137,6 +1159,7 @@ function! magit#commit_command(mode)
 			let b:magit_current_commit_mode=a:mode
 			let b:magit_commit_newly_open=1
 			call s:set_mode_write()
+			let b:magit_editable = 1
 			setlocal nomodified
 		endif
 	endif
@@ -1263,7 +1286,9 @@ function! magit#show_version()
 endfunction
 
 function! magit#get_current_mode()
-	if ( b:magit_current_commit_mode == '' )
+	if ( b:magit_editable )
+		return "STAGING-EDIT"
+	elseif ( b:magit_current_commit_mode == '' )
 		return "STAGING"
 	elseif ( b:magit_current_commit_mode == 'CC' )
 		return "COMMIT"

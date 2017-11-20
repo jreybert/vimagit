@@ -56,6 +56,7 @@ Execute (Stage untracked file with magit#stage_hunk modified hunk):
     call Search_file('unstaged')
     call magit#open_close_folding(1)
     /^+
+    call magit#edit_hunk()
     call setline(line('.'), substitute(getline('.'), '^\(+.*\) .\{-\}$', '\1 vimatest', ''))
     call Cursor_position()
     call magit#stage_hunk(0)
