@@ -1219,10 +1219,15 @@ endfunction
 function! magit#jump_to()
 	let section=magit#helper#get_section()
 	let filename=fnameescape(magit#git#top_dir() . magit#helper#get_filename())
-	let line=substitute(magit#helper#get_hunkheader(),
+	let header_line_nb=magit#helper#get_hunkheader_line_nb()
+
+	let line_in_file=substitute(getline(header_line_nb),
 				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
-	let context = magit#git#get_config("diff.context", 3)
-	let line += context
+
+	" header_line_nb+2: +2 because we skip the header and the fist line
+	let hunk_extract=getline(header_line_nb+2, line('.'))
+	let line_in_hunk = len(filter(hunk_extract, 'v:val =~ "^[ +]"'))
+	let line_in_file += line_in_hunk
 
 	" winnr('#') is overwritten by magit#get_win()
 	let last_win = winnr('#')
@@ -1235,7 +1240,7 @@ function! magit#jump_to()
 	endif
 
 	try
-		execute "edit " . "+" . line . " " filename
+		execute "edit " . "+" . line_in_file . " " filename
 	catch
 		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
 			close

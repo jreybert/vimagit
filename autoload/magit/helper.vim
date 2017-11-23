@@ -6,11 +6,11 @@ function! magit#helper#get_filename()
 	return substitute(getline(search(g:magit_file_re, "cbnW")), g:magit_file_re, '\2', '')
 endfunction
 
-" magit#helper#get_hunkheader: helper function to get the current hunk header,
-" according to cursor position
-" return: hunk header
-function! magit#helper#get_hunkheader()
-	return getline(search(g:magit_hunk_re, "cbnW"))
+" magit#helper#get_hunkheader_line_nb: helper function to get the current hunk
+" header line number, according to cursor position
+" return: hunk header line number
+function! magit#helper#get_hunkheader_line_nb()
+	return search(g:magit_hunk_re, "cbnW")
 endfunction
 
 " magit#utils#get_section: helper function to get the current section, according to
