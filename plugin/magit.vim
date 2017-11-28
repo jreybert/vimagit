@@ -1216,7 +1216,8 @@ endfunction
 " hunk
 " if this file is already displayed in a window, jump to the window, if not,
 " jump to last window and open buffer, at the beginning of the hunk
-function! magit#jump_to()
+" param[in] newwin_cmd: vim command to execute to open the new window
+function! magit#jump_to(newwin_cmd)
 	let section=magit#helper#get_section()
 	let filename=fnameescape(magit#git#top_dir() . magit#helper#get_filename())
 	let header_line_nb=magit#helper#get_hunkheader_line_nb()
@@ -1234,7 +1235,7 @@ function! magit#jump_to()
 	let buf_win = magit#utils#search_buffer_in_windows(filename)
 	let buf_win = ( buf_win == 0 ) ? last_win : buf_win
 	if ( buf_win == 0 || winnr('$') == 1 )
-		rightbelow vnew
+		execute a:newwin_cmd
 	else
 		execute buf_win."wincmd w"
 	endif
