@@ -78,7 +78,7 @@ Voila! you created your first commit with vimagit!
 MODES                                                            *vimagit-modes*
 
 vimagit buffer has modes. Mappings may have different behavior, depending on
-current mode and curosr position.
+current mode and cursor position.
 
 For the moment, vimagit counts only two modes.
 
