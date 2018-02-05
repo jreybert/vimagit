@@ -495,6 +495,14 @@ or a hunk is staged/unstaged).
 Default value is 1.
 > let g:magit_refresh_gitgutter=[01]
 
+#### g:magit_auto_close
+
+When set to 1, magit buffer automatically closes after a commit if there is
+nothing else to stage (which means that both Staged and Unstaged sections are
+empty).
+Default value is 0.
+> let g:magit_auto_close=[01]
+
 ## Requirements
 
 This part must be refined, I don't see any minimal version for git and vim, but for sure there should be one.

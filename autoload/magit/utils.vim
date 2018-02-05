@@ -51,60 +51,6 @@ function! magit#utils#clear_undo()
 	unlet old_undolevels
 endfunction
 
-" magit#utils#system: wrapper for system, which only takes String as input in vim,
-" although it can take String or List input in neovim.
-" INFO: temporarly change pwd to git top directory, then restore to previous
-" pwd at the end of function
-" param[in] ...: command + optional args
-" return: command output as a string
-function! magit#utils#system(...)
-	let dir = getcwd()
-	try
-		call magit#utils#chdir(magit#git#top_dir())
-		" List as system() input is since v7.4.247, it is safe to check
-		" systemlist, which is sine v7.4.248
-		if exists('*systemlist')
-			return call('system', a:000)
-		else
-			if ( a:0 == 2 )
-				if ( type(a:2) == type([]) )
-					" ouch, this one is tough: input is very very sensitive, join
-					" MUST BE done with "\n", not '\n' !!
-					let arg=join(a:2, "\n")
-				else
-					let arg=a:2
-				endif
-				return system(a:1, arg)
-			else
-				return system(a:1)
-			endif
-		endif
-	finally
-		call magit#utils#chdir(dir)
-	endtry
-endfunction
-
-" magit#utils#systemlist: wrapper for systemlist, which only exists in neovim for
-" the moment.
-" INFO: temporarly change pwd to git top directory, then restore to previous
-" pwd at the end of function
-" param[in] ...: command + optional args to execute, args can be List or String
-" return: command output as a list
-function! magit#utils#systemlist(...)
-	let dir = getcwd()
-	try
-		call magit#utils#chdir(magit#git#top_dir())
-		" systemlist since v7.4.248
-		if exists('*systemlist')
-			return call('systemlist', a:000)
-		else
-			return split(call('magit#utils#system', a:000), '\n')
-		endif
-	finally
-		call magit#utils#chdir(dir)
-	endtry
-endfunction
-
 " magit#utils#underline: helper function to underline a string
 " param[in] title: string to underline
 " return a string composed of strlen(title) '='

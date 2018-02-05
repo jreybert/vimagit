@@ -26,6 +26,7 @@ let g:magit_enabled                = get(g:, 'magit_enabled',                   
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
+let g:magit_auto_close             = get(g:, 'magit_auto_close',                0)
 let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
 let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
@@ -182,10 +183,12 @@ endfunction
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 function! s:mg_get_stashes()
-	silent! let stash_list=magit#utils#systemlist(g:magit_git_cmd . " stash list")
-	if ( v:shell_error != 0 )
-		echoerr "Git error: " . stash_list
-	endif
+	try
+		silent! let stash_list=magit#sys#systemlist(g:magit_git_cmd . " stash list")
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
+		return
+	endtry
 
 	if (!empty(stash_list))
 		silent put =g:magit_sections.stash
@@ -222,10 +225,10 @@ function! s:mg_get_commit_section()
 		let git_dir=magit#git#git_dir()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
 						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
-			silent! call magit#utils#system("GIT_EDITOR=/bin/false " .
+			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
 						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
@@ -332,8 +335,13 @@ endfunction
 " return no
 function! s:mg_git_commit(mode) abort
 	if ( a:mode == 'CF' )
-		silent let git_result=magit#utils#system(g:magit_git_cmd .
-					\ " commit --amend -C HEAD")
+		try
+			silent let git_result=magit#sys#system(g:magit_git_cmd .
+						\ " commit --amend -C HEAD")
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			echoerr "Commit fix failed"
+		endtry
 	else
 		let commit_flag=""
 		if ( a:mode != 'CA' && empty( magit#get_staged_files() ) )
@@ -364,16 +372,16 @@ function! s:mg_git_commit(mode) abort
 		endif
 		let commit_cmd=g:magit_git_cmd . " commit " . commit_flag .
 					\ " --file - "
-		silent! let git_result=magit#utils#system(commit_cmd, commit_msg)
+		try
+			silent! let git_result=magit#sys#system(commit_cmd, commit_msg)
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			echoerr "Commit failed"
+		endtry
 		let b:magit_current_commit_mode=''
 		let b:magit_current_commit_msg=[]
 	endif
-	if ( v:shell_error != 0 )
-		echohl ErrorMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . commit_cmd
-		echohl None
-	endif
+	let b:magit_just_commited = 1
 endfunction
 
 " s:mg_select_file_block: select the whole diff file, relative to the current
@@ -593,6 +601,15 @@ function! magit#update_buffer(...)
 
 	call b:state.update()
 
+	if ( g:magit_auto_close == 1 &&
+				\ b:magit_just_commited == 1 &&
+				\ empty(b:state.get_filenames('staged')) &&
+				\ empty(b:state.get_filenames('unstaged')) )
+		let b:magit_just_commited = 0
+		call magit#close_magit()
+		return
+	endif
+
 	for section in g:magit_default_sections
 		try
 			let func = s:mg_display_functions[section]
@@ -797,6 +814,8 @@ function! magit#show_magit(display, ...)
 	let b:magit_commit_newly_open=0
 
 	let b:magit_diff_context=3
+
+	let b:magit_just_commited = 0
 
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
@@ -1206,10 +1225,15 @@ endfunction
 function! magit#jump_to()
 	let section=magit#helper#get_section()
 	let filename=fnameescape(magit#git#top_dir() . magit#helper#get_filename())
-	let line=substitute(magit#helper#get_hunkheader(),
+	let header_line_nb=magit#helper#get_hunkheader_line_nb()
+
+	let line_in_file=substitute(getline(header_line_nb),
 				\ '^@@ -\d\+,\d\+ +\(\d\+\),\d\+ @@.*$', '\1', "")
-	let context = magit#git#get_config("diff.context", 3)
-	let line += context
+
+	" header_line_nb+2: +2 because we skip the header and the fist line
+	let hunk_extract=getline(header_line_nb+2, line('.'))
+	let line_in_hunk = len(filter(hunk_extract, 'v:val =~ "^[ +]"'))
+	let line_in_file += line_in_hunk
 
 	" winnr('#') is overwritten by magit#get_win()
 	let last_win = winnr('#')
@@ -1222,7 +1246,7 @@ function! magit#jump_to()
 	endif
 
 	try
-		execute "edit " . "+" . line . " " filename
+		execute "edit " . "+" . line_in_file . " " filename
 	catch
 		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
 			close

@@ -24,7 +24,7 @@ function! magit#git#get_status()
 	" we can't use git status -z here, because system doesn't make the
 	" difference between NUL and NL. -status z terminate entries with NUL,
 	" instead of NF
-	let status_list=magit#utils#systemlist(g:magit_git_cmd . " status --porcelain")
+	let status_list=magit#sys#systemlist(g:magit_git_cmd . " status --porcelain")
 	for file_status_line in status_list
 		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
@@ -34,13 +34,13 @@ function! magit#git#get_status()
 endfunction
 
 function! magit#git#get_config(conf_name, default)
-	silent! let git_result=magit#utils#strip(
-				\ magit#utils#system(g:magit_git_cmd . " config --get " . a:conf_name))
-	if ( v:shell_error != 0 )
+	try
+		silent! let git_result=magit#utils#strip(
+				\ magit#sys#system(g:magit_git_cmd . " config --get " . a:conf_name))
+	catch 'shell_error'
 		return a:default
-	else
-		return git_result
-	endif
+	endtry
+	return git_result
 endfunction
 
 " magit#git#is_work_tree: this function check that path passed as parameter is
@@ -51,11 +51,12 @@ function! magit#git#is_work_tree(path)
 	let dir = getcwd()
 	try
 		call magit#utils#chdir(a:path)
-		let top_dir=magit#utils#strip(
+		try
+			let top_dir=magit#utils#strip(
 					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
-		if ( v:shell_error != 0 )
+		catch 'shell_error'
 			return ''
-		endif
+		endtry
 		return top_dir
 	finally
 		call magit#utils#chdir(dir)
@@ -69,15 +70,14 @@ function! magit#git#set_top_dir(path)
 	let dir = getcwd()
 	try
 		call magit#utils#chdir(a:path)
-		let top_dir=magit#utils#strip(
-					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
-		if ( v:shell_error != 0 )
-			throw "magit: git-show-toplevel error: " . top_dir
-		endif
-		let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --git-dir")) . "/"
-		if ( v:shell_error != 0 )
-			throw "magit: git-git-dir error: " . git_dir
-		endif
+		try
+			let top_dir=magit#utils#strip(
+						\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
+			let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --git-dir")) . "/"
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			throw 'set_top_dir_error'
+		endtry
 		let b:magit_top_dir=top_dir
 		let b:magit_git_dir=git_dir
 	finally
@@ -119,14 +119,18 @@ function! magit#git#git_diff(filename, status, mode)
 	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
 				\ " --no-color -p -U" . b:magit_diff_context .
 				\ " -- " . dev_null . " " . a:filename
-	silent let diff_list=magit#utils#systemlist(git_cmd)
-	if ( a:status != '?' && v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . string(diff_list)
-		echom "Git cmd: " . git_cmd
-		echohl None
-		throw 'diff error'
+
+	if ( a:status != '?' )
+		try
+			silent let diff_list=magit#sys#systemlist(git_cmd)
+		catch 'shell_error'
+			call magit#sys#print_shell_error()
+			throw 'diff error'
+		endtry
+	else
+		silent let diff_list=magit#sys#systemlist_noraise(git_cmd)
 	endif
+
 	if ( empty(diff_list) )
 		echohl WarningMsg
 		echom "diff command \"" . git_cmd . "\" returned nothing"
@@ -146,7 +150,7 @@ function! magit#git#sub_check(submodule, check_level)
 	let ignore_flag = ( a:check_level == 'modified' ) ?
 				\ '--ignore-submodules=untracked' : ''
 	let git_cmd=g:magit_git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
-	return ( !empty(magit#utils#systemlist(git_cmd)) )
+	return ( !empty(magit#sys#systemlist(git_cmd)) )
 endfunction
 
 " magit#git#git_sub_summary: helper function to get diff of a submodule
@@ -158,7 +162,7 @@ function! magit#git#git_sub_summary(filename, mode)
 	let staged_flag = ( a:mode == 'staged' ) ? " --cached " : " --files "
 	let git_cmd=g:magit_git_cmd . " submodule summary " . staged_flag . " HEAD "
 				\ .a:filename
-	silent let diff_list=magit#utils#systemlist(git_cmd)
+	silent let diff_list=magit#sys#systemlist(git_cmd)
 	if ( empty(diff_list) )
 		if ( a:mode == 'unstaged' )
 			if ( magit#git#sub_check(a:filename, 'modified') )
@@ -182,14 +186,12 @@ endfunction
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_add(filename)
 	let git_cmd=g:magit_git_cmd . " add --no-ignore-removal -- " . a:filename
-	silent let git_result=magit#utils#system(git_cmd)
-	if ( v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . git_cmd
-		echohl None
+	try
+		silent let git_result=magit#sys#system(git_cmd)
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
 		throw 'add error'
-	endif
+	endtry
 endfunction
 
 " magit#git#git_checkout: helper function to add a whole file
@@ -198,14 +200,12 @@ endfunction
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_checkout(filename)
 	let git_cmd=g:magit_git_cmd . " checkout -- " . a:filename
-	silent let git_result=magit#utils#system(git_cmd)
-	if ( v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . git_cmd
-		echohl None
+	try
+		silent let git_result=magit#sys#system(git_cmd)
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
 		throw 'checkout error'
-	endif
+	endtry
 endfunction
 
 " magit#git#git_reset: helper function to add a whole file
@@ -214,14 +214,12 @@ endfunction
 " param[in] filemane: it must be quoted if it contains spaces
 function! magit#git#git_reset(filename)
 	let git_cmd=g:magit_git_cmd . " reset HEAD -- " . a:filename
-	silent let git_result=magit#utils#system(git_cmd)
-	if ( v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . git_cmd
-		echohl None
+	try
+		silent let git_result=magit#sys#system(git_cmd)
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
 		throw 'reset error'
-	endif
+	endtry
 endfunction
 
 " magit#git#git_apply: helper function to stage a selection
@@ -236,16 +234,14 @@ function! magit#git#git_apply(header, selection)
 		let selection += [ '' ]
 	endif
 	let git_cmd=g:magit_git_cmd . " apply --recount --no-index --cached -"
-	silent let git_result=magit#utils#system(git_cmd, selection)
-	if ( v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . git_result
-		echom "Git cmd: " . git_cmd
+	try
+		silent let git_result=magit#sys#system(git_cmd, selection)
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
 		echom "Tried to aply this"
 		echom string(selection)
-		echohl None
 		throw 'apply error'
-	endif
+	endtry
 endfunction
 
 " magit#git#git_unapply: helper function to unstage a selection
@@ -263,23 +259,22 @@ function! magit#git#git_unapply(header, selection, mode)
 	if ( selection[-1] !~ '^$' )
 		let selection += [ '' ]
 	endif
-	silent let git_result=magit#utils#system(
-		\ g:magit_git_cmd . " apply --recount --no-index " . cached_flag . " --reverse - ",
-		\ selection)
-	if ( v:shell_error != 0 )
-		echohl WarningMsg
-		echom "Git error: " . git_result
+	try
+		silent let git_result=magit#sys#system(
+			\ g:magit_git_cmd . " apply --recount --no-index " . cached_flag . " --reverse - ",
+			\ selection)
+	catch 'shell_error'
+		call magit#sys#print_shell_error()
 		echom "Tried to unaply this"
 		echom string(selection)
-		echohl None
 		throw 'unapply error'
-	endif
+	endtry
 endfunction
 
 " magit#git#submodule_status: helper function to return the submodule status
 " return submodule status
 function! magit#git#submodule_status()
-	return system(g:magit_git_cmd . " submodule status")
+	return magit#sys#system(g:magit_git_cmd . " submodule status")
 endfunction
 
 " magit#git#get_branch_name: get the branch name given a reference
@@ -287,18 +282,18 @@ endfunction
 " param[in] ref can be HEAD or a branch name
 " return branch name
 function! magit#git#get_branch_name(ref)
-	return magit#utils#strip(magit#utils#system(g:magit_git_cmd . " rev-parse --abbrev-ref " . a:ref))
+	return magit#utils#strip(magit#sys#system(g:magit_git_cmd . " rev-parse --abbrev-ref " . a:ref))
 endfunction
 
 " magit#git#get_commit_subject: get the subject of a commit (first line)
 " param[in] ref: reference, can be SHA1, brnach name or HEAD
 " return commit subject
 function! magit#git#get_commit_subject(ref)
-	silent let git_result=magit#utils#strip(magit#utils#system(g:magit_git_cmd . " show --no-patch --format=\"%s\" " . a:ref))
-	if ( v:shell_error != 0 )
+	try
+		return magit#utils#strip(magit#sys#system(g:magit_git_cmd . " show --no-patch --format=\"%s\" " . a:ref))
+	catch 'shell_error'
 		return ""
-	endif
-	return git_result
+	endtry
 endfunction
 
 " magit#git#get_remote_branch: get the branch name of the default remote, for
@@ -308,10 +303,10 @@ endfunction
 " param[in] type: type of default remote: upstream or push
 " return the remote branch name, 'none' if it has not
 function! magit#git#get_remote_branch(ref, type)
-	silent let git_result=magit#utils#strip(magit#utils#system(
-		\ g:magit_git_cmd . " rev-parse --abbrev-ref=loose " . a:ref . "@{" . a:type . "}"))
-	if ( v:shell_error != 0 )
+	try
+		return magit#utils#strip(magit#sys#system(
+			\ g:magit_git_cmd . " rev-parse --abbrev-ref=loose " . a:ref . "@{" . a:type . "}"))
+	catch 'shell_error'
 		return "none"
-	endif
-	return git_result
+	endtry
 endfunction
