@@ -321,6 +321,13 @@ function! magit#state#get_files(mode) dict
 	return self.dict[a:mode]
 endfunction
 
+" magit#state#get_files_nb: returns the number of files in a given section
+" param[in] mode: mode to select, can be 'staged' or 'unstaged'
+" return number of files of this section
+function! magit#state#get_files_nb(mode) dict
+	return len(self.dict[a:mode])
+endfunction
+
 " magit#state#get_files: global dict file objects (copy) getter function
 " param[in] mode: mode to select, can be 'staged' or 'unstaged'
 " return ordered list of file objects belonging to mode
@@ -366,6 +373,7 @@ let magit#state#state = {
 			\ 'nb_diff_lines': 0,
 			\ 'get_file': function("magit#state#get_file"),
 			\ 'get_files': function("magit#state#get_files"),
+			\ 'get_files_nb': function("magit#state#get_files_nb"),
 			\ 'get_files_ordered': function("magit#state#get_files_ordered"),
 			\ 'get_filenames': function("magit#state#get_filenames"),
 			\ 'add_file': function("magit#state#add_file"),

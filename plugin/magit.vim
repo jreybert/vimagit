@@ -654,31 +654,43 @@ function! magit#update_buffer(...)
 	endif
 
 	if ( a:0 >= 3 )
-		" if, in this order, current file, next file, previous file exists in
-		" current section, move cursor to it
-		let cur_file = 1
-		for fname in [cur_filename, next_filename, prev_filename]
-			try
-				let file = b:state.get_file(cur_section, fname)
-				if ( cur_file )
-					let hunk_id = max([0, min([len(file.get_hunks())-1, cur_hunk_id])])
-					let cur_file = 0
-				else
-					let hunk_id = 0
-				endif
-
-				if ( file.is_visible() )
-					call cursor(file.get_hunks()[hunk_id].line_pos, 0)
-					if ( g:magit_auto_foldopen )
-						foldopen
+		if (b:state.get_files_nb(cur_section) > 0)
+			" if, in this order, current file, next file, previous file exists in
+			" current section, move cursor to it
+			let cur_file = 1
+			for fname in [cur_filename, next_filename, prev_filename]
+				try
+					let file = b:state.get_file(cur_section, fname)
+					if ( cur_file )
+						let hunk_id = max([0, min([len(file.get_hunks())-1, cur_hunk_id])])
+						let cur_file = 0
+					else
+						let hunk_id = 0
 					endif
-				else
-					call cursor(file.line_pos, 0)
-				endif
-				break
-			catch 'file_doesnt_exists'
-			endtry
-		endfor
+
+					if ( file.is_visible() )
+						call cursor(file.get_hunks()[hunk_id].line_pos, 0)
+						if ( g:magit_auto_foldopen )
+							foldopen
+						endif
+					else
+						call cursor(file.line_pos, 0)
+					endif
+					break
+				catch 'file_doesnt_exists'
+				endtry
+			endfor
+		else
+			" if current section is empty, move cursor to top to other section
+			if (cur_section == 'staged')
+				let cur_section = 'unstaged'
+			elseif (cur_section == 'unstaged')
+				let cur_section = 'staged'
+			endif
+			let section_line=search(g:magit_sections[cur_section], "bnw")
+			call cursor(section_line, 0)
+		endif
+		silent execute "normal! zt"
 	endif
 
 	if exists(':AirlineRefresh')
