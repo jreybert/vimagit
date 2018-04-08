@@ -168,13 +168,15 @@ It takes 3 parameters:
       - 'h', curent window is split horizontally, and magit is displayed in
         new buffer
       - 'c', magit is displayed in current buffer
+    user can control type of the split with variable
+    (see [g:magit_split_type](#gmagit_split_type))
   * show_all_files: define how file diffs are shown by default for this session
     (see [g:magit_default_show_all_files](#gmagit_default_show_all_files))
   * foldlevel: set default magit buffer foldlevel for this session
     (see [g:magit_default_fold_level](#gmagit_default_fold_level))
 
 #### :Magit
-Open magit buffer in a vertical split (see [details](magitshow_magit)).
+Open magit buffer in a vertical split by default (see [details](magitshow_magit)).
 
 #### :MagitOnly
 Open magit buffer in current window (see [details](magitshow_magit)).
@@ -502,6 +504,12 @@ nothing else to stage (which means that both Staged and Unstaged sections are
 empty).
 Default value is 0.
 > let g:magit_auto_close=[01]
+
+#### g:magit_split_type
+
+When set to "h", magit will open in a horizontal split.
+Default value is "v".
+> let g:magit_split_type = [hv]
 
 ## Requirements
 
