@@ -104,7 +104,7 @@ This plugin follows the standard runtime path structure, and as such it can be i
 
 ### Modes
 
-vimagit buffer has modes. Mappings may have different behavior, depending on current mode and curosr position.
+vimagit buffer has modes. Mappings may have different behavior, depending on current mode and cursor position.
 
 For the moment, vimagit counts only two modes.
 
