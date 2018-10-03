@@ -11,7 +11,7 @@ diff --git books/models.py books/models.py
  import isbn_search
  
  class User(models.Model):
-@@ -20,20 +24,26 @@ class BookManager(models.Manager):
+@@ -20,20 +24,26 @@ class BookManager(~/models.Manager):
  				eisbn   = product.eisbn,
  				author  = product.author,
  				title   = product.title,

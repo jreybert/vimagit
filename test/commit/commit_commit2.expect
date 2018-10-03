@@ -4,7 +4,7 @@ Uber commit message
 diff --git books/models.py books/models.py
 --- books/models.py
 +++ books/models.py
-@@ -24,20 +24,26 @@ class BookManager(models.Manager):
+@@ -24,20 +24,26 @@ class BookManager(~/models.Manager):
  				eisbn   = product.eisbn,
  				author  = product.author,
  				title   = product.title,

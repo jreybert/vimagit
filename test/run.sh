@@ -26,10 +26,11 @@ fi
 pushd "$TEST_PATH"
 git config --local user.email 'tester@vimagit.org'
 git config --local user.name 'vimagit tester'
-export TEST_HEAD_SHA1='origin/vimagit_test-1.4.1'
+export TEST_HEAD_SHA1='origin/vimagit_test-1.7.3'
+export TEST_RESET_TAG='reset-here'
 git submodule update
 git show $TEST_HEAD_SHA1 --stat
-git reset $TEST_HEAD_SHA1~1 && git status --porcelain && git reset --hard $TEST_HEAD_SHA1
+git reset $TEST_RESET_TAG && git status --porcelain && git reset --hard $TEST_HEAD_SHA1
 popd
 
 if [ "$VIM_VERSION" = 'neovim' ]; then
