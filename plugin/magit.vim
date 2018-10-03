@@ -965,7 +965,7 @@ function! magit#stage_block(selection, discard) abort
 	" find current hunk position in file matching against current selection
 	" header
 	try
-		let hunk_id = match(map(deepcopy(file.get_hunks()), 'v:val.header'), escape(a:selection[0], '~*'))
+		let hunk_id = match(map(deepcopy(file.get_hunks()), 'v:val.header'), "\\V" . a:selection[0])
 	catch /^Vim\%((\a\+)\)\=:E874/
 		echoerr "Escape issue with '" . a:selection[0] ."'"
 		return
