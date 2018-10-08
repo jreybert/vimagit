@@ -51,13 +51,11 @@ function! magit#git#is_work_tree(path)
 	let dir = getcwd()
 	try
 		call magit#utils#chdir(a:path)
-		try
-			let top_dir=magit#utils#strip(
-					\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
-		catch 'shell_error'
+		let top_dir=system(g:magit_git_cmd . " rev-parse --show-toplevel")
+		if ( v:shell_error != 0 )
 			return ''
-		endtry
-		return top_dir
+		endif
+		return magit#utils#strip(top_dir) . "/"
 	finally
 		call magit#utils#chdir(dir)
 	endtry

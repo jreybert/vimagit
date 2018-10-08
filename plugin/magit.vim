@@ -732,13 +732,13 @@ function! magit#show_magit(display, ...)
 	if ( git_dir == '' )
 		echohl ErrorMsg
 		echom "magit can not find any git repository"
+		echohl None
 		echom "make sure that current opened file or vim current directory points to a git repository"
 		echom "search paths:"
 		for path in try_paths
 			echom path
 		endfor
-		echohl None
-		throw 'magit_not_in_git_repo'
+		return
 	endif
 
 	let buffer_name=fnameescape('magit://' . git_dir)
