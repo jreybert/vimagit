@@ -913,9 +913,9 @@ function! s:mg_stage_closed_file(discard)
 				endif
 			else
 				if ( section == 'unstaged' )
-					if ( file.status == '?' )
+					if ( file.status == '?' || file.must_be_added() )
 						if ( g:magit_discard_untracked_do_delete == 1 )
-							if ( delete(filename) != 0 )
+							if ( delete(filename, "rf") != 0 )
 								echoerr "Can not delete \"" . filename . "\""
 								return
 							endif
@@ -992,8 +992,21 @@ function! magit#stage_block(selection, discard) abort
 		endif
 	else
 		if ( section == 'unstaged' )
-			if ( file.must_be_added() )
-				call magit#git#git_checkout(magit#utils#add_quotes(filename))
+			if ( file.status == '?' || file.must_be_added() )
+				if ( g:magit_discard_untracked_do_delete == 1 )
+					if ( delete(filename, "rf") != 0 )
+						echoerr "Can not delete \"" . filename . "\""
+						return
+					endif
+				else
+					echohl WarningMsg
+					echomsg "By default, vimagit won't discard "
+								\ "untracked file (which means delete this file)"
+					echomsg "You can force this behaviour, "
+								\ "setting g:magit_discard_untracked_do_delete=1"
+					echohl None
+					return
+				endif
 			else
 				call magit#git#git_unapply(header, a:selection, 'unstaged')
 			endif
