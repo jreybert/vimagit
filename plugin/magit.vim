@@ -78,7 +78,11 @@ function! s:mg_get_info()
 				\ g:magit_section_info.cur_repo,
 				\ magit#git#top_dir())
 
-	let head_br=magit#git#get_branch_name("HEAD")
+	try
+		let head_br=magit#git#get_branch_name("HEAD")
+	catch 'shell_error'
+		let head_br="Empty repository"
+	endtry
 	let upstream_br=magit#git#get_remote_branch("HEAD", "upstream")
 	let push_br=magit#git#get_remote_branch("HEAD", "push")
 	let max_br_w = max([len(head_br), len(upstream_br), len(push_br)])
@@ -815,7 +819,6 @@ function! magit#show_magit(display, ...)
 	      \ endif"
 	augroup END
 
-	let b:state = deepcopy(g:magit#state#state)
 	" s:magit_commit_mode: global variable which states in which commit mode we are
 	" values are:
 	"       '': not in commit mode
@@ -829,6 +832,17 @@ function! magit#show_magit(display, ...)
 
 	let b:magit_just_commited = 0
 
+	if ( magit#git#check_repo() != 0 )
+		echohl ErrorMsg
+		echom "git repository seems to be corrupted"
+		echohl None
+		echom "To be safe, vimagit ends now"
+		echom "Check your repository health with git fsck"
+		echom "If the result shows no problem, open an issue"
+		return
+	endif
+
+	let b:state = deepcopy(g:magit#state#state)
 	call magit#utils#setbufnr(bufnr(buffer_name))
 	call magit#sign#init()
 

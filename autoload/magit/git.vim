@@ -283,6 +283,34 @@ function! magit#git#get_branch_name(ref)
 	return magit#utils#strip(magit#sys#system(g:magit_git_cmd . " rev-parse --abbrev-ref " . a:ref))
 endfunction
 
+" magit#git#count_object: this function returns the output of git
+" count-objects, in a dict object
+" It contains the following information: count, size, in-pack, packs,
+" size-pack, prune-packable, garbage, size-garbage
+function! magit#git#count_object()
+	let count_object=magit#sys#systemlist(g:magit_git_cmd . " count-objects -v")
+	let refs={}
+	for line in count_object
+		let ref=split(line, ":")
+		let refs[ref[0]] = ref[1]
+	endfor
+	return refs
+endfunction
+
+" magit#git#check_repo: check the health of the repo
+" return 0 if everything is fine, 1 otherwise
+function! magit#git#check_repo()
+	try
+		let head_br=magit#git#get_branch_name("HEAD")
+	catch 'shell_error'
+		let count = magit#git#count_object()['count']
+		if ( count != 0 )
+			return 1
+		endif
+	endtry
+	return 0
+endfunction
+
 " magit#git#get_commit_subject: get the subject of a commit (first line)
 " param[in] ref: reference, can be SHA1, brnach name or HEAD
 " return commit subject
