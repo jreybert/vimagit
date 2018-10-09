@@ -10,7 +10,7 @@ From a very single vim buffer, you can perform main git operations in few key pr
 * Stage file, hunks or even just parts of a hunk using a single key press.
 * Write or amend your commit message and commit in the same buffer.
 
-Take a look at [TL;DR](#tldr) to start using it immediately.
+Take a look at [TL;DR](#tldr) to start using it immediately. If you encounter any performance issue, take a look in the section [performance](#performance).
 
 ![Example of vimagit 1.7.2](https://user-images.githubusercontent.com/533068/28827790-ee0ec640-76ce-11e7-840b-10a4f5e4eae4.gif "Example of vimagit 1.7.2")
 
@@ -32,10 +32,10 @@ This workflow is 100% inspired from magnificent emacs [Magit][1] plugin.
 * [x] Stable. All features are tested in continuous integration.
 
 More to come:
-* [ ] Add a push function, taking care if needed about the remote repository and branch #24 .
-* [ ] Handle commit fixup! and squash!, with a smart git log popup #23 .
-* [ ] Handle stash: add, pop, apply, drop #26 .
-* [ ] Stage multiple hunks or file by visually selecting them #83 .
+* [ ] Add a push function, taking care if needed about the remote repository and branch [#24](../../issues/24) .
+* [ ] Handle commit fixup! and squash!, with a smart git log popup [#23](../../issues/23) .
+* [ ] Handle stash: add, pop, apply, drop [#26](../../issues/26) .
+* [ ] Stage multiple hunks or file by visually selecting them [#83](../../issues/83) .
 * [ ] Go through history, cherry-pick changes.
 * [ ] Make vimagit more efficient for huge repositories, with a lot of diffs.
 * [ ] Something is missing? Open an [issue][9]!
@@ -64,6 +64,24 @@ To simply test vimagit, modify/add/delete/rename some files in a git repository 
   - To commit, go back in Normal mode, and press `CC` (or `:w` if you prefer).
   
 You just created your first commit with vimagit!
+
+## Performance
+
+For various reasons, vimagit may be slow to refresh. A refresh happends every time you stage, unstage, commit or refresh the vimagit buffer. Currently, vimagit is quite dumb: every time the buffer is refreshed, it dumps everything and reconstruct the entire buffer. It could be smarter, but there are a lot of corner cases and it is quite a big work.
+
+vimagit tends to be slow when:
+* there is a lot of diff lines
+* there are long lines
+
+Possible solution:
+
+### Fold level
+
+```let g:magit_default_fold_level = 0```
+
+Change the default fold level. When fold level is set to 0, diff content are not print in the buffer. The buffer will show the files containing diffs. If you want to see the diff relative to file, move the cursor to the filename, and press`<Enter>`.
+
+In a near future, vimagit may try to be smart, and adapt the foldlevel automatically, based on the bumber of diff lines.
 
 ## Contribute
 
