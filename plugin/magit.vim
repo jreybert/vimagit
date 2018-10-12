@@ -590,7 +590,16 @@ function! magit#update_buffer(...)
 
 	" remove all signs (needed as long as we wipe buffer)
 	call magit#sign#remove_all()
-	
+
+	" remove folding while we are updating the buffer. writing to the buffer
+	" while the folding is enabled can be veryyyyy slow.
+	" One last strange thing is that, the first time the buffer is written, it
+	" is not slow at all. It is slow the second time, at first refresh (can be
+	" order of seconds). Then at third time (2nd refresh), it is fast again.
+	" refs:
+	" https://github.com/jreybert/vimagit/issues/170
+	" https://github.com/jreybert/vimagit/issues/36 (maybe)
+	setlocal foldmethod=manual
 	" delete buffer
 	silent! execute "silent :%delete _"
 
@@ -631,6 +640,7 @@ function! magit#update_buffer(...)
 	call magit#utils#clear_undo()
 
 	setlocal filetype=magit
+	setlocal foldmethod=syntax
 
 	if ( b:magit_current_commit_mode != '' && b:magit_commit_newly_open == 1 )
 		let commit_section_pat_start='^'.g:magit_sections.commit.'$'
