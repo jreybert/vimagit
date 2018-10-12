@@ -172,10 +172,9 @@ endfunction
 
 function! magit#utils#start_profile(...)
 	let prof_file = ( a:0 == 1 ) ? a:1 : "/tmp/vimagit.log"
+	profdel *
 	execute "profile start " . prof_file . " | profile pause"
-	profile! file */plugin/magit.vim
-	profile! file */autoload/magit/*
-	profile! file */common/magit_common.vim
-	profile! file */syntax/magit.vim
+	profile file *
+	profile func *
 	profile continue
 endfunction
