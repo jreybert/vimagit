@@ -1,3 +1,33 @@
+Release 1.7.3
+=============
+
+This release adds some minor improvements, and fixes a lot of bugs. Most of
+these has been in master branch since a long time.
+
+New features
+------------
+
+* Add option to auto-close magit buffer/window on clean state #132
+* Jump to source is now line precise #152 #153
+  Using the 'E' (for edit) mapping, cursor will now jump to the exact line
+  instead of the beginning of the hunk.
+* Smarter cursor position when staging/refreshing.
+  When refreshing, the cirsor stays in the same position. When (un)staging,
+  cursor move to the hunk close to the current one.
+* Add vimagit support to vim-airline
+
+Bug fixes
+---------
+
+* Fix freeze while refresh fix #170 #36
+* Fix character escape issues #156 #168
+  These are two old issues, which have been reproduced thanks to the issue
+  #168. Big up to @akrejczinger for the docker image.
+* Discarding untracked file results in an error in some cases fix #165
+* Ungraceful behaviour when opening magit outside of a git repo fix #162
+* Freshly created repository fails to open in vimagit fix #169
+* Handle commit set at the end of magit_default_sections #149
+
 Release 1.7.2
 =============
 
