@@ -37,6 +37,8 @@ let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         
 
 let g:magit_commit_title_limit     = get(g:, 'magit_commit_title_limit',        50)
 
+let g:magit_scrolloff              = get(g:, 'magit_scrolloff',                 3)
+
 let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         10000)
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
@@ -808,6 +810,17 @@ function! magit#show_magit(display, ...)
 	setlocal nomodeline
 	let &l:foldlevel = b:magit_default_fold_level
 	setlocal filetype=magit
+	if ( g:magit_scrolloff != -1 )
+		if ( has("patch-8.1.0864") )
+			let &l:scrolloff = g:magit_scrolloff
+		else
+			let s:default_scrolloff=&scrolloff
+			" ugly hack, scrolloff is a global only option before patch 8.1.0864
+			execute "autocmd BufLeave " . buffer_name . " :set scrolloff=" . s:default_scrolloff
+			execute "autocmd BufEnter " . buffer_name . " :set scrolloff=" . g:magit_scrolloff
+			let &scrolloff = g:magit_scrolloff
+		endif
+	endif
 
 	augroup vimagit_buffer
 	autocmd!
