@@ -1351,6 +1351,18 @@ function! magit#get_current_mode()
 	endif
 endfunction
 
+" magit#stage_all
+function! magit#stage_all()
+  call magit#sys#system(g:magit_git_cmd . " add -u")
+  call magit#update_buffer()
+endfunction
+
+" magit#unstage_all
+function! magit#unstage_all()
+  call magit#sys#system(g:magit_git_cmd . " reset --mixed")
+  call magit#update_buffer()
+endfunction
+
 command! Magit call magit#show_magit('v')
 command! MagitOnly call magit#show_magit('c')
 

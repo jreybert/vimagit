@@ -2,6 +2,8 @@
 let g:magit_stage_file_mapping     = get(g:, 'magit_stage_file_mapping',        'F' )
 let g:magit_stage_hunk_mapping     = get(g:, 'magit_stage_hunk_mapping',        'S' )
 let g:magit_stage_line_mapping     = get(g:, 'magit_stage_line_mapping',        'L' )
+let g:magit_stage_all_mapping      = get(g:, 'magit_stage_all_mapping',         'gA' )
+let g:magit_unstage_all_mapping    = get(g:, 'magit_unstage_all_mapping',       'gU' )
 let g:magit_mark_line_mapping      = get(g:, 'magit_mark_line_mapping',         'M' )
 let g:magit_commit_mapping         = get(g:, 'magit_commit_mapping',            'CC' )
 let g:magit_commit_amend_mapping   = get(g:, 'magit_commit_amend_mapping',      'CA' )
@@ -157,6 +159,11 @@ function! magit#mapping#set_default()
 	call s:mg_set_mapping('n', g:magit_jump_prev_hunk,
 				\ "magit#jump_hunk('P')")
 
+  call s:mg_set_mapping('n', g:magit_stage_all_mapping,
+        \ "magit#stage_all()")
+  call s:mg_set_mapping('n', g:magit_unstage_all_mapping,
+        \ "magit#unstage_all()")
+
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
@@ -227,6 +234,10 @@ function! magit#mapping#set_default()
 \'       modifying the previous commit message',
 \g:magit_close_commit_mapping
 \. '     commit undo, cancel and close current commit message',
+\g:magit_stage_all_mapping
+\. '     stage all files, except untracked (git add -u)',
+\g:magit_unstage_all_mapping
+\. '     unstage all files (git reset --mixed)',
 \g:magit_reload_mapping
 \.'      refresh magit buffer',
 \g:magit_diff_shrink.','.g:magit_diff_enlarge.','.g:magit_diff_reset
