@@ -102,6 +102,11 @@ function! magit#git#git_dir()
 	return b:magit_git_dir
 endfunction
 
+" Use explicit prefixes to avoid issues when the user has configured the
+" diff.noprefix option.  The actual prefix values are arbitrary and just
+" stripped internally by the commands invoking diff / show.
+let s:diff_prefix = "--src-prefix a/ --dst-prefix b/"
+
 " magit#git#git_diff: helper function to get diff of a file
 " nota: when git fail (due to misformated patch for example), an error
 " message is raised.
@@ -115,6 +120,7 @@ function! magit#git#git_diff(filename, status, mode)
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
 	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
 	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
+				\ " " . s:diff_prefix .
 				\ " --no-color -p -U" . b:magit_diff_context .
 				\ " -- " . dev_null . " " . a:filename
 
@@ -316,7 +322,9 @@ endfunction
 " return commit subject
 function! magit#git#get_commit_subject(ref)
 	try
-		return magit#utils#strip(magit#sys#system(g:magit_git_cmd . " show --no-patch --format=\"%s\" " . a:ref))
+		return magit#utils#strip(magit#sys#system(g:magit_git_cmd . " show " .
+					\ " " . s:diff_prefix .
+					\" --no-patch --format=\"%s\" " . a:ref))
 	catch 'shell_error'
 		return ""
 	endtry
