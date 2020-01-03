@@ -52,6 +52,9 @@ function! magit#git#is_work_tree(path)
 	try
 		call magit#utils#chdir(a:path)
 		let top_dir=system(g:magit_git_cmd . " rev-parse --show-toplevel")
+    if ( executable("cygpath") )
+      let top_dir = magit#utils#strip(system("cygpath " . top_dir))
+    endif
 		if ( v:shell_error != 0 )
 			return ''
 		endif
@@ -72,6 +75,10 @@ function! magit#git#set_top_dir(path)
 			let top_dir=magit#utils#strip(
 						\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
 			let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --git-dir")) . "/"
+      if ( executable("cygpath") )
+        let top_dir = magit#utils#strip(system("cygpath " . top_dir))
+        let git_dir = magit#utils#strip(system("cygpath " . git_dir))
+      endif
 		catch 'shell_error'
 			call magit#sys#print_shell_error()
 			throw 'set_top_dir_error'
