@@ -249,13 +249,8 @@ function! s:mg_get_commit_section()
 	endif
 endfunction
 
-<<<<<<< HEAD
-" s:mg_get_branches_section: this function writes in current buffer the commit
-" section. It is a commit message, depending on b:magit_current_commit_mode
-=======
 " s:mg_get_branches_section: this function writes in current buffer the branch 
 " section. 
->>>>>>> 39003c0... Implemented Branch Checkout (#141)
 " WARNING: this function writes in file, it should only be called through
 " protected functions like magit#update_buffer
 " param[in] b:magit_show_branches: 
