@@ -339,3 +339,9 @@ function! magit#git#get_remote_branch(ref, type)
 		return "none"
 	endtry
 endfunction
+
+
+function! magit#git#get_branches()
+    return magit#sys#system(g:magit_git_cmd . " branch -a")
+endfunction
+

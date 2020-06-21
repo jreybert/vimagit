@@ -28,7 +28,7 @@ let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 let g:magit_auto_close             = get(g:, 'magit_auto_close',                0)
 let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
-let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
+let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'branch', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
 let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
@@ -249,6 +249,25 @@ function! s:mg_get_commit_section()
 	endif
 endfunction
 
+" s:mg_get_branches_section: this function writes in current buffer the commit
+" section. It is a commit message, depending on b:magit_current_commit_mode
+" WARNING: this function writes in file, it should only be called through
+" protected functions like magit#update_buffer
+" param[in] b:magit_show_branches: 
+function! s:mg_get_branches_section()
+    if ( b:magit_show_branches == 1 )
+        silent put =g:magit_sections.branches
+        silent put =magit#utils#underline(g:magit_sections.branches)
+
+        let branch_list = magit#git#get_branches()
+        silent put ='*Close*'
+        silent put ='New Branch:'
+        silent put =branch_list
+        silent put =''
+        silent put =''
+    endif
+endfunction
+
 " s:mg_search_block: helper function, to get start and end line of a block,
 " giving a start and multiple end pattern
 " a "pattern parameter" is a List:
@@ -388,6 +407,42 @@ function! s:mg_git_commit(mode) abort
 		let b:magit_current_commit_msg=[]
 	endif
 	let b:magit_just_commited = 1
+endfunction
+
+" s:mg_git_checkout_branch: checks out a branch (local or remote)
+" param[in]:  branch_name specifies the name of the branch
+"             remote specifies the name of the remote
+"               = '' specifies a local branch
+" return none
+function! s:mg_git_checkout_branch(branch_name, remote)
+    " Update the name of the remote branch (format: 'origin/master')
+    if ( a:remote != '' )
+        let remote_name = " " . a:remote . "/" . a:branch_name
+    endif
+
+    if ( b:magit_current_checkout_flag == 'B' && a:remote != '' )
+        let checkout_cmd = g:magit_git_cmd . " checkout -b " . 
+                            \ a:branch_name . " " . remote_name
+    elseif ( b:magit_current_checkout_flag == 'B' && b:magit_creating_new_branch == 1)
+        let checkout_cmd = g:magit_git_cmd . " checkout -b " . 
+                            \ a:branch_name 
+    elseif ( b:magit_current_checkout_flag == 'B' || b:magit_current_checkout_flag == '-' )
+        let checkout_cmd = g:magit_git_cmd . " checkout " . 
+                            \ a:branch_name
+    elseif ( b:magit_current_checkout_flag == 'F' && a:remote != '' && b:magit_creating_new_branch == 0 )
+        let checkout_cmd = g:magit_git_cmd . " checkout -B " .
+                            \ a:branch_name . remote_name
+    elseif ( b:magit_current_checkout_flag == 'F' && b:magit_creating_new_branch == 1 )
+        let checkout_cmd = g:magit_git_cmd . " checkout -B " .
+                            \ a:branch_name
+    endif
+
+    try
+        silent! let git_result = magit#sys#system(checkout_cmd)
+    catch 'shell error'
+        call magit#sys#print_shell_error()
+        echoerr "Could not checkout branch ''" . a:branch_name . "'"
+    endtry
 endfunction
 
 " s:mg_select_file_block: select the whole diff file, relative to the current
@@ -531,6 +586,7 @@ let g:magit_last_updated_buffer = ''
 let s:mg_display_functions = {
 	\ 'info':        { 'fn': function("s:mg_get_info"), 'arg': []},
 	\ 'global_help': { 'fn': function("magit#mapping#get_section_help"), 'arg': ['global']},
+    \ 'branch':      { 'fn': function("s:mg_get_branches_section"), 'arg': []},
 	\ 'commit':      { 'fn': function("s:mg_get_commit_section"), 'arg': []},
 	\ 'staged':      { 'fn': function("s:mg_get_staged_section"), 'arg': ['staged']},
 	\ 'unstaged':    { 'fn': function("s:mg_get_staged_section"), 'arg': ['unstaged']},
@@ -850,6 +906,9 @@ function! magit#show_magit(display, ...)
 	"       'CF': fixup commit mode, it should not be a global state mode
 	let b:magit_current_commit_mode=''
 	let b:magit_commit_newly_open=0
+
+    let b:magit_show_branches=0 
+    let b:magit_current_branch_mode=''
 
 	let b:magit_diff_context=3
 
@@ -1273,6 +1332,73 @@ function! magit#jump_hunk(dir)
 	endif
 endfunction
 
+" magit#checkout_branch: entry function for branch checkout
+" param[in]: opt specifies the option for checkout
+"           'B' is for '-b'
+"           'F' is for '-B'
+"           '-' is to checkout previous branch
+function! magit#checkout_branch(opt)
+    let b:magit_current_checkout_flag = a:opt
+    if ( b:magit_show_branches == 0 && a:opt != '-' )
+        let b:magit_show_branches = 1 
+    else
+        call magit#select_branch()
+    endif
+        
+    if ( a:opt == '-' )
+        call <SID>mg_git_checkout_branch('-', '')
+    endif
+
+    call magit#update_buffer()
+endfunction
+
+" magit#select_branch: handles the parsing and passing of the selected branch 
+" return no
+function! magit#select_branch()
+    let line = trim(getline("."))
+
+    " cannot checkout HEAD
+    if ( match(line, "HEAD") != -1 )
+        let b:magit_show_branches = 0
+        call magit#update_buffer()
+        return
+    endif
+
+    " close buffer if requested
+    if ( match(line, "*Close*") != -1 )
+        let b:magit_show_branches = 0
+        call magit#update_buffer()
+        return
+    endif
+
+    " check whether attempting to checkout remote branch
+    " and pass to s:mg_git_checkout_branch() with correct + clean options
+    let is_remote = match(line, "remotes")
+    if ( is_remote != -1 )  
+        let line = substitute(line, "^remotes/", "", "") 
+        let remote = matchstr(line, "[^/]*")
+        let branch = matchstr(line, ".*", len(remote)+1)
+        call <SID>mg_git_checkout_branch(branch, remote)
+    else
+        " disregard if attempting to checkout current branch
+        if ( match(line, "*") != -1 )
+            echo "You are already checked out on this branch..."
+            return
+        else
+            " handle custom input for new branch
+            if ( match(line, "^New Branch:") != -1 )
+                let anti_line = matchstr(line, "[^:]*")
+                let line = trim(matchstr(line, ".*", len(anti_line)+1))
+                let b:magit_creating_new_branch = 1
+            else   
+                let b:magit_creating_new_branch = 0
+            endif 
+
+            call <SID>mg_git_checkout_branch(line, '')
+        endif
+    endif
+endfunction
+
 " magit#get_staged_files: function returning an array with staged files names
 " return: an array with staged files names
 function! magit#get_staged_files()
@@ -1348,6 +1474,10 @@ function! magit#get_current_mode()
 		return "COMMIT"
 	elseif ( b:magit_current_commit_mode == 'CA' )
 		return "AMEND"
+    elseif ( b:magit_current_checkout_flag == 'B' )
+        return "BRANCH"
+    elseif ( b:magit_current_checkout_flag == 'F' )
+        return "FORCE"
 	endif
 endfunction
 

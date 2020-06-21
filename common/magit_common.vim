@@ -7,7 +7,8 @@ let g:magit_sections = {
  \ 'staged':         'Staged changes',
  \ 'unstaged':       'Unstaged changes',
  \ 'commit':         'Commit message',
- \ 'stash':          'Stash list'
+ \ 'stash':          'Stash list',
+ \ 'branches':       'Branch list'
  \ }
 
 let g:magit_section_info = {
