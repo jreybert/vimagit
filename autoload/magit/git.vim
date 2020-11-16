@@ -312,8 +312,8 @@ function! magit#git#check_repo()
 	try
 		let head_br=magit#git#get_branch_name("HEAD")
 	catch 'shell_error'
-		let count = magit#git#count_object()['count']
-		if ( count != 0 )
+		let object_count = magit#git#count_object()['count']
+		if ( object_count != 0 )
 			return 1
 		endif
 	endtry
