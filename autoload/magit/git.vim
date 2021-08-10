@@ -278,10 +278,12 @@ function! magit#git#git_unapply(header, selection, mode)
 	endtry
 endfunction
 
-" magit#git#submodule_status: helper function to return the submodule status
-" return submodule status
-function! magit#git#submodule_status()
-	return magit#sys#system(g:magit_git_cmd . " submodule status")
+" magit#git#submodule_list: helper function to return the submodule list
+" return array of submodule names
+function! magit#git#submodule_list()
+	return map(split(magit#sys#system(
+				\ g:magit_git_cmd . " ls-files --stage | \grep 160000 || true"),
+				\ "\n"), 'split(v:val)[3]')
 endfunction
 
 " magit#git#get_branch_name: get the branch name given a reference

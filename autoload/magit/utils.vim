@@ -10,7 +10,7 @@ let s:submodule_list = []
 " magit#utils#refresh_submodule_list: this function refresh the List s:submodule_list
 " magit#utils#is_submodule() is using s:submodule_list
 function! magit#utils#refresh_submodule_list()
-	let s:submodule_list = map(split(magit#git#submodule_status(), "\n"), 'split(v:val)[1]')
+	let s:submodule_list = magit#git#submodule_list()
 endfunction
 
 " magit#utils#is_submodule search if dirname is in s:submodule_list 
