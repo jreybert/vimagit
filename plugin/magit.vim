@@ -232,16 +232,15 @@ function! s:mg_get_commit_section()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
 			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --cleanup=verbatim --no-status -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
 			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --cleanup=verbatim --no-status --amend -e 2> /dev/null")
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
 			silent put =b:magit_current_commit_msg
 		elseif ( filereadable(git_dir . 'COMMIT_EDITMSG') )
-			let comment_char=magit#git#get_config("core.commentChar", '#')
-			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+			let commit_msg=readfile(git_dir . 'COMMIT_EDITMSG')
 			silent put =commit_msg
 		endif
 		silent put =''

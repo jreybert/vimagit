@@ -15,7 +15,9 @@ hi def link titleEntry Comment
 
 execute 'syn region commitMsg start=/' . g:magit_sections.commit . '/ end=/\%(' . g:magit_section_re . '\)\@=/ contains=titleEntry'
 execute 'syn match commitMsgExceed "\%(=\+\n\+\_^.\{' . g:magit_commit_title_limit . '}\)\@<=.*$" contained containedin=commitMsg'
+execute 'syn match commitMsgComment "^\s*#.*$" contained containedin=commitMsg'
 hi def link commitMsgExceed Comment
+hi def link commitMsgComment Comment
 
 execute 'syn match stashEntry "' . g:magit_stash_re . '"'
 hi def link stashEntry String
