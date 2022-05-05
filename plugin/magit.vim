@@ -348,7 +348,8 @@ function! s:mg_git_commit(mode) abort
 			echoerr "Commit fix failed"
 		endtry
 	else
-		let commit_flag=""
+		let cleanup_cfg = magit#git#get_config('commit.cleanup', 'strip')
+		let commit_flag=" --cleanup=" . cleanup_cfg . " "
 		if ( a:mode != 'CA' && empty( magit#get_staged_files() ) )
 			let choice = confirm(
 				\ "Do you really want to commit without any staged files?",
