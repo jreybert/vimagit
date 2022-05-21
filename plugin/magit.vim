@@ -1314,7 +1314,11 @@ function! magit#jump_to()
 	endif
 
 	try
-		execute "edit " . "+" . line_in_file . " " filename
+		if ( bufexists(filename) )
+			execute "buffer " . "+" . line_in_file . " " filename
+		else
+			execute "edit " . "+" . line_in_file . " " filename
+		endif
 	catch
 		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
 			close
