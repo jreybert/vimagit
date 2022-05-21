@@ -1323,7 +1323,7 @@ function! magit#jump_to()
 		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
 			close
 		elseif ( v:exception != 'Vim(edit):E325: ATTENTION' )
-			throw v:exception
+			throw "vimagit: " . v:exception
 		endif
 	endtry
 endfunction
