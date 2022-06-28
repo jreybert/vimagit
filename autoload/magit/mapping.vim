@@ -9,6 +9,9 @@ let g:magit_commit_fixup_mapping   = get(g:, 'magit_commit_fixup_mapping',      
 let g:magit_close_commit_mapping   = get(g:, 'magit_close_commit_mapping',      'CU' )
 let g:magit_reload_mapping         = get(g:, 'magit_reload_mapping',            'R' )
 let g:magit_edit_mapping           = get(g:, 'magit_edit_mapping',              'E' )
+let g:magit_checkout_mapping       = get(g:, 'magit_checkout_mapping',          'CBB')
+let g:magit_checkout_last_mapping  = get(g:, 'magit_checkout_last_mapping',     'CB-')
+let g:magit_checkout_force_mapping = get(g:, 'magit_checkout_force_mapping',    'CBF')
 
 let g:magit_jump_next_hunk         = get(g:, 'magit_jump_next_hunk',            '<C-N>')
 let g:magit_jump_prev_hunk         = get(g:, 'magit_jump_prev_hunk',            '<C-P>')
@@ -157,6 +160,13 @@ function! magit#mapping#set_default()
 	call s:mg_set_mapping('n', g:magit_jump_prev_hunk,
 				\ "magit#jump_hunk('P')")
 
+    call s:mg_set_mapping('n', g:magit_checkout_mapping,
+                \ "magit#checkout_branch('B')")
+    call s:mg_set_mapping('n', g:magit_checkout_last_mapping,
+                \ "magit#checkout_branch('-')")
+    call s:mg_set_mapping('n', g:magit_checkout_force_mapping,
+                \ "magit#checkout_branch('F')")
+
 	for mapping in g:magit_folding_toggle_mapping
 		" trick to pass '<cr>' in a mapping command without being interpreted
 		let func_arg = ( mapping ==? "<cr>" ) ? '+' : mapping
@@ -227,6 +237,14 @@ function! magit#mapping#set_default()
 \'       modifying the previous commit message',
 \g:magit_close_commit_mapping
 \. '     commit undo, cancel and close current commit message',
+\g:magit_checkout_mapping
+\. '    From stage mode: set branch mode in normal flavor',
+\'       From branch mode: checkout branch on line cursor is on.', 
+\g:magit_checkout_force_mapping
+\. '    From stage mode: set branch mode in force flavor',
+\'       From branch mode: checkout/reset branch on line cursor is on.', 
+\g:magit_checkout_last_mapping
+\. '    From stage mode: checkout previous branch.',
 \g:magit_reload_mapping
 \.'      refresh magit buffer',
 \g:magit_diff_shrink.','.g:magit_diff_enlarge.','.g:magit_diff_reset

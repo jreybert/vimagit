@@ -100,15 +100,26 @@ Commit mode has two flavors.
 
 By the way, you can also perform all stage mode actions in commit mode.
 
+BRANCH MODE                                                *vimagit-branch-mode*
+
+In this mode, the `Branch list` section is open, where you can choose any 
+existing local or remote branch as well as create a new local branch.
+There are two flavors to Branch mode:
+
+* `normal`: selected branch will be created/checked out normally.
+* `force`: selected branch will be created if nonexistant, or reset if existant.
+
 SECTIONS                                                      *vimagit-sections*
 
 IMPORTANT: mappings can have different meanings regarding the cursor position.
 
-There are 5 sections:
+There are 6 sections:
 * Info: this section display some information about the git repository, like
   the current branch and the HEAD commit.
 * Commit message: this section appears in commit mode (see below). It contains
   the message to be committed.
+* Branch list: this section contains all of the current local and remote 
+  brances.
 * Staged changes: this sections contains all staged files/hunks, ready to
   commit.
 * Unstaged changes: this section contains all unstaged and untracked
@@ -216,6 +227,27 @@ section only.
   <CF>      From `stage mode`: amend the staged changes into the previous
             commit, without modifying previous commit message.
 
+
+
+                                    *vimagit-CBB*   *magit#checkout_branch('B')*
+                                    *vimagit-g:magit_checkout_mapping*
+  <CBB>    From `stage mode`, set branch mode in `normal` flavor and show  
+           "Branches" section. When used in `branch mode`, the branch name on
+           the line the cursor is on will be checked out. Created locally if
+           needed. This is equivalent to `git checkout -b <branch> [remote]`
+
+                                    *vimagit-CBF*   *magit#checkout_branch('F')*
+                                    *vimagit-g:magit_checkout_force_mapping*
+  <CBF>    From `stage mode` or `branch mode`, set branching to `force` mode, 
+           and checkout any new or existing branches with <CBF> while the cursor 
+           is on the line of the desired branch. This is equivalent to 
+           `git checkout -B <branch> [remote]`.
+
+                                    *vimagit-CB-*   *magit#checkout_branch('-')*
+                                    *vimagit-g:magit_checkout_last_mapping*
+  <CB->    From `stage mode`, instantly checkout the previous branch. Any 
+           changes are carried along the checkout. This is equivalent to
+           `git checkout -`.
 
 
                                     *vimagit-<C-n>*          *magit#jump_hunk()*
