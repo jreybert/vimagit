@@ -7,11 +7,12 @@ let g:loaded_magit = 1
 
 let g:vimagit_version = [1, 7, 3]
 
-" Initialisation {{{
+let g:vimagit_minium_vim_version = '7.4.1926'
+if ! has('patch-' . g:vimagit_minium_vim_version)
+	throw "vimagit needs at least vim " . g:vimagit_minium_vim_version
+endif
 
-" FIXME: find if there is a minimum vim version required
-" if v:version < 703
-" endif
+" Initialisation {{{
 
 " source common file. variables in common file are shared with plugin and
 " syntax files
@@ -232,16 +233,15 @@ function! s:mg_get_commit_section()
 		" refresh the COMMIT_EDITMSG file
 		if ( b:magit_current_commit_mode == 'CC' )
 			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " -c commit.verbose=no commit -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --cleanup=verbatim --no-status -e 2> /dev/null")
 		elseif ( b:magit_current_commit_mode == 'CA' )
 			silent! call magit#sys#system_noraise("GIT_EDITOR=/bin/false " .
-						\ g:magit_git_cmd . " -c commit.verbose=no commit --amend -e 2> /dev/null")
+						\ g:magit_git_cmd . " -c commit.verbose=no commit --cleanup=verbatim --no-status --amend -e 2> /dev/null")
 		endif
 		if ( !empty(b:magit_current_commit_msg) )
 			silent put =b:magit_current_commit_msg
 		elseif ( filereadable(git_dir . 'COMMIT_EDITMSG') )
-			let comment_char=magit#git#get_config("core.commentChar", '#')
-			let commit_msg=magit#utils#join_list(filter(readfile(git_dir . 'COMMIT_EDITMSG'), 'v:val !~ "^' . comment_char . '"'))
+			let commit_msg=readfile(git_dir . 'COMMIT_EDITMSG')
 			silent put =commit_msg
 		endif
 		silent put =''
@@ -349,7 +349,8 @@ function! s:mg_git_commit(mode) abort
 			echoerr "Commit fix failed"
 		endtry
 	else
-		let commit_flag=""
+		let cleanup_cfg = magit#git#get_config('commit.cleanup', 'strip')
+		let commit_flag=" --cleanup=" . cleanup_cfg . " "
 		if ( a:mode != 'CA' && empty( magit#get_staged_files() ) )
 			let choice = confirm(
 				\ "Do you really want to commit without any staged files?",
@@ -759,10 +760,10 @@ function! magit#show_magit(display, ...)
 
 	let buffer_name=fnameescape('magit://' . git_dir)
 
-	let magit_win = magit#utils#search_buffer_in_windows(buffer_name)
+	let magit_win = bufwinid(buffer_name)
 
-	if ( magit_win != 0 )
-		silent execute magit_win."wincmd w"
+	if ( magit_win != -1 )
+		call win_gotoid(magit_win)
 	elseif ( a:display == 'v' )
 		silent execute "vnew " . buffer_name
 		" next is a workaround for vader, revert as soon as vader bug is fixed
@@ -1303,23 +1304,36 @@ function! magit#jump_to()
 	let line_in_hunk = len(filter(hunk_extract, 'v:val =~ "^[ +]"'))
 	let line_in_file += line_in_hunk
 
-	" winnr('#') is overwritten by magit#get_win()
-	let last_win = winnr('#')
-	let buf_win = magit#utils#search_buffer_in_windows(filename)
-	let buf_win = ( buf_win == 0 ) ? last_win : buf_win
-	if ( buf_win == 0 || winnr('$') == 1 )
+	if ( winnr('$') == 1 )
+		" if single window in current tab, create a new window to the right
 		rightbelow vnew
+	elseif ( bufwinid(filename) != -1 )
+		" window in current tab with 'filename' buffer visible
+		call win_gotoid(bufwinid(filename))
+	elseif ( win_getid(winnr('#')) )
+		" last access window
+		call win_gotoid(win_getid(winnr('#')))
+	elseif ( win_getid(winnr('1l')) != win_getid() )
+		" right window
+		call win_gotoid(win_getid(winnr('1l')))
+	elseif ( win_getid(winnr('1h')) != win_getid() )
+		" left window
+		call win_gotoid(win_getid(winnr('1h')))
 	else
-		execute buf_win."wincmd w"
+		throw "unexpected error: no viable window"
 	endif
 
 	try
-		execute "edit " . "+" . line_in_file . " " filename
+		if ( bufexists(filename) )
+			execute "buffer " . "+" . line_in_file . " " filename
+		else
+			execute "edit " . "+" . line_in_file . " " filename
+		endif
 	catch
 		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
 			close
 		elseif ( v:exception != 'Vim(edit):E325: ATTENTION' )
-			throw v:exception
+			throw "vimagit: " . v:exception
 		endif
 	endtry
 endfunction
