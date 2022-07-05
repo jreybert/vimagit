@@ -33,6 +33,25 @@ function! magit#git#get_status()
 	return file_list
 endfunction
 
+
+function! magit#git#get_commit_status(ref)
+	let file_list = {}
+
+	let status_output=magit#sys#system(g:magit_git_cmd . " show --pretty='' --name-status -z " . a:ref)
+	let status_list = split(status_output)
+
+	while len(status_list)
+		let file_status = magit#utils#pop_list(status_list)
+		if file_status =~ "^R"
+			let file_status = "R"
+			call magit#utils#pop_list(status_list)
+		endif
+		let filename = magit#utils#pop_list(status_list)
+		let file_list[filename] = {'amend': file_status}
+	endwhile
+	return file_list
+endfunction
+
 function! magit#git#get_config(conf_name, default)
 	try
 		silent! let git_result=magit#utils#strip(
@@ -120,12 +139,13 @@ endfunction
 " return: two values
 "        [0]: boolean, if true current file is binary
 "        [1]: string array containing diff output
-function! magit#git#git_diff(filename, status, mode)
+function! magit#git#git_diff(filename, status, mode, ref, ...)
+	let ignore_empty = ( a:0 == 1 ) ? a:1 : 0
 	let dev_null = ( a:status == '?' ) ? "/dev/null " : ""
-	let staged_flag = ( a:mode == 'staged' ) ? "--staged" : ""
-	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . staged_flag .
+	let diff_flags = ( a:mode != 'unstaged' ) ? "--staged" : ""
+	let git_cmd=g:magit_git_cmd . " diff --no-ext-diff " . diff_flags .
 				\ " --no-prefix --no-color -p -U" . b:magit_diff_context .
-				\ " -- " . dev_null . " " . a:filename
+				\ " " . a:ref . " -- " . dev_null . " " . a:filename
 
 	if ( a:status != '?' )
 		try
@@ -139,14 +159,18 @@ function! magit#git#git_diff(filename, status, mode)
 	endif
 
 	if ( empty(diff_list) )
-		echohl WarningMsg
-		echom "diff command \"" . git_cmd . "\" returned nothing"
-		echohl None
-		throw 'diff error'
+		if ( ignore_empty )
+			let is_bin = 0
+		else
+			echohl WarningMsg
+			echom "diff command \"" . git_cmd . "\" returned nothing"
+			echohl None
+			throw 'diff error'
+		endif
+	else
+		let is_bin = ( diff_list[-1] =~ "^Binary files .* differ$" && len(diff_list) <= 4 )
 	endif
-	return [
-		\ ( diff_list[-1] =~ "^Binary files .* differ$" && len(diff_list) <= 4 )
-		\, diff_list ]
+	return [ is_bin, diff_list ]
 endfunction
 
 " magit#git#sub_check: this function checks if given submodule has modified or
@@ -258,9 +282,11 @@ endfunction
 " header plus one or more hunks
 " return: no
 function! magit#git#git_unapply(header, selection, mode)
-	let cached_flag=''
+	let apply_flag=''
 	if ( a:mode == 'staged' )
-		let cached_flag=' --cached '
+		let apply_flag=' --cached '
+	elseif ( a:mode == 'amend' )
+		let apply_flag=' --index '
 	endif
 	let selection = magit#utils#flatten(a:header + a:selection)
 	if ( selection[-1] !~ '^$' )
@@ -269,7 +295,7 @@ function! magit#git#git_unapply(header, selection, mode)
 	try
 		silent let git_result=magit#sys#system(
 			\ g:magit_git_cmd . " apply --recount --no-index -p0 --reverse " .
-			\ cached_flag . " - ", selection)
+			\ apply_flag . " - ", selection)
 	catch 'shell_error'
 		call magit#sys#print_shell_error()
 		echom "Tried to unaply this"
@@ -347,4 +373,16 @@ function! magit#git#get_remote_branch(ref, type)
 	catch 'shell_error'
 		return "none"
 	endtry
+endfunction
+
+function! magit#git#is_commit_merge_commit(ref)
+	let ret = magit#utils#strip(
+				\ magit#sys#system(
+				\ g:magit_git_cmd . "rev-parse --verify " . a:ref . "^2")
+				\ )
+	if ret =~ "^fatal"
+		return 0
+	else
+		return 1
+	endif
 endfunction

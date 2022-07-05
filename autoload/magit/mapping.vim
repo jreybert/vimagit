@@ -110,25 +110,26 @@ endfunction
 
 function! magit#mapping#set_default()
 
+	let stage_sections = '\vstaged\|amend'
 	call s:mg_set_mapping('n', g:magit_stage_hunk_mapping,
-				\"magit#stage_hunk(0)", '\<\%(un\)\?staged\>')
+				\"magit#stage_hunk(0)", stage_sections)
 	call s:mg_set_mapping('n', g:magit_stage_file_mapping,
-				\ "magit#stage_file()", '\<\%(un\)\?staged\>')
+				\ "magit#stage_file()", stage_sections)
 	call s:mg_set_mapping('n', g:magit_discard_hunk_mapping,
-				\ "magit#stage_hunk(1)", '\<\%(un\)\?staged\>')
+				\ "magit#stage_hunk(1)", stage_sections)
 	call s:mg_set_mapping('n', g:magit_stage_line_mapping,
-				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#stage_vselect()", stage_sections)
 	call s:mg_set_mapping('x', g:magit_stage_hunk_mapping,
-				\ "magit#stage_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#stage_vselect()", stage_sections)
 	call s:mg_set_mapping('n', g:magit_mark_line_mapping,
-				\ "magit#mark_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#mark_vselect()", stage_sections)
 	call s:mg_set_mapping('x', g:magit_mark_line_mapping,
-				\ "magit#mark_vselect()", '\<\%(un\)\?staged\>')
+				\ "magit#mark_vselect()", stage_sections)
 
 	call s:mg_set_mapping('n', g:magit_ignore_mapping,
-				\ "magit#ignore_file()", '\<\%(un\)\?staged\>')
+				\ "magit#ignore_file()", stage_sections)
 	call s:mg_set_mapping('n', g:magit_edit_mapping,
-				\ "magit#jump_to()", '\<\%(un\)\?staged\>')
+				\ "magit#jump_to()", stage_sections)
 
 	call s:mg_set_mapping('n', g:magit_reload_mapping,
 				\ "magit#update_buffer()")

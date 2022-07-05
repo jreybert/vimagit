@@ -90,6 +90,12 @@ function! magit#utils#join_list(list)
 	return join(a:list, "\n") . "\n"
 endfunction
 
+function! magit#utils#pop_list(list)
+	let ret = a:list[0]
+	call remove(a:list, 0)
+	return ret
+endfunction
+
 " magit#utils#add_quotes: helper function to protect filename with quotes
 " return quoted filename
 function! magit#utils#add_quotes(filename)

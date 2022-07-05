@@ -7,6 +7,7 @@ let g:magit_sections = {
  \ 'staged':         'Staged changes',
  \ 'unstaged':       'Unstaged changes',
  \ 'commit':         'Commit message',
+ \ 'amend':          'Amended commit',
  \ 'stash':          'Stash list'
  \ }
 

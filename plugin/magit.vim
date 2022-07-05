@@ -29,7 +29,7 @@ let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    
 let g:magit_default_fold_level     = get(g:, 'magit_default_fold_level',        1)
 let g:magit_auto_close             = get(g:, 'magit_auto_close',                0)
 let g:magit_auto_foldopen            = get(g:, 'magit_auto_foldopen',               1)
-let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'commit', 'staged', 'unstaged'])
+let g:magit_default_sections       = get(g:, 'magit_default_sections',          ['info', 'global_help', 'amend', 'commit', 'staged', 'unstaged'])
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
 let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
@@ -249,6 +249,16 @@ function! s:mg_get_commit_section()
 	endif
 endfunction
 
+function! s:mg_get_amend_section()
+	if (b:magit_current_commit_mode == 'CA')
+		silent put =g:magit_sections.amend
+		silent put =magit#utils#underline(g:magit_sections.amend)
+		silent put =''
+		call s:mg_display_files('amend', '', 0)
+		silent put =''
+	endif
+endfunction
+
 " s:mg_search_block: helper function, to get start and end line of a block,
 " giving a start and multiple end pattern
 " a "pattern parameter" is a List:
@@ -462,7 +472,7 @@ function! s:mg_create_diff_from_select(select_lines)
 	" ignored. To do so, + lines are simply ignored, - lines are considered as
 	" untouched.
 	" For unstaging, - lines must be ignored and + lines considered untouched.
-	if ( section == 'unstaged' )
+	if ( section == 'unstaged' || section == 'amend')
 		let remove_line_char = '+'
 		let replace_line_char = '-'
 	else
@@ -533,6 +543,7 @@ let s:mg_display_functions = {
 	\ 'info':        { 'fn': function("s:mg_get_info"), 'arg': []},
 	\ 'global_help': { 'fn': function("magit#mapping#get_section_help"), 'arg': ['global']},
 	\ 'commit':      { 'fn': function("s:mg_get_commit_section"), 'arg': []},
+	\ 'amend':       { 'fn': function("s:mg_get_amend_section"), 'arg': []},
 	\ 'staged':      { 'fn': function("s:mg_get_staged_section"), 'arg': ['staged']},
 	\ 'unstaged':    { 'fn': function("s:mg_get_staged_section"), 'arg': ['unstaged']},
 	\ 'stash':       { 'fn': function("s:mg_get_stashes"), 'arg': []},
@@ -944,6 +955,8 @@ function! s:mg_stage_closed_file(discard)
 					call magit#git#git_add(magit#utils#add_quotes(filename))
 				elseif ( section == 'staged' )
 					call magit#git#git_reset(magit#utils#add_quotes(filename))
+				elseif ( section == 'staged' )
+					error
 				else
 					echoerr "Must be in \"" .
 								\ g:magit_sections.staged . "\" or \"" .
@@ -1023,6 +1036,8 @@ function! magit#stage_block(selection, discard) abort
 			else
 				call magit#git#git_unapply(header, a:selection, 'staged')
 			endif
+		elseif ( section == 'amend' )
+			call magit#git#git_unapply(header, a:selection, 'amend')
 		else
 			echoerr "Must be in \"" .
 						\ g:magit_sections.staged . "\" or \"" .

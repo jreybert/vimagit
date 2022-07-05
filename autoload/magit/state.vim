@@ -213,11 +213,21 @@ function! magit#state#add_file(mode, status, filename, depth) dict
 			return
 		endif
 		let line = 0
-		" match(
+		if a:mode == 'amend'
+			let ref = 'HEAD~1'
+			let ignore_empty = 1
+		else
+			let ref = ''
+			let ignore_empty = 0
+		endif
 		let [ is_bin, diff_list ] =
 					\ magit#git#git_diff(magit#utils#add_quotes(a:filename),
-					\ a:status, a:mode)
+					\ a:status, a:mode, ref, ignore_empty)
 
+		if ( empty(diff_list) )
+			let file.diff.hunks[0].header = 'Empty diff'
+			return
+		endif
 		if ( is_bin )
 			let file.binary = 1
 			let file.diff.hunks[0].header = 'Binary file'
@@ -278,7 +288,7 @@ function! magit#state#update() dict
 		call magit#utils#chdir(magit#git#top_dir())
 		call magit#utils#refresh_submodule_list()
 		let status_list = magit#git#get_status()
-		for [mode, diff_dict_mode] in items(self.dict)
+		for mode in ['staged', 'unstaged']
 			for file_status in status_list
 				let status=file_status[mode]
 
@@ -289,6 +299,13 @@ function! magit#state#update() dict
 				call self.add_file(mode, status, file_status.filename, 0)
 			endfor
 		endfor
+
+		if (b:magit_current_commit_mode == 'CA')
+			let status_list = magit#git#get_commit_status('HEAD')
+			for [filename, file_status] in items(status_list)
+				call self.add_file('amend', file_status['amend'], filename, 0)
+			endfor
+		endif
 	finally
 		call magit#utils#chdir(dir)
 	endtry
@@ -301,6 +318,7 @@ function! magit#state#update() dict
 			endif
 		endfor
 	endfor
+
 endfunction
 
 " magit#state#set_files_visible: global dict setter function
@@ -380,6 +398,6 @@ let magit#state#state = {
 			\ 'set_files_visible': function("magit#state#set_files_visible"),
 			\ 'check_max_lines': function("magit#state#check_max_lines"),
 			\ 'update': function("magit#state#update"),
-			\ 'dict': { 'staged': {}, 'unstaged': {}},
+			\ 'dict': { 'staged': {}, 'unstaged': {}, 'amend': {}},
 			\ }
 
