@@ -1,0 +1,9 @@
+filetype off
+set rtp-=~/.vim
+set rtp-=~/.vim/after
+set rtp+=$VIMAGIT_PATH
+set rtp+=$VADER_PATH
+let g:vader_show_version=0
+filetype plugin indent on
+syntax enable
+

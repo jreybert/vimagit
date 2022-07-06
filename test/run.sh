@@ -1,6 +1,6 @@
-set -e
+set -evx
 
-if [[ "$VIMGAGIT_TEST_VERBOSE" == "1" ]]; then
+if [[ "$VIMAGIT_TEST_VERBOSE" == "1" ]]; then
 	set -x
 fi
 
@@ -71,17 +71,7 @@ for script in ${!test_scripts[@]}; do
 
 				echo "Test $script with $filename from path $TEST_SUB_PATH and from $([ $i -eq 1 ] && echo "end" || echo "start") of line"
 
-				$VIM -Nu <(cat << EOF
-				filetype off
-				set rtp-=~/.vim
-				set rtp-=~/.vim/after
-				set rtp+=$VIMAGIT_PATH
-				set rtp+=$VADER_PATH
-				let g:vader_show_version=0
-				filetype plugin indent on
-				syntax enable
-EOF
-) -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
+				$VIM -Nu test/vimrc -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
 
 			done
 		done

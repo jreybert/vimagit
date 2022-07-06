@@ -518,7 +518,10 @@ endfunction
 " param[in] visible : boolean, force visible value. If not set, toggle
 " visibility
 function! magit#open_close_folding(...)
+	call vader#log(g:magit_file_re)
+	call vader#log(getline("."))
 	let list = matchlist(getline("."), g:magit_file_re)
+	call vader#log(list)
 	if ( empty(list) )
 		throw 'non file header line: ' . getline(".")
 	endif
@@ -1345,7 +1348,7 @@ function! magit#jump_to()
 			execute "edit " . "+" . line_in_file . " " filename
 		endif
 	catch
-		if ( v:exception == 'Vim:Interrupt' && buf_win == 0)
+		if ( v:exception == 'Vim:Interrupt' && bufwinid(filename) != -1)
 			close
 		elseif ( v:exception != 'Vim(edit):E325: ATTENTION' )
 			throw "vimagit: " . v:exception
