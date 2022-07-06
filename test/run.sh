@@ -80,7 +80,8 @@ for script in ${!test_scripts[@]}; do
 				let g:vader_show_version=0
 				filetype plugin indent on
 				syntax enable
-EOF) -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
+EOF
+) -c "Vader! $VIMAGIT_PATH/test/$script 2> >(sed -n '/^Starting Vader/,$p')"
 
 			done
 		done
