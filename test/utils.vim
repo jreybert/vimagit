@@ -156,7 +156,7 @@ function! Search_file(mode, ...)
 	call Git_verbose_log('Search mode: "' . a:mode . '" => ' . getline('.'))
 	let pattern='^.*: ' . call('Get_filename', a:000) . '\%( -> .*\)\?$'
 	let ret = search(pattern)
-	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.') . ' @line' . line('.'))
+	call Git_verbose_log('Search: "' . pattern . '" => ' . getline('.') . ' @line' . line('.') . ' ret ' .ret)
 	return ret
 endfunction
 

@@ -1,0 +1,8 @@
+export VIMAGIT_TEST_FILENAME="manage.py|manage with spaces.py"
+export VIMAGIT_PATH="$PWD"
+export TEST_PATH="$PWD/djooks with spaces"
+export TEST_SUB_PATH="$PWD/djooks with spaces/books/templates/"
+export VADER_PATH=$PWD/vader.vim/
+export VIMGAGIT_TEST_VERBOSE=1
+export TEST_HEAD_SHA1='origin/vimagit_test-1.7.3'
+export TEST_RESET_TAG='reset-here'
