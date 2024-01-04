@@ -277,7 +277,7 @@ function! magit#state#update() dict
 	try
 		call magit#utils#chdir(magit#git#top_dir())
 		call magit#utils#refresh_submodule_list()
-		let status_list = magit#git#get_status()
+		let status_list = magit#git#get_status(b:magit_update_mode)
 		for [mode, diff_dict_mode] in items(self.dict)
 			for file_status in status_list
 				let status=file_status[mode]

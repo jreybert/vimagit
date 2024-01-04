@@ -17,14 +17,19 @@ endfunction
 " magit#git#get_status: this function returns the git status output formated
 " into a List of Dict as
 " [ {staged', 'unstaged', 'filename'}, ... ]
-function! magit#git#get_status()
+function! magit#git#get_status(update_mode)
 	let file_list = []
 
 	" systemlist v7.4.248 problem again
 	" we can't use git status -z here, because system doesn't make the
 	" difference between NUL and NL. -status z terminate entries with NUL,
 	" instead of NF
-	let status_list=magit#sys#systemlist(g:magit_git_cmd . " status --porcelain")
+	if a:update_mode == 'fast'
+		let ignore_flag = 'dirty'
+	else
+		let ignore_flag = 'none'
+	endif
+	let status_list=magit#sys#systemlist(g:magit_git_cmd . " status --porcelain --ignore-submodules=" . ignore_flag)
 	for file_status_line in status_list
 		let line_match = matchlist(file_status_line, '\(.\)\(.\) \%(.\{-\} -> \)\?"\?\(.\{-\}\)"\?$')
 		let filename = line_match[3]
@@ -153,10 +158,8 @@ endfunction
 " untracked content
 " param[in] submodule: submodule path
 " param[in] check_level: can be modified or untracked
-function! magit#git#sub_check(submodule, check_level)
-	let ignore_flag = ( a:check_level == 'modified' ) ?
-				\ '--ignore-submodules=untracked' : ''
-	let git_cmd=g:magit_git_cmd . " status --porcelain " . ignore_flag . " " . a:submodule
+function! magit#git#sub_check(submodule, ignore_flag)
+	let git_cmd=g:magit_git_cmd . " status --porcelain --ignore-submodules=" . a:ignore_flag . " " . a:submodule
 	return ( !empty(magit#sys#systemlist(git_cmd)) )
 endfunction
 
@@ -172,10 +175,10 @@ function! magit#git#git_sub_summary(filename, mode)
 	silent let diff_list=magit#sys#systemlist(git_cmd)
 	if ( empty(diff_list) )
 		if ( a:mode == 'unstaged' )
-			if ( magit#git#sub_check(a:filename, 'modified') )
+			if ( magit#git#sub_check(a:filename, 'untracked') )
 				return "modified content"
 			endif
-			if ( magit#git#sub_check(a:filename, 'untracked') )
+			if ( magit#git#sub_check(a:filename, 'none') )
 				return "untracked content"
 			endif
 		endif

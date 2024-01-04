@@ -16,6 +16,7 @@ let g:magit_section_info = {
  \ 'cur_upstream':   'Upstream:',
  \ 'cur_push':       'Push:',
  \ 'commit_mode':    'Commit mode:',
+ \ 'update_mode':    'Update mode:',
  \ }
 
 let g:magit_git_status_code = {

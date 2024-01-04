@@ -366,6 +366,24 @@ section only.
 
 ------------------------------------------------------------------------------
 
+UPDATE MODE                                               *vimagit-update-mode*
+
+Update can be slow, especially when the repository has a lot of (recursive)
+submodules. To speed up update, submodules status can be lighter.
+
+By setting update mode to normal, git status performs the default behavior.
+By setting update mode to fast, git status will use the option
+`--ignore-submodules=dirty`. This option will only search for commit changes
+in the submodules. All modified and untracked changes will be ignored.
+
+It is possible to control this option by two ways:
+- globally, by setting the vim option `g:magit_update_mode`
+- at repository level, by setting the git option:
+  `git config vimagit.update-mode fast`
+- for the record, it is also possible to set the option globally with git:
+  `git config --global vimagit.update-mode fast`
+
+------------------------------------------------------------------------------
 
 AUTOCMD                                                        *vimagit-autocmd*
 
@@ -516,6 +534,11 @@ nothing else to stage (which means that both Staged and Unstaged sections are
 empty).
 Default value is 0.
 let g:magit_auto_close=[01]
+
+                                                   *vimagit-g:magit_update_mode*
+See |vimagit-update-mode|.
+Can be set to 'normal' and 'fast'.
+Default value is 'normal'.
 
 ===============================================================================
 6. FAQ                                                             *vimagit-FAQ*

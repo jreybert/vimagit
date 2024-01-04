@@ -33,6 +33,10 @@ let g:magit_default_sections       = get(g:, 'magit_default_sections',          
 let g:magit_discard_untracked_do_delete = get(g:, 'magit_discard_untracked_do_delete',        0)
 
 let g:magit_refresh_gutter         = get(g:, 'magit_refresh_gutter'   ,         1)
+
+let g:magit_update_mode           = get(g:, 'magit_update_mode',      'normal')
+let g:magit_update_modes = ['normal', 'fast']
+
 " Should deprecate the following
 let g:magit_refresh_gitgutter      = get(g:, 'magit_refresh_gitgutter',         0)
 
@@ -95,7 +99,12 @@ function! s:mg_get_info()
 	let upstream_msg=s:mg_cut_str(magit#git#get_commit_subject(upstream_br), limit)
 	let push_msg=s:mg_cut_str(magit#git#get_commit_subject(push_br), limit)
 
-	let head_line=magit#utils#strip(printf("%-*s %-*s %s", 
+	let update_msg = ""
+	if b:magit_last_update_time > 1.0 && b:magit_update_mode_undefined == 1
+				\ && b:magit_update_mode != 'fast'
+		let update_msg = "update is slow, consider fast update `:help vimagit-update-mode`"
+	endif
+	let head_line=magit#utils#strip(printf("%-*s %-*s %s",
 				\ align_w, g:magit_section_info.cur_head,
 				\ max_br_w, head_br, head_msg))
 	let upstream_line=magit#utils#strip(printf("%-*s %-*s %s",
@@ -104,7 +113,9 @@ function! s:mg_get_info()
 	let push_line=magit#utils#strip(printf("%-*s %-*s %s",
 				\ align_w, g:magit_section_info.cur_push,
 				\ max_br_w, push_br, push_msg))
-
+	let update_line=magit#utils#strip(printf("%-*s %-*s %s",
+				\ align_w, g:magit_section_info.update_mode,
+				\ max_br_w, b:magit_update_mode, update_msg))
 
 	silent put =g:magit_sections.info
 	silent put =magit#utils#underline(g:magit_sections.info)
@@ -113,6 +124,7 @@ function! s:mg_get_info()
 	silent put =head_line
 	silent put =upstream_line
 	silent put =push_line
+	silent put =update_line
 
 	if ( b:magit_current_commit_mode != '' )
 		let commit_mode_line=printf("%-*s %s",
@@ -615,7 +627,15 @@ function! magit#update_buffer(...)
 		let prev_filename = (pos > 0) ? filenames[pos-1] : ''
 	endif
 
+	if has('reltime')
+		let start_time = reltime()
+	endif
 	call b:state.update()
+	if has('reltime')
+		let b:magit_last_update_time = reltimefloat(start_time)
+	else
+		let b:magit_last_update_time = 0
+	endif
 
 	if ( g:magit_auto_close == 1 &&
 				\ b:magit_just_commited == 1 &&
@@ -864,6 +884,30 @@ function! magit#show_magit(display, ...)
 		echom "Check your repository health with git fsck"
 		echom "If the result shows no problem, open an issue"
 		return
+	endif
+
+	if index(g:magit_update_modes, g:magit_update_mode) == -1
+		echohl WarningMsg
+		echom "g:magit_update_mode='" . g:magit_update_mode . "' must be one of the following: " . join(g:magit_update_modes, ',')
+		echom "Reset to normal"
+		echohl None
+		let g:magit_update_mode = 'normal'
+	endif
+
+	let update_mode = magit#git#get_config('vimagit.update-mode', 'undefined')
+	if update_mode == 'undefined'
+		let b:magit_update_mode_undefined = 1
+		let b:magit_update_mode = g:magit_update_mode
+	else
+		let b:magit_update_mode_undefined = 0
+		if index(g:magit_update_modes, update_mode) == -1
+			echohl WarningMsg
+			echom "vimagit.update-mode='" . update_mode . "' (gitconfig) must be one of the following: " . join(g:magit_update_modes, ',')
+			echom "Reset to g:magit_update_mode"
+			echohl None
+			let update_mode = g:magit_update_mode
+		endif
+		let b:magit_update_mode = update_mode
 	endif
 
 	let b:state = deepcopy(g:magit#state#state)
