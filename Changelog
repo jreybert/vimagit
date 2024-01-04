@@ -1,3 +1,42 @@
+Release 1.8.0
+=============
+
+New features
+------------
+
+* feat: add update mode to speed up update
+
+
+Updates
+-------
+
+* Rework and simplify magit#utils#search_buffer_in_windows usage
+
+Bug fixes
+---------
+
+* Fix jump_to exception
+* Fix jump_to function when jumping to a dirty existing buffer
+* Force git commit cleanup
+* Update mg_get_commit_section function
+* Merge pull request #195 from jreybert/next
+* Fix very slow update when large submodule
+* check_repo() can't use 'count' for a variable name.
+* Make top level git path work with Cygwin/MSYS2
+* Use cygpath if present to create top level dir for Cygwin/MSYS2 compatibility
+* Use --no-prefix to generate diff
+* perf: get git status only once per refresh
+* Always specify diff prefix to avoid diff.noprefix errors
+* Set scrolloff in magit buffer
+
+Contributors
+------------
+
+Thanks to users who have contributed to this release:
+* @arafel
+* @wwade
+* @pnetherwood
+
 Release 1.7.3
 =============
 

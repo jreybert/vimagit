@@ -5,7 +5,7 @@ if exists('g:loaded_magit') || !executable('git') || &cp
 endif
 let g:loaded_magit = 1
 
-let g:vimagit_version = [1, 7, 3]
+let g:vimagit_version = [1, 8, 0]
 
 let g:vimagit_minium_vim_version = '7.4.1926'
 if ! has('patch-' . g:vimagit_minium_vim_version)
