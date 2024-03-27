@@ -168,9 +168,9 @@ MAPPINGS                                                      *vimagit-mappings*
 For each mapping, user can redefine the behavior with its own mapping. Each
 variable is described below as           *vimagit-g:magit_nameofmapping_mapping*
 
-For example, to redefine the <leader>M mapping, user should add this line in
-its |vimrc|:
-let g:magit_show_magit_mapping='m'
+For example, to redefine the <leader>M mapping to <leader>g, add this line in 
+your |vimrc|:
+let g:magit_show_magit_mapping='<leader>g'
 
 Mapping update                                          *vimagit-mapping-update*
 --------------
@@ -178,6 +178,10 @@ Mapping update                                          *vimagit-mapping-update*
 Since vimagit 1.7, jump mappings have changed:
    Jump next hunk : N -> <C-n>
    Jump prev hunk : P -> <C-p>
+
+(Previous behaviour can be restored by redefining the following variables:
+let g:magit_jump_next_hunk='N'
+let g:magit_jump_prev_hunk='P')
 
 Global mappings
 ---------------
