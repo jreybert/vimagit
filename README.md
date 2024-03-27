@@ -435,6 +435,15 @@ example to your vimrc.
 
 User can define in its prefered vimrc some options.
 
+#### g:magit_show_magit_display
+Choose display setup for magit (default: 'v')
+Possible values:
+     'v': vertical split
+     'h': horizontal split
+     'c': current buffer
+> let g:magit_show_magit_display='v'
+
+
 #### g:magit_enabled
 
 To enable or disable vimagit plugin.

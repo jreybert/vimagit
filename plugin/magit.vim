@@ -23,6 +23,8 @@ execute 'source ' . g:vimagit_path . '/../common/magit_common.vim'
 let g:magit_show_magit_mapping     = get(g:, 'magit_show_magit_mapping',        '<leader>M' )
 
 " user options
+" default display: vertical split.
+let g:magit_show_magit_display     = get(g:, 'magit_show_magit_display',       'v')
 let g:magit_enabled                = get(g:, 'magit_enabled',                   1)
 let g:magit_show_help              = get(g:, 'magit_show_help',                 0)
 let g:magit_default_show_all_files = get(g:, 'magit_default_show_all_files',    1)
@@ -48,7 +50,7 @@ let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
 
-execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('v')<cr>"
+execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('" . g:magit_show_magit_display . "')<cr>"
 
 if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
   autocmd User VimagitUpdateFile
@@ -1409,7 +1411,7 @@ function! magit#get_current_mode()
 	endif
 endfunction
 
-command! Magit call magit#show_magit('v')
+command! Magit call magit#show_magit(g:magit_show_magit_display)
 command! MagitOnly call magit#show_magit('c')
 
 " }}}
