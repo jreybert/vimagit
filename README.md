@@ -433,7 +433,7 @@ example to your vimrc.
 
 ### Options
 
-User can define in its prefered vimrc some options.
+User can define in its preferred vimrc some options.
 
 #### g:magit_show_magit_display
 Choose display setup for magit (default: 'v')
@@ -452,7 +452,7 @@ Default value is 1.
 
 #### g:magit_git_cmd
 
-Git command, may be simply simply "git" if git is in your path. Defualt is "git"
+Git command, may be simply simply "git" if git is in your path. Default is "git"
 > let g:magit_git_cmd="git"
 
 #### g:magit_show_help
