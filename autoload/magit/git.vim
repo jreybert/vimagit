@@ -79,7 +79,7 @@ function! magit#git#set_top_dir(path)
 		try
 			let top_dir=magit#utils#strip(
 						\ system(g:magit_git_cmd . " rev-parse --show-toplevel")) . "/"
-			let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --git-dir")) . "/"
+			let git_dir=magit#utils#strip(system(g:magit_git_cmd . " rev-parse --absolute-git-dir")) . "/"
 			if ( executable("cygpath") )
 				let top_dir = magit#utils#strip(system("cygpath " . top_dir))
 				let git_dir = magit#utils#strip(system("cygpath " . git_dir))
