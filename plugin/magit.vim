@@ -50,16 +50,24 @@ let g:magit_warning_max_lines      = get(g:, 'magit_warning_max_lines',         
 
 let g:magit_git_cmd                = get(g:, 'magit_git_cmd'          ,         "git")
 
-execute "nnoremap <silent> " . g:magit_show_magit_mapping . " :call magit#show_magit('" . g:magit_show_magit_display . "')<cr>"
-
-if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
-  autocmd User VimagitUpdateFile
-    \ if ( exists("*gitgutter#process_buffer") ) |
-    \   call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
-    \ elseif ( exists("*sy#util#refresh_windows") ) |
-    \   call sy#util#refresh_windows() |
-    \ endif
+" Set up global key mapping (supports lazy loading)
+if !hasmapto('<Plug>(magit-show-magit)', 'n')
+  execute "nmap <silent> " . g:magit_show_magit_mapping . " <Plug>(magit-show-magit)"
 endif
+nnoremap <silent> <Plug>(magit-show-magit) :call magit#show_magit(g:magit_show_magit_display)<cr>
+
+" Set up autocommands in an augroup (supports lazy loading)
+augroup vimagit_gitgutter
+  autocmd!
+  if (g:magit_refresh_gutter == 1 || g:magit_refresh_gitgutter == 1)
+    autocmd User VimagitUpdateFile
+      \ if ( exists("*gitgutter#process_buffer") ) |
+      \   call gitgutter#process_buffer(bufnr(g:magit_last_updated_buffer), 0) |
+      \ elseif ( exists("*sy#util#refresh_windows") ) |
+      \   call sy#util#refresh_windows() |
+      \ endif
+  endif
+augroup END
 " }}}
 
 " s:mg_cut_str cut a string given a limit size

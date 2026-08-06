@@ -102,20 +102,117 @@ Thanks for your time.
 
 ## Installation
 
-This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers:
+This plugin follows the standard runtime path structure, and as such it can be installed with a variety of plugin managers.
 
-- Pathogen  
-  `git clone https://github.com/jreybert/vimagit ~/.vim/bundle/vimagit`  
+### With Lazy Loading (Recommended)
+
+Vimagit supports lazy loading for faster startup. The plugin loads automatically when you press `<leader>M` or run `:Magit`.
+
+#### lazy.nvim (Recommended for Neovim)
+
+**Basic configuration:**
+```lua
+{
+  'jreybert/vimagit',
+  cmd = { 'Magit', 'MagitOnly' },
+  keys = { '<leader>M' },
+}
+```
+
+**With configuration:**
+```lua
+{
+  'jreybert/vimagit',
+  cmd = { 'Magit', 'MagitOnly' },
+  keys = {
+    { '<leader>M', '<cmd>Magit<cr>', desc = 'Open Magit' },
+  },
+  dependencies = {
+    -- Optional: for git sign integration
+    -- 'airblade/vim-gitgutter',
+    -- 'mhinz/vim-signify',
+
+    -- Optional: for statusline integration
+    -- 'vim-airline/vim-airline',
+  },
+  config = function()
+    vim.g.magit_show_magit_display = 'v'  -- 'v' vertical, 'h' horizontal, 'c' current
+    vim.g.magit_default_fold_level = 1
+    vim.g.magit_refresh_gutter = 1
+  end,
+}
+```
+
+**Custom key mapping:**
+```lua
+{
+  'jreybert/vimagit',
+  cmd = { 'Magit', 'MagitOnly' },
+  keys = {
+    { '<leader>G', '<cmd>Magit<cr>', desc = 'Open Magit' },
+  },
+  init = function()
+    vim.g.magit_show_magit_mapping = '<leader>G'
+  end,
+}
+```
+
+#### vim-plug
+
+**With lazy loading:**
+```vim
+Plug 'jreybert/vimagit', { 'on': ['Magit', 'MagitOnly'] }
+```
+
+**Without lazy loading:**
+```vim
+Plug 'jreybert/vimagit'
+```
+
+**Custom key mapping:**
+```vim
+let g:magit_show_magit_mapping = '<leader>G'
+Plug 'jreybert/vimagit', { 'on': ['Magit', 'MagitOnly'] }
+```
+
+#### packer.nvim
+
+```lua
+use {
+  'jreybert/vimagit',
+  cmd = { 'Magit', 'MagitOnly' },
+  keys = { '<leader>M' },
+  config = function()
+    vim.g.magit_default_fold_level = 1
+  end,
+}
+```
+
+#### dein.vim
+
+```vim
+call dein#add('jreybert/vimagit', {
+  \ 'on_cmd': ['Magit', 'MagitOnly'],
+  \ 'on_map': '<leader>M',
+  \ })
+```
+
+### Without Lazy Loading
+
+- **Pathogen**
+  `git clone https://github.com/jreybert/vimagit ~/.vim/bundle/vimagit`
   Remember to run :Helptags to generate help tags
-- NeoBundle  
+
+- **NeoBundle**
   `NeoBundle 'jreybert/vimagit'`
-- Vundle  
+
+- **Vundle**
   `Plugin 'jreybert/vimagit'`
-- Plug  
-  `Plug 'jreybert/vimagit'`
-- VAM  
+
+- **VAM**
   `call vam#ActivateAddons([ 'jreybert/vimagit' ])`
-- manual  
+
+- **manual**
   copy all of the files into your ~/.vim directory
 
 ## Usage
